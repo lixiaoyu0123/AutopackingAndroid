@@ -9,6 +9,7 @@ QDialog(parent),
 ui(new Ui::EditTable),
 madapterStr(),
 madapterRes(),
+madapterPak(),
 mpindex(index)
 {
 	ui->setupUi(this);
@@ -31,6 +32,10 @@ void EditTable::InitModel(const QModelIndex *index)
 	else if (index->column() == 4){
 		ui->TableView->setModel(DatabaseManager::GetInstance()->GetTableModelRes(*index));
 		ui->TableView->SetAapter(&madapterRes);
+	}
+	else if (index->column() == 5){
+		ui->TableView->setModel(DatabaseManager::GetInstance()->GetTableModelPak(*index));
+		ui->TableView->SetAapter(&madapterPak);
 	}
 	ui->TableView->hideColumn(0);
 	ui->TableView->hideColumn(1);
@@ -56,6 +61,9 @@ void EditTable::NewItem()
 	else if (mpindex->column() == 4){
 		madapterRes.AddRow();
 	}
+	else if (mpindex->column() == 5){
+		madapterPak.AddRow();
+	}
 }
 
 void EditTable::DelItem()
@@ -65,6 +73,9 @@ void EditTable::DelItem()
 	}
 	else if (mpindex->column() == 4){
 		madapterRes.DelRow(ui->TableView->GetSelectIndex());
+	}
+	else if (mpindex->column() == 5){
+		madapterPak.DelRow(ui->TableView->GetSelectIndex());
 	}
 }
 

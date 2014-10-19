@@ -39,6 +39,7 @@ void BjCentralFram::InitView()
 	mtableview.setItemDelegateForColumn(3, mpeditDelegate);
 	mtableview.setItemDelegateForColumn(4, mpeditDelegate);
 	mtableview.setItemDelegateForColumn(5, mpeditDelegate);
+	mtableview.setItemDelegateForColumn(6, mpeditDelegate);
 	mtableview.setSortingEnabled(true);
 	mtableview.hideColumn(0);
 }

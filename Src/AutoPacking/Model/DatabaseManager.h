@@ -26,11 +26,15 @@ public:
 	void DelRowStr(QModelIndexList &selecteds);
 	void AddRowRes();
 	void DelRowRes(QModelIndexList &selecteds);
+	void AddRowPak();
+	void DelRowPak(QModelIndexList &selecteds);
 	BjTableModel *GetTableModel();
 	BjTableModel *GetTableModelStr(const QModelIndex &modelIndexStr);
 	BjTableModel *GetTableModelRes(const QModelIndex &modelIndexRes);
+	BjTableModel *GetTableModelPak(const QModelIndex &modelIndexRes);
 	BjTableModel *GetTableModelStr();
 	BjTableModel *GetTableModelRes();
+	BjTableModel *GetTableModelPak();
 	QSqlDatabase *GetDatabase();
 	void Commit();
 	void DeleteAll(QSqlTableModel &model);
@@ -46,8 +50,10 @@ private:
 	BjTableModel *mptableModel;
 	BjTableModel *mptableModelStr;
 	BjTableModel *mptableModelRes;
+	BjTableModel *mptableModelPak;
 	QModelIndex mmodelIndexStr;
 	QModelIndex mmodelIndexRes;
+	QModelIndex mmodelIndexPak;
 	static DatabaseManager *mpinstance;
 signals:
 	void ReloadDataSignal();

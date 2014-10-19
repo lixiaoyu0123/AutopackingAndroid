@@ -22,4 +22,8 @@ void TableContralAdapter::DoubleClick(const QModelIndex &index)
 		EditTable editTb(NULL, &index);
 		editTb.exec();
 	}
+	else if (index.column() == 5){
+		EditTable editTb(NULL, &index);
+		editTb.exec();
+	}
 }

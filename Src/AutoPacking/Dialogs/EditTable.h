@@ -6,6 +6,7 @@
 #include "ui_EditTable.h"
 #include "Adapter/TableContralAdapterStr.h"
 #include "Adapter/TableContralAdapterRes.h"
+#include "Adapter/TableContralAdapterPak.h"
 
 class EditTable:public QDialog
 {
@@ -18,6 +19,7 @@ private:
 	Ui::EditTable *ui;
 	TableContralAdapterStr madapterStr;
 	TableContralAdapterRes madapterRes;
+	TableContralAdapterPak madapterPak;
 	const QModelIndex *mpindex;
 
 private:
