@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>680</width>
+    <height>445</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::NoContextMenu</enum>
+  </property>
+  <property name="windowTitle">
+   <string>批量自动Android打包工具</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../Resource/Ico/favicon.ico</normaloff>../Resource/Ico/favicon.ico</iconset>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QHBoxLayout" name="horizontalLayout_2"/>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>680</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_1">
+    <property name="title">
+     <string>文 件</string>
+    </property>
+    <addaction name="actionImportDb"/>
+    <addaction name="actionExportDb"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>关 于</string>
+    </property>
+    <addaction name="actionHelp"/>
+    <addaction name="actionVersion"/>
+    <addaction name="actionUpdata"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>设 置</string>
+    </property>
+    <addaction name="actionSetJdk"/>
+    <addaction name="actionSetKey"/>
+    <addaction name="actionSourceSetting"/>
+    <addaction name="actionDecPkSetting"/>
+    <addaction name="actionSetVersion"/>
+   </widget>
+   <addaction name="menu_1"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
+  </widget>
+  <action name="actionHelp">
+   <property name="text">
+    <string>帮 助</string>
+   </property>
+   <property name="statusTip">
+    <string>帮助信息及文档</string>
+   </property>
+   <property name="whatsThis">
+    <string>帮助信息及文档</string>
+   </property>
+  </action>
+  <action name="actionVersion">
+   <property name="text">
+    <string>版 本</string>
+   </property>
+   <property name="statusTip">
+    <string>版本信息</string>
+   </property>
+   <property name="whatsThis">
+    <string>版本信息</string>
+   </property>
+  </action>
+  <action name="actionUpdata">
+   <property name="text">
+    <string>检查更新</string>
+   </property>
+   <property name="statusTip">
+    <string>检查新版本</string>
+   </property>
+   <property name="whatsThis">
+    <string>检查新版本</string>
+   </property>
+  </action>
+  <action name="actionSetJdk">
+   <property name="text">
+    <string>设置jdk路径</string>
+   </property>
+   <property name="statusTip">
+    <string>设置你的java sdk 路径</string>
+   </property>
+   <property name="whatsThis">
+    <string>设置你的java sdk 路径</string>
+   </property>
+  </action>
+  <action name="actionImportDb">
+   <property name="text">
+    <string>导入数据</string>
+   </property>
+   <property name="statusTip">
+    <string>导出设置的数据</string>
+   </property>
+   <property name="whatsThis">
+    <string>导出设置的数据</string>
+   </property>
+  </action>
+  <action name="actionExportDb">
+   <property name="text">
+    <string>导出数据</string>
+   </property>
+   <property name="statusTip">
+    <string>导入设置的数据</string>
+   </property>
+   <property name="whatsThis">
+    <string>导入设置的数据</string>
+   </property>
+  </action>
+  <action name="actionSetKey">
+   <property name="text">
+    <string>设置密钥</string>
+   </property>
+   <property name="statusTip">
+    <string>设置打包用的公私密钥</string>
+   </property>
+   <property name="whatsThis">
+    <string>设置打包用的公私密钥</string>
+   </property>
+  </action>
+  <action name="actionSourceSetting">
+   <property name="text">
+    <string>源码打包设置</string>
+   </property>
+   <property name="statusTip">
+    <string>通过设置源码位置来打包</string>
+   </property>
+   <property name="whatsThis">
+    <string>通过设置源码位置来打包</string>
+   </property>
+  </action>
+  <action name="actionDecPkSetting">
+   <property name="text">
+    <string>反编译打包设置</string>
+   </property>
+   <property name="statusTip">
+    <string>通过反编译打好的apk来重新批量打包</string>
+   </property>
+   <property name="whatsThis">
+    <string>通过反编译打好的apk来重新批量打包</string>
+   </property>
+  </action>
+  <action name="actionSetVersion">
+   <property name="text">
+    <string>设置版本号</string>
+   </property>
+   <property name="statusTip">
+    <string>设置打包的版本号</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
