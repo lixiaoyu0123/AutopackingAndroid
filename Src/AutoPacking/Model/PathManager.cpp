@@ -3,6 +3,7 @@
 #include <QSettings>
 #include <QTextStream>
 #include <QProcess>
+#include <QDebug>
 #include "PathManager.h"
 #include "Dialogs/BjMessageBox.h"
 
@@ -664,31 +665,35 @@ bool PathManager::CopyFile(const QString &SrcFile, const QString &DestFile, bool
 
 bool PathManager::CheckSysEnvironment()
 {
-	QString javaSdkPath = QString("");
+	QString javaHome = QString("");
 	QStringList environment = QProcess::systemEnvironment();
 
 	for (QStringList::iterator ite = environment.begin(); ite != environment.end(); ite++)
 	{
-		if (ite->startsWith("PATH=")){
-			QStringList pathValueList = ite->mid(QString("PATH=").length()).split(";");
+		if (ite->toLower().startsWith("path=")){
+			QStringList pathValueList = ite->mid(QString("path=").length()).split(";");
 			for (QStringList::iterator ite = pathValueList.begin(); ite != pathValueList.end(); ite++)
 			{
 				QString path = ite->toLower();
 				if (path.contains("java") && path.contains("bin")){
-					javaSdkPath = *ite;
+					SetJdkPath(*ite);
 					break;
 				}
 			}
-			break;
+			continue;
+		}
+		else if (ite->toLower().startsWith("java_home")){
+			javaHome = *ite;
 		}
 	}
 
-	if (javaSdkPath.isEmpty()){
+	if (JDKPATH.isEmpty()){
 		BjMessageBox::warning(NULL, QStringLiteral("jdk环境变量错误"), QStringLiteral("在系统环境变量中未发现jdk路径，请先设置jdk环境变量，如果已经设置jdk环境变量，请在设置中指定其位置！"), QMessageBox::Ok, QMessageBox::NoButton);
 		return false;
 	}
-	else{
-		SetJdkPath(javaSdkPath);
+	else if (javaHome.isEmpty()){
+		BjMessageBox::warning(NULL, QStringLiteral("java_home环境变量错误"), QStringLiteral("在系统环境变量中未发现java_home环境变量，请先设置java_home环境变量！"), QMessageBox::Ok, QMessageBox::NoButton);
+		return false;
 	}
 	return true;
 }

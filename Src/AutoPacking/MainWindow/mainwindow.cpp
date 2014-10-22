@@ -102,7 +102,7 @@ void MainWindow::ChangStat(bool isStar)
 
 void MainWindow::StartSlot()
 {
-	if (!PathManager::CheckParameter()){
+	if (!PathManager::CheckSysEnvironment() || !PathManager::CheckParameter()){
 		return;
 	}
 	ChangStat(true);
