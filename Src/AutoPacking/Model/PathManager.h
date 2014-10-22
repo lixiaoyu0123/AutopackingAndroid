@@ -66,6 +66,8 @@ public:
 	static QString GetSigalg();
 	static void SetDigestalg(QString &dig);
 	static QString GetDigestalg();
+	static bool CheckSysEnvironment();
+	static bool CheckParameter();
 protected:
 private:
 	static QString OUTPATH;

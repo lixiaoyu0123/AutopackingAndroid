@@ -46,6 +46,7 @@ void MainWindow::InitData()
 {
 	mcentralFram.GetTableView().SetAapter(&madapter);
 	StatusTextChang();
+	PathManager::CheckSysEnvironment();
 }
 
 void MainWindow::InitView()
@@ -101,6 +102,9 @@ void MainWindow::ChangStat(bool isStar)
 
 void MainWindow::StartSlot()
 {
+	if (!PathManager::CheckParameter()){
+		return;
+	}
 	ChangStat(true);
 	if (DatabaseManager::GetInstance()->isDatabaseEmpty()){
 		BjMessageBox::warning(NULL, QStringLiteral("数据为空"), QStringLiteral("没有配置数据，请先配置数据表！"), QMessageBox::Ok, QMessageBox::NoButton);
@@ -140,6 +144,14 @@ void MainWindow::StartSlot()
 
 void MainWindow::StartDecPack()
 {
+	if (PathManager::GetDecPackPath().isEmpty()){
+		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), QStringLiteral("反编译的模板包未设置!"), QMessageBox::Ok, QMessageBox::NoButton);
+		return;
+	}
+	else if (!QFile(PathManager::GetDecPackPath()).exists()){
+		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), QStringLiteral("指定位置的反编译的模板包不存在!"), QMessageBox::Ok, QMessageBox::NoButton);
+		return;
+	}
 	for (int i = 0; i < mthreadNum; i++,mcurrentTaskIndex++)
 	{
 		if (mcurrentTaskIndex >= mrecordIndex.size()){
@@ -167,6 +179,14 @@ void MainWindow::StartDecPack()
 
 void MainWindow::StartSrcPack()
 {
+	if (PathManager::GetSdkPath().isEmpty()){
+		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), QStringLiteral("Android Sdk路径未设置!"), QMessageBox::Ok, QMessageBox::NoButton);
+		return;
+	}
+	else if (PathManager::GetSrcPath().isEmpty()){
+		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), QStringLiteral("源码路径未设置!"), QMessageBox::Ok, QMessageBox::NoButton);
+		return;
+	}
 	for (int i = mtaskList.size(); i < mthreadNum; i++, mcurrentTaskIndex++)
 	{
 		if (mcurrentTaskIndex >= mrecordIndex.size()){

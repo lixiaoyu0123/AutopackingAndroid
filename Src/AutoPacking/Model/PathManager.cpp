@@ -2,7 +2,9 @@
 #include <QVector>
 #include <QSettings>
 #include <QTextStream>
+#include <QProcess>
 #include "PathManager.h"
+#include "Dialogs/BjMessageBox.h"
 
 
 QString PathManager::OUTPATH = "";
@@ -658,6 +660,73 @@ bool PathManager::CopyFile(const QString &SrcFile, const QString &DestFile, bool
 	}
 	QFile oldFile(SrcFile);
 	return oldFile.copy(DestFile);
+}
+
+bool PathManager::CheckSysEnvironment()
+{
+	QString javaSdkPath = QString("");
+	QStringList environment = QProcess::systemEnvironment();
+
+	for (QStringList::iterator ite = environment.begin(); ite != environment.end(); ite++)
+	{
+		if (ite->startsWith("PATH=")){
+			QStringList pathValueList = ite->mid(QString("PATH=").length()).split(";");
+			for (QStringList::iterator ite = pathValueList.begin(); ite != pathValueList.end(); ite++)
+			{
+				QString path = ite->toLower();
+				if (path.contains("java") && path.contains("bin")){
+					javaSdkPath = *ite;
+					break;
+				}
+			}
+			break;
+		}
+	}
+
+	if (javaSdkPath.isEmpty()){
+		BjMessageBox::warning(NULL, QStringLiteral("jdk环境变量错误"), QStringLiteral("在系统环境变量中未发现jdk路径，请先设置jdk环境变量，如果已经设置jdk环境变量，请在设置中指定其位置！"), QMessageBox::Ok, QMessageBox::NoButton);
+		return false;
+	}
+	else{
+		SetJdkPath(javaSdkPath);
+	}
+	return true;
+}
+
+bool PathManager::CheckParameter()
+{
+	QString parameter = QString("");
+	if (OUTPATH.isEmpty()){
+		parameter.append(QStringLiteral("输出路径为空\n"));
+		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
+		return false;
+	}
+	else if (KEYPATH.isEmpty() || !QFile(KEYPATH).exists()){
+		parameter.append(QStringLiteral("密钥位置未设置或指定位置密钥不存在\n"));
+		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
+		return false;
+	}
+	else if (JDKPATH.isEmpty()){
+		parameter.append(QStringLiteral("jdk位置未设置\n"));
+		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
+		return false;
+	}
+	else if (PASSWD.isEmpty()){
+		parameter.append(QStringLiteral("签名密码未设置\n"));
+		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
+		return false;
+	}
+	else if (SIGALG.isEmpty()){
+		parameter.append(QStringLiteral("签名算法未设置\n"));
+		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
+		return false;
+	}
+	else if (DIGESTALG.isEmpty()){
+		parameter.append(QStringLiteral("摘要算法未设置\n"));
+		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
+		return false;
+	}
+	return true;
 }
 
 void PathManager::WriteSetting()
