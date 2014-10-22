@@ -208,7 +208,7 @@ void MainWindow::StartSrcPack()
 		QList<ReplacePakTable> pakTableList;
 		DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(mcurrentTaskIndex), QStringLiteral("打包开始！"));
 		DatabaseManager::GetInstance()->ReadyData(id, strTableList, resTableList, pakTableList);
-		ppack->Start(PathManager::GetDecPackPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, mcurrentTaskIndex);
+		ppack->Start(PathManager::GetSrcPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, mcurrentTaskIndex);
 	}
 
 	if (mtaskList.isEmpty()){

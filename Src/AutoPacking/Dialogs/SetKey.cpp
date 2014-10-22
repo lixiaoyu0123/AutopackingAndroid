@@ -21,7 +21,8 @@ void SetKey::InitView()
 	QRegExp rx("^[\\@A-Za-z0-9\\!\\#\\$\\%\\^\\&\\*\\.\\~]{6,200}$");
 	QValidator *validator = new QRegExpValidator(rx, this);
 	ui->LineEditKey->setValidator(validator);
-	ui->LineEditPath->setText(PathManager::GetKeyPath());
+	mkeyPath = PathManager::GetKeyPath();
+	ui->LineEditPath->setText(mkeyPath);
 	ui->LineEditKey->setText(PathManager::GetPasswd());
 	ui->LineEditAliases->setText(PathManager::GetKeyAliases());
 	ui->ComboBoxSigalg->insertItem(0, QString("MD5withRSA"));
@@ -65,8 +66,12 @@ void SetKey::ButtonOkClickSlot()
 {
 	PathManager::SetKeyPath(mkeyPath);
 	PathManager::WriteLastPath(QStringLiteral("setkey"), mkeyPath.left(mkeyPath.replace("\\","/").lastIndexOf("/")));
-	PathManager::SetPasswd(ui->LineEditKey->text());
-	PathManager::SetKeyAliases(ui->LineEditAliases->text());
-	PathManager::SetSigalg(ui->ComboBoxSigalg->currentText());
-	PathManager::SetDigestalg(ui->ComboBoxDigestalg->currentText());
+	QString passwrd = ui->LineEditKey->text();
+	PathManager::SetPasswd(passwrd);
+	QString aliases = ui->LineEditAliases->text();
+	PathManager::SetKeyAliases(aliases);
+	QString sigal = ui->ComboBoxSigalg->currentText();
+	PathManager::SetSigalg(sigal);
+	QString digestalg = ui->ComboBoxDigestalg->currentText();
+	PathManager::SetDigestalg(digestalg);
 }

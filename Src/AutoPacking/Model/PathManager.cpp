@@ -135,7 +135,7 @@ QString PathManager::GetReleaseApk(QString &path)
 	QStringList files = dir.entryList();
 	for (QStringList::iterator ite = files.begin(); ite != files.end(); ite++)
 	{
-		if (ite->endsWith("release.apk")){
+		if (ite->toLower().endsWith("release.apk")){
 			return *ite;
 		}		
 	}
@@ -149,7 +149,7 @@ QString PathManager::GetReleaseUnsignApk(QString &path)
 	QStringList files = dir.entryList();
 	for (QStringList::iterator ite = files.begin(); ite != files.end(); ite++)
 	{
-		if (ite->endsWith("unaligned.apk")){
+		if (ite->toLower().endsWith("unaligned.apk")){
 			return *ite;
 		}		
 	}
@@ -264,7 +264,7 @@ QString PathManager::GetSdkToolsPath()
 
 void PathManager::SetPasswd(QString &password)
 {
-	password;
+	PASSWD = password;
 	WriteSetting();
 }
 
@@ -681,7 +681,7 @@ bool PathManager::CheckSysEnvironment()
 			{
 				QString path = ite->toLower();
 				if (path.contains("java") && path.contains("bin")){
-					SetJdkPath(*ite);
+					SetJdkPath(ite->replace("\\","/"));
 					break;
 				}
 			}
