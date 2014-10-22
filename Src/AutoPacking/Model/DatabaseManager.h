@@ -10,6 +10,7 @@
 #include "Model/BjTableModel.h"
 #include "Table/ReplaceStrTable.h"
 #include "Table/ReplaceResTable.h"
+#include "Table/ReplacePakTable.h"
 
 class DatabaseManager:public QObject
 {
@@ -40,7 +41,7 @@ public:
 	void DeleteAll(QSqlTableModel &model);
 	bool isDatabaseEmpty();
 	void ChangStatInDatabase(int row, QString &status);
-	void DatabaseManager::ReadyData(QString &id, QList<ReplaceStrTable> &strTable, QList<ReplaceResTable>  &resTable);
+	void DatabaseManager::ReadyData(QString &id, QList<ReplaceStrTable> &strTable, QList<ReplaceResTable>  &resTable, QList<ReplacePakTable>  &pakTable);
 	void ExportData(QString &fileName);
 	void ImportData(QString &fileName);
 	void ReloadData();

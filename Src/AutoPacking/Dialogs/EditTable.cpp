@@ -69,13 +69,13 @@ void EditTable::NewItem()
 void EditTable::DelItem()
 {
 	if (mpindex->column() == 3){
-		madapterStr.DelRow(ui->TableView->GetSelectIndex());
+		madapterStr.DelRow(ui->TableView->GetSelectIndexs());
 	}
 	else if (mpindex->column() == 4){
-		madapterRes.DelRow(ui->TableView->GetSelectIndex());
+		madapterRes.DelRow(ui->TableView->GetSelectIndexs());
 	}
 	else if (mpindex->column() == 5){
-		madapterPak.DelRow(ui->TableView->GetSelectIndex());
+		madapterPak.DelRow(ui->TableView->GetSelectIndexs());
 	}
 }
 

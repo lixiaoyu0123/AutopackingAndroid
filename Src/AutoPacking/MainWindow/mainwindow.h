@@ -29,8 +29,8 @@ public:
 	void InitSlot();
 	void ChangStat(bool isStar);
 	void StatusTextChang();
-	void StartDecPack();
-	void StartSrcPack();
+	void StartDecPack(QVector<int> &recorderRows);
+	void StartSrcPack(QVector<int> &recorderRows);
 
 public slots:
 	void StartSlot();

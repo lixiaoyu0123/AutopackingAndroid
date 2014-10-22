@@ -10,10 +10,11 @@ public:
 	explicit SrcPack(QObject *parent = 0);
 	virtual ~SrcPack();
 	virtual void Start(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
-		QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, int taskId);
+		QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, int taskId);
 	virtual void Stop();
 
 	bool CopySrc(QString &srcPath,QString &destPath);
+	virtual bool ReplacePakByTable();
 	void PrePack();
 	void PackFromSrc();
 	void CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId);

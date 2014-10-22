@@ -492,6 +492,69 @@ bool PathManager::CopyDir(const QString &source, const QString &destination, boo
 	return true;
 }
 
+bool PathManager::RenamePak(QString &path, QString &oldName, QString &newName)
+{
+	QString oldNameTmp = oldName;
+	QString newNameTmp = newName;
+	QString srcDir = path + QString("/src");
+	QString oldPath = srcDir + QString("/") + oldNameTmp.replace(".", "/");
+	QString newPath = srcDir + QString("/") + newName.replace(".", "/");
+	if (!CopyDir(oldPath, newPath, true)){
+		return false;
+	}
+	if (!RemoveDir(oldPath)){
+		return false;
+	}
+	return true;
+}
+
+bool PathManager::ReplacePak(QString &path, QString &oldName, QString &newName)
+{
+	QVector<QString> dirNames;
+	QDir dir(path);
+	QFileInfoList filst;
+	QFileInfoList::iterator curFi;
+	//初始化
+	dirNames.clear();
+	if (dir.exists()){
+		dirNames << path;
+	}
+	else{
+		return true;
+	}
+	//遍历各级文件夹，并将这些文件夹中的文件删除  
+	for (int i = 0; i<dirNames.size(); ++i)
+	{
+		dir.setPath(dirNames[i]);
+		filst = dir.entryInfoList(QDir::Dirs | QDir::Files
+			| QDir::Readable | QDir::Writable
+			| QDir::Hidden | QDir::NoDotAndDotDot
+			, QDir::Name);
+		if (filst.size()>0){
+			curFi = filst.begin();
+			while (curFi != filst.end())
+			{
+				//遇到文件夹,则添加至文件夹列表dirs尾部  
+				if (curFi->isDir()){
+					dirNames.push_back(curFi->filePath());
+				}
+				else if (curFi->isFile()){
+					//遇到文件,则删除之  
+					if(!ReplacePakNameInJava(curFi->absoluteFilePath(), oldName, newName) || !ReplacePakNameInXml(curFi->absoluteFilePath(), oldName, newName)){
+						return false;
+					}
+				}
+				curFi++;
+			}//end of while  
+		}
+	}
+
+	if (!RenamePak(path, oldName, newName)){
+		return false;
+	}
+	return true;
+}
+
 bool PathManager::SearchDirContianSuffix(const QString &dirFrom, QStringList &result, QString &suffix)
 {
 	QVector<QString> dirNames;
@@ -556,6 +619,24 @@ bool PathManager::ReplaceStr(QString &fileName, QString &beforeStr, QString &aft
 	}
 	newfile.write(content.toUtf8());
 	newfile.close();
+	return true;
+}
+
+bool PathManager::ReplacePakNameInXml(QString &fileName, QString &oldName, QString &newName)
+{
+	if (fileName.toLower().endsWith("xml")){
+		QString oldNameTmp = QString("\"") + oldName + QString("\"");
+		QString newNameTmp = QString("\"") + newName + QString("\"");
+		return ReplaceStr(fileName, oldNameTmp, newNameTmp);
+	}
+	return true;
+}
+
+bool PathManager::ReplacePakNameInJava(QString &fileName, QString &oldName, QString &newName)
+{
+	if (fileName.toLower().endsWith("java")){
+		return ReplaceStr(fileName, oldName, newName);
+	}
 	return true;
 }
 

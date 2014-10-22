@@ -119,7 +119,7 @@ bool Pack::CheckError()
 {
 	QTextCodec *gbk = QTextCodec::codecForName("GBK");
 	QString error = gbk->toUnicode(mpprocess->readAllStandardError());
-	if (error.contains("error")){
+	if (error.toLower().contains("error") || error.toLower().contains("exception")){
 		emit GenerateError(error);
 		return false;
 	}

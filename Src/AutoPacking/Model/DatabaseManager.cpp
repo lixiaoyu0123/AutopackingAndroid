@@ -483,7 +483,7 @@ void DatabaseManager::ChangStatInDatabase(int row, QString &status)
 	}
 }
 
-void DatabaseManager::ReadyData(QString &id, QList<ReplaceStrTable> &strTable, QList<ReplaceResTable>  &resTable)
+void DatabaseManager::ReadyData(QString &id, QList<ReplaceStrTable> &strTable, QList<ReplaceResTable>  &resTable, QList<ReplacePakTable>  &pakTable)
 {
 	mptableModelStr->setFilter(QString("ChanneltbID=\'%1\'").arg(id));
 	int rowNum = mptableModelStr->rowCount();
@@ -509,6 +509,18 @@ void DatabaseManager::ReadyData(QString &id, QList<ReplaceStrTable> &strTable, Q
 		reResTable.SetFolderSrc(srcDir);
 		reResTable.SetFolderDest(destDir);
 		resTable.push_back(reResTable);
+	}
+
+	mptableModelPak->setFilter(QString("ChanneltbID=\'%1\'").arg(id));
+	rowNum = mptableModelPak->rowCount();
+	for (int i = 0; i < rowNum; i++)
+	{
+		QString srcPak = mptableModelPak->record(i).value("SourcePackage").toString().trimmed();
+		QString destPak = mptableModelPak->record(i).value("TargetPackage").toString().trimmed();
+		ReplacePakTable rePakTable;
+		rePakTable.SetSrcPakName(srcPak);
+		rePakTable.SetDestPakName(destPak);
+		pakTable.push_back(rePakTable);
 	}
 }
 

@@ -15,6 +15,10 @@ BjTableView::~BjTableView()
 {
 	pactionNew->deleteLater();
 	pactionDel->deleteLater();
+	for (QSet<QAction *>::iterator ite = mactionSet.begin(); ite != mactionSet.end(); ite++)
+	{
+		(*ite)->deleteLater();
+	}
 }
 
 void BjTableView::InitSlot()
@@ -37,12 +41,21 @@ void BjTableView::contextMenuEvent(QContextMenuEvent *event)
 	mmenu.clear(); //清除原有菜单
 	mmenu.addAction(pactionNew);
 	mmenu.addAction(pactionDel);
+	for (QSet<QAction *>::iterator ite = mactionSet.begin(); ite != mactionSet.end(); ite++)
+	{
+		mmenu.addAction(*ite);
+	}
 	mmenu.exec(QCursor::pos());
 }
 
 void BjTableView::SetAapter(ITableContral *pinterface)
 {
 	mpinterface = pinterface;
+}
+
+void BjTableView::AddAction(QAction *action)
+{
+	mactionSet.insert(action);
 }
 
 void BjTableView::ActionNewSlot()
@@ -66,7 +79,7 @@ void BjTableView::DoubleClick(const QModelIndex &index)
 	}
 }
 
-QModelIndexList BjTableView::GetSelectIndex()
+QModelIndexList BjTableView::GetSelectIndexs()
 {
 	return this->selectedIndexes();
 }

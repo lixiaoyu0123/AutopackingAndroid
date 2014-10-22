@@ -1,6 +1,7 @@
 #ifndef BJTABLEVIEW_H
 #define BJTABLEVIEW_H
 #include <QTableView>
+#include <QSet>
 #include <QMenu>
 #include "Interface/ITableContral.h"
 
@@ -11,13 +12,15 @@ public:
 	explicit BjTableView(QWidget *parent = 0);
 	~BjTableView();
 	void SetAapter(ITableContral *pinterface);
-	QModelIndexList GetSelectIndex();
+	void AddAction(QAction *action);
+	QModelIndexList GetSelectIndexs();
 protected:
 	void contextMenuEvent(QContextMenuEvent *event);
 private:
 	QMenu mmenu;
 	QAction *pactionNew;
 	QAction *pactionDel;
+	QSet<QAction *> mactionSet;
 	ITableContral *mpinterface;
 
 private:

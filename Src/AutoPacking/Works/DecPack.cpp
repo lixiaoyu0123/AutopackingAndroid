@@ -17,7 +17,7 @@ DecPack::~DecPack()
 }
 
 void DecPack::Start(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
-	QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, int taskId)
+	QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, int taskId)
 {
 	if (inPath.isEmpty() || outPath.isEmpty()){
 		emit GenerateError(QStringLiteral("error:输入输出路径为空！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
@@ -36,6 +36,7 @@ void DecPack::Start(QString &inPath, QString &outPath, QString &channelId, QStri
 	mtaskId = taskId;
 	mstrTableList = strTableList;
 	mresTableList = resTableList;
+	mpakTableList = pakTableList;
 	CreatPath(outPath,channelId, channelName, channeltbID);
 	Unpacket(inPath, mtmpUnpacketPath);
 }
@@ -67,6 +68,11 @@ void DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelNa
 	PathManager::CreatDir(signPath);
 	mtmpUnpacketPath = unpackPath;
 	mtmpSignFile = signPath + "/" + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
+}
+
+bool DecPack::ReplacePakByTable()
+{
+	return true;
 }
 
 void DecPack::Unpacket(QString &inPath, QString &outPath)
