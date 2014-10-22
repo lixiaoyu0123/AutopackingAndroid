@@ -154,8 +154,6 @@ set( TABLE_FILES
 	Table/ReplacePakTable.h
 	)
 
-file( GLOB RESOURCE_FILES ${CMAKE_SOURCE_DIR}/installer/Resource/* )
-file( GLOB DOC_FILES ${CMAKE_SOURCE_DIR}/installer/Resource/Documents/* )
 set( RAW_SOURCES ${MAIN_FILES} ${MAINUI_WINDOW} ${MODEL_FILES} ${DIALOG_FILES} ${WORKS_FILES} ${INTERFACE_FILES} ${ADAPTER_FILES} ${TABLE_FILES})
 
 #############################################################################
@@ -213,7 +211,7 @@ if (MSVC)
 endif()
 
 target_link_libraries( ${PROJECT_NAME} ${QT_MAIN} )
-qt5_use_modules(${PROJECT_NAME} Widgets Xml XmlPatterns Concurrent Sql)
+qt5_use_modules(${PROJECT_NAME} Widgets Sql)
 
 #############################################################################
 
@@ -277,18 +275,13 @@ if (MSVC)
         COMMAND iscc ${ISS_TEMP_LOCATION} )
 	if( MSVC_IDE )
     set( TARGET_FOR_COPY makeinstaller )
-	add_custom_target(  copyfiles
-                            COMMENT "Copying installer files to temporary location..."
-                            DEPENDS ${PROJECT_NAME} )
-                            
-    add_dependencies( makeinstaller copyfiles )
+    # Copy ISS file to temp folder location
+    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
+                        COMMAND cmake -E copy ${ISS_CONFIGURED_LOCATION} ${ISS_TEMP_LOCATION} ) 
 	endif()
 
-	add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
-                        COMMAND cmake -E copy ${ISS_CONFIGURED_LOCATION} ${ISS_TEMP_LOCATION} )
-
 	# Copy Qt runtime libs
-    set( QT_LIBS Qt5Concurrent Qt5Core Qt5Gui Qt5Multimedia Qt5MultimediaWidgets Qt5Quick Qt5Sql Qt5Widgets Qt5Xml Qt5XmlPatterns )
+    set( QT_LIBS Qt5Core Qt5Quick Qt5Sql Qt5Widgets )
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
     foreach( lib ${QT_LIBS} )
         set( location location-NOTFOUND )
@@ -296,8 +289,8 @@ if (MSVC)
         add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/ )
     endforeach( lib )
 
-    # Copy bin libs
-    set( QT_BIN_LIBS D3DCompiler_43 icudt51 icuin51 icuuc51 )
+	# Copy bin libs
+    set( QT_BIN_LIBS D3DCompiler_43 )
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
     foreach( lib ${QT_BIN_LIBS} )
         set( location location-NOTFOUND )
@@ -312,16 +305,7 @@ if (MSVC)
         set( location location-NOTFOUND )
         find_file( location ${lib}.dll PATHS ${QT_PLUGINS_DIR}/iconengines/ )
         add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/Plugins/iconengines/ )
-    endforeach( lib )  
-
-    # Copy imageformats plugins
-    set( QT_IMAGEFORMATS qgif qico qjpeg qmng qsvg qtiff )
-    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Plugins/imageformats/ )
-    foreach( lib ${QT_IMAGEFORMATS} )   
-        set( location location-NOTFOUND )
-        find_file( location ${lib}.dll PATHS ${QT_PLUGINS_DIR}/imageformats/ )
-        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/Plugins/imageformats/ )
-    endforeach( lib )
+    endforeach( lib ) 
 
     # Copy platform plugins
     set( QT_PLATFORMS qminimal qwindows)
@@ -341,26 +325,18 @@ if (MSVC)
         add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/Plugins/sqldrivers/ )
     endforeach( lib )
 
-    # Copy accessible plugins
-    set( QT_ACCESSIBLE qtaccessiblequick qtaccessiblewidgets )
-    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Plugins/accessible/ )
-    foreach( lib ${QT_ACCESSIBLE} )   
-        set( location location-NOTFOUND )
-        find_file( location ${lib}.dll PATHS ${QT_PLUGINS_DIR}/accessible/ )
-        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/Plugins/accessible/ )
-    endforeach( lib )
+   # Set the path of the application executable
+    if( MSVC_IDE )
+        set( EXE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/${PROJECT_NAME}${CMAKE_EXECUTABLE_SUFFIX} )
+    endif()
 
-	add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Resource/ )
-    foreach( FILE ${RESOURCE_FILES} )
-        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${FILE} ${MAIN_PACKAGE_DIR}/Resource/ )
-    endforeach( HTML )
+    # Copy the application executable
+    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
+                        COMMAND cmake -E copy ${EXE_PATH} ${MAIN_PACKAGE_DIR} )
 
-	#Copy the user manual file
-	foreach( MANUAL ${DOC_FILES} )
-        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${MANUAL} ${MAIN_PACKAGE_DIR} )
-    endforeach( MANUAL )
+	file(COPY ${CMAKE_SOURCE_DIR}/installer/Resource/ DESTINATION ${MAIN_PACKAGE_DIR})
 
-    # Remove the temp directory used for building the installer 
+	    # Remove the temp directory used for building the installer 
     add_custom_command( TARGET makeinstaller POST_BUILD 
                         COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
                         COMMENT "Removing temporary directory..." )

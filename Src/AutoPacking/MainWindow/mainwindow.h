@@ -33,6 +33,9 @@ public:
 	void StartDecPack();
 	void StartSrcPack();
 
+protected:
+	void closeEvent(QCloseEvent *event);
+
 public slots:
 	void StartSlot();
 	void StopSlot();

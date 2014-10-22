@@ -12,6 +12,7 @@ public:
 	static QString GetDataBasePath();
 	static QString GetToolPath();
 	static QString GetApkToolPath();
+	static QString GetDocumentsPath();
 	static QString GetSrcPack();
 	static void CreatDir(QString &dir);
 	static void SetOutPath(QString &path);

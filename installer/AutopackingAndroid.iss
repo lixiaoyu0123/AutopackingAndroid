@@ -3,14 +3,14 @@
 ; Inno, the ones with the dollar we define with CMake.
 
 [Setup]
-AppId={3736C7B6-53BD-491F-AD3B-6B066F62787D}
+AppId={{3736C7B6-53BD-491F-AD3B-6C066F62787F}
 AppName=android批量打包工具
-AppVerName=AutopackingAndroid ${TOOLS_FULL_VERSION}
-DefaultDirName={pf}\AutopackingAndroid
-DefaultGroupName=AutopackingAndroid
-UninstallDisplayIcon={app}\AutopackingAndroid.exe
+AppVerName=Autopacking ${TOOLS_FULL_VERSION}
+DefaultDirName={pf}\Autopacking
+DefaultGroupName=Autopacking
+UninstallDisplayIcon={app}\Autopacking.exe
 AppPublisher=BingJian
-AppPublisherURL=
+AppPublisherURL=www.bingjian.com
 WizardImageFile=compiler:wizmodernimage-IS.bmp
 WizardSmallImageFile=compiler:wizmodernsmallimage-IS.bmp
 Compression=lzma2
@@ -35,7 +35,6 @@ ArchitecturesInstallIn64BitMode="${ISS_ARCH}"
 
 [Files]
 Source: "AutopackingAndroid\*"; DestDir: "{app}"; Flags: createallsubdirs recursesubdirs ignoreversion
-Source: vendor\vcredist.exe; DestDir: {tmp}
 
 [Languages]
 Name: zh; MessagesFile: compiler:Languages\ChineseSimplified.isl
@@ -44,12 +43,19 @@ Name: zh; MessagesFile: compiler:Languages\ChineseSimplified.isl
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Icons]
-Name: "{group}\AutopackingAndroid"; Filename: "{app}\AutopackingAndroid.exe"
-Name: "{group}\用户手册"; Filename: "{app}\UserManual.pdf"
+Name: "{group}\AutopackingAndroid"; Filename: "{app}\Autopacking.exe"
+Name: "{group}\用户手册"; Filename: "{app}\Documents\UserManual.pdf"
 Name: "{group}\卸载AutopackingAndroid"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\AutopackingAndroid"; Filename: "{app}\AutopackingAndroid.exe"; Tasks: desktopicon
-Name: "{userdesktop}\AutopackingAndroid"; Filename:"{app}\AutopackingAndroid.exe"
+Name: "{commondesktop}\AutopackingAndroid"; Filename: "{app}\Autopacking.exe"; Tasks: desktopicon
+Name: "{userdesktop}\AutopackingAndroid"; Filename:"{app}\Autopacking.exe"
 
 [InstallDelete]
-Type: files; Name: "{group}\AutopackingAndroid 3.4.1.lnk";Type: files; Name: "{commonappdata}\Microsoft\Windows\Start Menu\Programs\AutopackingAndroid\AutopackingAndroid 3.4.1.lnk"
+Type: files; Name: "{group}\Autopacking ${TOOLS_FULL_VERSION}.lnk";Type: files; Name: "{commonappdata}\Microsoft\Windows\Start Menu\Programs\AutopackingAndroid\AutopackingAndroid 3.4.1.lnk"
 
+[Code]
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usUninstall then
+    if MsgBox('您是否要保留Autopacking配置信息？', mbConfirmation, MB_YESNO) = IDNO then
+      DelTree(ExpandConstant('{%UserProfile}\AppData\Local\bingjian'), True, True, False);
+end;

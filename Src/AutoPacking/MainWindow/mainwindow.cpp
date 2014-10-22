@@ -335,7 +335,7 @@ void MainWindow::ShowLogSlot()
 
 void MainWindow::HeldSlot()
 {
-	QString arg = PathManager::GetStartPath() + "/UserManual.chm";
+	QString arg = PathManager::GetDocumentsPath() + "/UserManual.chm";
 	QProcess::startDetached("hh.exe",QStringList()<<arg);
 }
 
@@ -361,4 +361,9 @@ void MainWindow::CollectLog(QString log)
 void MainWindow::StatusTextChang()
 {
 	mstatusBar.SetText1(QStringLiteral("线程数量：%1  当前打包版本:%2").arg(QString::number(mthreadNum)).arg(mversion));
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	StopSlot();
 }

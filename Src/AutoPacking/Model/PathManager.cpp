@@ -59,6 +59,11 @@ QString PathManager::GetApkToolPath()
 	return GetToolPath() + QStringLiteral("/apktool.bat");
 }
 
+QString PathManager::GetDocumentsPath()
+{
+	return GetStartPath() + QStringLiteral("/Documents");
+}
+
 QString PathManager::GetSrcPack()
 {
 	return GetToolPath() + QStringLiteral("/srcpack.bat");
