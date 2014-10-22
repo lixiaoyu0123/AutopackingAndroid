@@ -63,7 +63,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="generalTab">
       <attribute name="title">
@@ -116,7 +116,7 @@
             </font>
            </property>
            <property name="text">
-            <string notr="true">&lt;a href=&quot;http://code.google.com/p/sigil/&quot;&gt;http://code.google.com/p/sigil/&lt;/a&gt;</string>
+            <string notr="true">暂无</string>
            </property>
            <property name="textFormat">
             <enum>Qt::AutoText</enum>

@@ -334,9 +334,9 @@ if (MSVC)
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
                         COMMAND cmake -E copy ${EXE_PATH} ${MAIN_PACKAGE_DIR} )
 
-	file(COPY ${CMAKE_SOURCE_DIR}/installer/Resource/ DESTINATION ${MAIN_PACKAGE_DIR})
+	file(COPY ${CMAKE_SOURCE_DIR}/installer/Resource/ DESTINATION ${MAIN_PACKAGE_DIR}/)
 
-	    # Remove the temp directory used for building the installer 
+	# Remove the temp directory used for building the installer 
     add_custom_command( TARGET makeinstaller POST_BUILD 
                         COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
                         COMMENT "Removing temporary directory..." )
