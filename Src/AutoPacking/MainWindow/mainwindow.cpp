@@ -2,7 +2,6 @@
 #include <QStandardItemModel>
 #include <QMessageBox>
 #include <QProcess>
-#include <QVector>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "Model/DatabaseManager.h"
@@ -29,8 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	mstatusBar(parent),
 	mthreadNum(PathManager::GetThreadNum()),
 	mversion(PathManager::GetVersion()),
-	mcurrentTaskIndex(0),
-	mrowNum(0)
+	mcurrentTaskIndex(0)
 {
     ui->setupUi(this);
 	InitView();
@@ -112,53 +110,52 @@ void MainWindow::StartSlot()
 
 	QModelIndexList selectedIndex = mcentralFram.GetTableView().GetSelectIndexs();
 	int rows = DatabaseManager::GetInstance()->GetTableModel()->rowCount();
-	QVector<int> recordIndex;
 	if (!selectedIndex.isEmpty()){
-		recordIndex = QVector<int>(selectedIndex.size());
+		mrecordIndex = QVector<int>(selectedIndex.size());
+		int i = 0;
 		for (QModelIndexList::iterator ite = selectedIndex.begin(); ite != selectedIndex.end(); ite++)
 		{
-			recordIndex.push_back(ite->row());
+			mrecordIndex[i++] = ite->row();
 		}
 	}
 	else{
-		recordIndex = QVector<int>(rows);
+		mrecordIndex = QVector<int>(rows);
 		for (int i = 0; i < rows; i++)
 		{
-			recordIndex.push_back(i);
+			mrecordIndex[i] = i;
 		}
 	}
 
 	mcurrentTaskIndex = 0;
-	mrowNum = DatabaseManager::GetInstance()->GetTableModel()->rowCount();
 	switch (mtoolBar.GetCombox()->currentIndex())
 	{
 	case 0:
-		StartSrcPack(recordIndex);
+		StartSrcPack();
 		break;
 	case 1:
-		StartDecPack(recordIndex);
+		StartDecPack();
 		break;
 	}
 }
 
-void MainWindow::StartDecPack(QVector<int> &recorderRows)
+void MainWindow::StartDecPack()
 {
 	for (int i = 0; i < mthreadNum; i++,mcurrentTaskIndex++)
 	{
-		if (mcurrentTaskIndex >= mrowNum){
+		if (mcurrentTaskIndex >= mrecordIndex.size()){
 			break;;
 		}
 		Pack *ppack = new DecPack(this);
 		mtaskList.push_back(ppack);
 		connect(ppack, SIGNAL(FinishSignal(int,int)), this, SLOT(FinishedSlot(int,int)), Qt::QueuedConnection);
 		connect(ppack, SIGNAL(GenerateError(QString)), SLOT(CollectLog(QString)), Qt::QueuedConnection);
-		QString id = DatabaseManager::GetInstance()->GetTableModel()->record(mcurrentTaskIndex).value("ID").toString();
-		QString channelId = DatabaseManager::GetInstance()->GetTableModel()->record(mcurrentTaskIndex).value("ChannelID").toString();
-		QString channelName = DatabaseManager::GetInstance()->GetTableModel()->record(mcurrentTaskIndex).value("ChannelName").toString();
+		QString id = DatabaseManager::GetInstance()->GetTableModel()->record(mrecordIndex.at(mcurrentTaskIndex)).value("ID").toString();
+		QString channelId = DatabaseManager::GetInstance()->GetTableModel()->record(mrecordIndex.at(mcurrentTaskIndex)).value("ChannelID").toString();
+		QString channelName = DatabaseManager::GetInstance()->GetTableModel()->record(mrecordIndex.at(mcurrentTaskIndex)).value("ChannelName").toString();
 		QList<ReplaceStrTable> strTableList;
 		QList<ReplaceResTable> resTableList;
 		QList<ReplacePakTable> pakTableList;
-		DatabaseManager::GetInstance()->ChangStatInDatabase(mcurrentTaskIndex, QStringLiteral("打包开始！"));
+		DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(mcurrentTaskIndex), QStringLiteral("打包开始！"));
 		DatabaseManager::GetInstance()->ReadyData(id, strTableList, resTableList, pakTableList);
 		ppack->Start(PathManager::GetDecPackPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, mcurrentTaskIndex);
 	}
@@ -168,24 +165,24 @@ void MainWindow::StartDecPack(QVector<int> &recorderRows)
 	}
 }
 
-void MainWindow::StartSrcPack(QVector<int> &recorderRows)
+void MainWindow::StartSrcPack()
 {
 	for (int i = mtaskList.size(); i < mthreadNum; i++, mcurrentTaskIndex++)
 	{
-		if (mcurrentTaskIndex >= mrowNum){
+		if (mcurrentTaskIndex >= mrecordIndex.size()){
 			break;;
 		}
 		Pack *ppack = new SrcPack(this);
 		mtaskList.push_back(ppack);
 		connect(ppack, SIGNAL(FinishSignal(int, int)), this, SLOT(FinishedSlot(int, int)), Qt::QueuedConnection);
 		connect(ppack, SIGNAL(GenerateError(QString)), SLOT(CollectLog(QString)), Qt::QueuedConnection);
-		QString id = DatabaseManager::GetInstance()->GetTableModel()->record(mcurrentTaskIndex).value("ID").toString();
-		QString channelId = DatabaseManager::GetInstance()->GetTableModel()->record(mcurrentTaskIndex).value("ChannelID").toString();
-		QString channelName = DatabaseManager::GetInstance()->GetTableModel()->record(mcurrentTaskIndex).value("ChannelName").toString();
+		QString id = DatabaseManager::GetInstance()->GetTableModel()->record(mrecordIndex.at(mcurrentTaskIndex)).value("ID").toString();
+		QString channelId = DatabaseManager::GetInstance()->GetTableModel()->record(mrecordIndex.at(mcurrentTaskIndex)).value("ChannelID").toString();
+		QString channelName = DatabaseManager::GetInstance()->GetTableModel()->record(mrecordIndex.at(mcurrentTaskIndex)).value("ChannelName").toString();
 		QList<ReplaceStrTable> strTableList;
 		QList<ReplaceResTable> resTableList;
 		QList<ReplacePakTable> pakTableList;
-		DatabaseManager::GetInstance()->ChangStatInDatabase(mcurrentTaskIndex, QStringLiteral("打包开始！"));
+		DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(mcurrentTaskIndex), QStringLiteral("打包开始！"));
 		DatabaseManager::GetInstance()->ReadyData(id, strTableList, resTableList, pakTableList);
 		ppack->Start(PathManager::GetDecPackPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, mcurrentTaskIndex);
 	}

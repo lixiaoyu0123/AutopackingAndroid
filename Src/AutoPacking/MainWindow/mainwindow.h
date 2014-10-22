@@ -5,6 +5,7 @@
 #include <QtSql>
 #include <QTableView>
 #include <QDateTime>
+#include <QVector>
 #include "BjToolBar.h"
 #include "BjStatusBar.h"
 #include "BjCentralFram.h"
@@ -29,8 +30,8 @@ public:
 	void InitSlot();
 	void ChangStat(bool isStar);
 	void StatusTextChang();
-	void StartDecPack(QVector<int> &recorderRows);
-	void StartSrcPack(QVector<int> &recorderRows);
+	void StartDecPack();
+	void StartSrcPack();
 
 public slots:
 	void StartSlot();
@@ -60,9 +61,9 @@ private:
 	QString mlog;
 	int mthreadNum;
 	int mcurrentTaskIndex;
-	int mrowNum;
 	QList<Pack *> mtaskList;
 	QString mversion;
+	QVector<int> mrecordIndex;
 };
 
 #endif // MAINWINDOW_H
