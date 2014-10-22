@@ -153,6 +153,9 @@ set( TABLE_FILES
 	Table/ReplacePakTable.cpp
 	Table/ReplacePakTable.h
 	)
+
+file( GLOB RESOURCE_FILES ${CMAKE_SOURCE_DIR}/installer/Resource/* )
+file( GLOB DOC_FILES ${CMAKE_SOURCE_DIR}/installer/Resource/Documents/* )
 set( RAW_SOURCES ${MAIN_FILES} ${MAINUI_WINDOW} ${MODEL_FILES} ${DIALOG_FILES} ${WORKS_FILES} ${INTERFACE_FILES} ${ADAPTER_FILES} ${TABLE_FILES})
 
 #############################################################################
@@ -210,7 +213,7 @@ if (MSVC)
 endif()
 
 target_link_libraries( ${PROJECT_NAME} ${QT_MAIN} )
-qt5_use_modules(${PROJECT_NAME} Widgets Xml XmlPatterns PrintSupport Svg WebKit WebKitWidgets Network Concurrent Sql)
+qt5_use_modules(${PROJECT_NAME} Widgets Xml XmlPatterns Concurrent Sql)
 
 #############################################################################
 
@@ -231,3 +234,134 @@ elseif( CMAKE_COMPILER_IS_GNUCXX )
     add_definitions( -Wall )
 endif()
 #############################################################################
+if (MSVC)
+    get_target_property(QMAKE_EXECUTABLE Qt5::qmake LOCATION)
+    function(QUERY_QMAKE VAR RESULT)
+        exec_program(${QMAKE_EXECUTABLE} ARGS "-query ${VAR}" RETURN_VALUE return_code OUTPUT_VARIABLE output )
+        if(NOT return_code)
+            file(TO_CMAKE_PATH "${output}" output)
+            set(${RESULT} ${output} PARENT_SCOPE)
+        endif(NOT return_code)
+    endfunction(QUERY_QMAKE)
+
+    query_qmake(QT_INSTALL_LIBS QT_LIBRARY_DIR)
+    query_qmake(QT_INSTALL_BINS QT_INSTALL_BINS)
+    query_qmake(QT_INSTALL_PLUGINS QT_PLUGINS_DIR)
+
+    set( TEMP_PACKAGE_DIR ${CMAKE_BINARY_DIR}/temp_folder )
+    set( MAIN_PACKAGE_DIR ${TEMP_PACKAGE_DIR}/AutopackingAndroid)
+    set( OUTPUT_PACKAGE_DIR ${CMAKE_BINARY_DIR}/installer )
+    
+    # ISS conf file for the Inno Setup compiler
+    # We first create a CMake configured version of the ISS file,
+    # and then we copy it to the temp folder every time we need to build the installer.
+    set( ISS_MAIN_LOCATION ${CMAKE_SOURCE_DIR}/installer/AutopackingAndroid.iss  )
+    set( ISS_CONFIGURED_LOCATION ${CMAKE_BINARY_DIR}/AutopackingAndroid.iss )
+    set( ISS_TEMP_LOCATION ${CMAKE_BINARY_DIR}/temp_folder/AutopackingAndroid.iss )
+
+    # Specify platform var for Inno
+    if ( 64_BIT_PLATFORM )
+        # Used in the ISS CMake configuration
+        set( ISS_ARCH "x64" )
+        set( ISS_SETUP_FILENAME_PLATFORM "-x64" )
+    endif()
+    
+    # Creates a copy of the ISS file in ${ISS_CONFIGURED_LOCATION} and then configures it 
+    # Used in the ISS CMake configuration
+    set( LICENSE_LOCATION ${CMAKE_SOURCE_DIR}/installer/win_installer_note.txt  )
+    configure_file( ${ISS_MAIN_LOCATION} ${ISS_CONFIGURED_LOCATION} )
+
+    # Run Inno Setup's iscc compiler (*AFTER* all the PRE_BUILD custom commands execute)
+    add_custom_target(  makeinstaller 
+        COMMAND cmake -E echo "For this to work, Inno Setup's iscc compiler needs to be installed and on the system path."
+        COMMAND iscc ${ISS_TEMP_LOCATION} )
+	if( MSVC_IDE )
+    set( TARGET_FOR_COPY makeinstaller )
+	add_custom_target(  copyfiles
+                            COMMENT "Copying installer files to temporary location..."
+                            DEPENDS ${PROJECT_NAME} )
+                            
+    add_dependencies( makeinstaller copyfiles )
+	endif()
+
+	add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
+                        COMMAND cmake -E copy ${ISS_CONFIGURED_LOCATION} ${ISS_TEMP_LOCATION} )
+
+	# Copy Qt runtime libs
+    set( QT_LIBS Qt5Concurrent Qt5Core Qt5Gui Qt5Multimedia Qt5MultimediaWidgets Qt5Quick Qt5Sql Qt5Widgets Qt5Xml Qt5XmlPatterns )
+    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
+    foreach( lib ${QT_LIBS} )
+        set( location location-NOTFOUND )
+        find_file( location ${lib}.dll PATHS ${QT_INSTALL_BINS} )
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/ )
+    endforeach( lib )
+
+    # Copy bin libs
+    set( QT_BIN_LIBS D3DCompiler_43 icudt51 icuin51 icuuc51 )
+    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
+    foreach( lib ${QT_BIN_LIBS} )
+        set( location location-NOTFOUND )
+        find_file( location ${lib}.dll PATHS ${QT_INSTALL_BINS} )
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/ )
+    endforeach( lib )
+
+    # Copy iconengines plugins
+    set( QT_ICONENGINES qsvgicon )
+    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Plugins/iconengines/ )
+    foreach( lib ${QT_ICONENGINES} )
+        set( location location-NOTFOUND )
+        find_file( location ${lib}.dll PATHS ${QT_PLUGINS_DIR}/iconengines/ )
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/Plugins/iconengines/ )
+    endforeach( lib )  
+
+    # Copy imageformats plugins
+    set( QT_IMAGEFORMATS qgif qico qjpeg qmng qsvg qtiff )
+    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Plugins/imageformats/ )
+    foreach( lib ${QT_IMAGEFORMATS} )   
+        set( location location-NOTFOUND )
+        find_file( location ${lib}.dll PATHS ${QT_PLUGINS_DIR}/imageformats/ )
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/Plugins/imageformats/ )
+    endforeach( lib )
+
+    # Copy platform plugins
+    set( QT_PLATFORMS qminimal qwindows)
+    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Platforms/ )
+    foreach( lib ${QT_PLATFORMS} )   
+        set( location location-NOTFOUND )
+        find_file( location ${lib}.dll PATHS ${QT_PLUGINS_DIR}/platforms/ )
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/Platforms/ )
+    endforeach( lib )
+
+   # Copy sqldrivers plugins
+    set( QT_SQLDRIVERS qsqlite )
+    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Plugins/sqldrivers/ )
+    foreach( lib ${QT_SQLDRIVERS} )   
+        set( location location-NOTFOUND )
+        find_file( location ${lib}.dll PATHS ${QT_PLUGINS_DIR}/sqldrivers/ )
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/Plugins/sqldrivers/ )
+    endforeach( lib )
+
+    # Copy accessible plugins
+    set( QT_ACCESSIBLE qtaccessiblequick qtaccessiblewidgets )
+    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Plugins/accessible/ )
+    foreach( lib ${QT_ACCESSIBLE} )   
+        set( location location-NOTFOUND )
+        find_file( location ${lib}.dll PATHS ${QT_PLUGINS_DIR}/accessible/ )
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/Plugins/accessible/ )
+    endforeach( lib )
+
+	add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Resource/ )
+    foreach( FILE ${RESOURCE_FILES} )
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${FILE} ${MAIN_PACKAGE_DIR}/Resource/ )
+    endforeach( HTML )
+
+	#Copy the user manual file
+	foreach( MANUAL ${DOC_FILES} )
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${MANUAL} ${MAIN_PACKAGE_DIR} )
+    endforeach( MANUAL )
+
+    # Remove the temp directory used for building the installer 
+    add_custom_command( TARGET makeinstaller POST_BUILD 
+                        COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
+                        COMMENT "Removing temporary directory..." )
+endif()

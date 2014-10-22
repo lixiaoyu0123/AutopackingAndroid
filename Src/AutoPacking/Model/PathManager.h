@@ -68,6 +68,7 @@ public:
 	static QString GetDigestalg();
 	static bool CheckSysEnvironment();
 	static bool CheckParameter();
+	static bool IsFirstRun();
 protected:
 private:
 	static QString OUTPATH;

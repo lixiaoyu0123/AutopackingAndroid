@@ -734,6 +734,20 @@ bool PathManager::CheckParameter()
 	return true;
 }
 
+bool PathManager::IsFirstRun()
+{
+	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);
+	settings.beginGroup("Setting");
+	QString firstRun = settings.value("FirstRun", "").toString();
+	if (firstRun.isEmpty()){
+		settings.setValue("FirstRun", QString("false"));
+		settings.endGroup();
+		return true;
+	}
+	settings.endGroup();
+	return false;
+}
+
 void PathManager::WriteSetting()
 {
 	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);

@@ -47,6 +47,10 @@ void MainWindow::InitData()
 	mcentralFram.GetTableView().SetAapter(&madapter);
 	StatusTextChang();
 	PathManager::CheckSysEnvironment();
+	if (PathManager::IsFirstRun()){
+		BjMessageBox::information(this, QStringLiteral("友情提示"), QStringLiteral("检测到您是第一次使用本软件，所以请先阅读使用说明后使用，否则可能造成不必要的错误或损失！"), QMessageBox::Ok, QMessageBox::NoButton);
+		HeldSlot();
+	}
 }
 
 void MainWindow::InitView()
