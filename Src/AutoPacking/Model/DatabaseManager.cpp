@@ -3,6 +3,7 @@
 #include <QSqlRecord>
 #include <QSqlError>
 #include <QSqlField>
+#include <QDebug>
 #include "DatabaseManager.h"
 #include "PathManager.h"
 #include "Dialogs/BjMessageBox.h"
@@ -71,7 +72,7 @@ void DatabaseManager::InitDataModel()
 			msg.exec();
 			exit(1);
 		};
-		QSqlQuery query;
+		QSqlQuery query(PathManager::GetDataBasePath());
 		bool isSuccess = query.exec("CREATE TABLE Channeltb ("
 			"ID INTEGER PRIMARY KEY AUTOINCREMENT, "
 			"ChannelID INTEGER, "

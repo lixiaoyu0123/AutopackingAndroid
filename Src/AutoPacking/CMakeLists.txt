@@ -263,11 +263,6 @@ if (MSVC)
         set( ISS_ARCH "x64" )
         set( ISS_SETUP_FILENAME_PLATFORM "-x64" )
     endif()
-    
-	# Remove the temp directory used for building the installer 
-    add_custom_command( TARGET makeinstaller POST_BUILD 
-                        COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
-                        COMMENT "Removing temporary directory..." )
 
     # Creates a copy of the ISS file in ${ISS_CONFIGURED_LOCATION} and then configures it 
     # Used in the ISS CMake configuration
@@ -286,7 +281,7 @@ if (MSVC)
 	endif()
 
 	# Copy Qt runtime libs
-    set( QT_LIBS Qt5Core Qt5Quick Qt5Sql Qt5Widgets )
+    set( QT_LIBS Qt5Core Qt5Gui Qt5Sql Qt5Widgets libEGL libGLESv2 )
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
     foreach( lib ${QT_LIBS} )
         set( location location-NOTFOUND )
@@ -295,7 +290,7 @@ if (MSVC)
     endforeach( lib )
 
 	# Copy bin libs
-    set( QT_BIN_LIBS D3DCompiler_43 )
+    set( QT_BIN_LIBS icudt52 icuin52 icuuc52 )
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
     foreach( lib ${QT_BIN_LIBS} )
         set( location location-NOTFOUND )
@@ -303,17 +298,8 @@ if (MSVC)
         add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/ )
     endforeach( lib )
 
-    # Copy iconengines plugins
-    set( QT_ICONENGINES qsvgicon )
-    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Plugins/iconengines/ )
-    foreach( lib ${QT_ICONENGINES} )
-        set( location location-NOTFOUND )
-        find_file( location ${lib}.dll PATHS ${QT_PLUGINS_DIR}/iconengines/ )
-        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/Plugins/iconengines/ )
-    endforeach( lib ) 
-
     # Copy platform plugins
-    set( QT_PLATFORMS qminimal qwindows)
+    set( QT_PLATFORMS qwindows)
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Platforms/ )
     foreach( lib ${QT_PLATFORMS} )   
         set( location location-NOTFOUND )
@@ -323,11 +309,11 @@ if (MSVC)
 
    # Copy sqldrivers plugins
     set( QT_SQLDRIVERS qsqlite )
-    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Plugins/sqldrivers/ )
+    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/sqldrivers/ )
     foreach( lib ${QT_SQLDRIVERS} )   
         set( location location-NOTFOUND )
         find_file( location ${lib}.dll PATHS ${QT_PLUGINS_DIR}/sqldrivers/ )
-        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/Plugins/sqldrivers/ )
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/sqldrivers/ )
     endforeach( lib )
 
    # Set the path of the application executable
@@ -340,5 +326,27 @@ if (MSVC)
                         COMMAND cmake -E copy ${EXE_PATH} ${MAIN_PACKAGE_DIR} )
 
 	file(COPY ${CMAKE_SOURCE_DIR}/installer/Resource/ DESTINATION ${MAIN_PACKAGE_DIR}/)
+
+	# We need to copy the CRT dlls
+    # Add -DWIN_INSTALLER_USE_64BIT_CRT=1 to the cmake call if you want to build
+    # an installer for the x64 verison of iEditor. This will make sure that the
+    # correct CRT libs are included in the installer.
+    add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${TEMP_PACKAGE_DIR}/vendor/ )
+    if ( WIN_INSTALLER_USE_64BIT_CRT )
+        message( STATUS "Using the 64 bit CRT in the iEditor Windows installer" )
+        message( STATUS "Ensure vcredist_x64.exe has been placed in installer/ if you plan on running makeinstaller" )
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
+            COMMAND cmake -E copy ${CMAKE_SOURCE_DIR}/installer/vcredist_x64.exe ${TEMP_PACKAGE_DIR}/vendor/vcredist.exe )
+    else()
+        message( STATUS "Using the 32 bit CRT in the iEditor Windows installer" )
+        message( STATUS "Ensure vcredist_x86.exe has been placed in installer/ if you plan on running makeinstaller" )
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
+            COMMAND cmake -E copy ${CMAKE_SOURCE_DIR}/installer/vcredist_x86.exe ${TEMP_PACKAGE_DIR}/vendor/vcredist.exe )
+    endif()
+
+	# Remove the temp directory used for building the installer 
+    add_custom_command( TARGET makeinstaller POST_BUILD 
+                        COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
+                        COMMENT "Removing temporary directory..." )
 
 endif()

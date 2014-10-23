@@ -35,6 +35,7 @@ ArchitecturesInstallIn64BitMode="${ISS_ARCH}"
 
 [Files]
 Source: "AutopackingAndroid\*"; DestDir: "{app}"; Flags: createallsubdirs recursesubdirs ignoreversion
+Source: vendor\vcredist.exe; DestDir: {tmp}
 
 [Languages]
 Name: zh; MessagesFile: compiler:Languages\ChineseSimplified.isl
@@ -48,6 +49,9 @@ Name: "{group}\”√ªß ÷≤·"; Filename: "{app}\Documents\UserManual.pdf"
 Name: "{group}\–∂‘ÿAutopackingAndroid"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\AutopackingAndroid"; Filename: "{app}\Autopacking.exe"; Tasks: desktopicon
 Name: "{userdesktop}\AutopackingAndroid"; Filename:"{app}\Autopacking.exe"
+
+[Run]
+Filename: {tmp}\vcredist.exe; Parameters: "/passive /Q:a /c:""msiexec /qb /i vcredist.msi"" "; StatusMsg: Installing 2010 RunTime...
 
 [InstallDelete]
 Type: files; Name: "{group}\Autopacking ${TOOLS_FULL_VERSION}.lnk";Type: files; Name: "{commonappdata}\Microsoft\Windows\Start Menu\Programs\AutopackingAndroid\AutopackingAndroid 3.4.1.lnk"
