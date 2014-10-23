@@ -134,9 +134,15 @@
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="RadioButton2">
+      <widget class="QRadioButton" name="RadioButtonAliaKey">
        <property name="text">
         <string>显示密码</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+       <property name="autoExclusive">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -283,9 +289,15 @@
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="RadioButton1">
+      <widget class="QRadioButton" name="RadioButtonKey">
        <property name="text">
         <string>显示密码</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+       <property name="autoExclusive">
+        <bool>false</bool>
        </property>
       </widget>
      </item>

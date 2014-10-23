@@ -36,15 +36,15 @@ void SetKey::InitView()
 
 void SetKey::InitSlot()
 {
-	connect(ui->RadioButton1, SIGNAL(clicked()), this, SLOT(ChangStatusKeySlot()));
-	connect(ui->RadioButton2, SIGNAL(clicked()), this, SLOT(ChangStatusAlisKeySlot()));
+	connect(ui->RadioButtonKey, SIGNAL(clicked()), this, SLOT(ChangStatusKeySlot()));
+	connect(ui->RadioButtonAliaKey, SIGNAL(clicked()), this, SLOT(ChangStatusAlisKeySlot()));
 	connect(ui->ButtonScan, SIGNAL(clicked()), this, SLOT(ButtonScanClickSlot()));
 	connect(ui->ButtonOk, SIGNAL(clicked()), this, SLOT(ButtonOkClickSlot()));
 }
 
 void SetKey::ChangStatusKeySlot()
 {
-	if (ui->RadioButton1->isChecked()){ 
+	if (ui->RadioButtonKey->isChecked()){ 
 		ui->LineEditKey->setEchoMode(QLineEdit::Normal);
 	}
 	else{ 
@@ -54,7 +54,7 @@ void SetKey::ChangStatusKeySlot()
 
 void SetKey::ChangStatusAlisKeySlot()
 {
-	if (ui->RadioButton2->isChecked()){
+	if (ui->RadioButtonAliaKey->isChecked()){
 		ui->LineEditAliasesPasswd->setEchoMode(QLineEdit::Normal);
 	}
 	else{
