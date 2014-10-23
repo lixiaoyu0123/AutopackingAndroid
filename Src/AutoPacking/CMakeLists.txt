@@ -319,15 +319,23 @@ if (MSVC)
    # Set the path of the application executable
     if( MSVC_IDE )
         set( EXE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/${PROJECT_NAME}${CMAKE_EXECUTABLE_SUFFIX} )
-    endif()
-
-    # Copy the application executable
+	# Copy the application executable
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
                         COMMAND cmake -E copy ${EXE_PATH} ${MAIN_PACKAGE_DIR} )
+    endif()
 
 	file(COPY ${CMAKE_SOURCE_DIR}/installer/Resource/ DESTINATION ${MAIN_PACKAGE_DIR}/)
 
-	# We need to copy the CRT dlls
+
+
+
+	# Remove the temp directory used for building the installer 
+    add_custom_command( TARGET makeinstaller POST_BUILD 
+                        COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
+                        COMMENT "Removing temporary directory..." )
+						
+						
+							# We need to copy the CRT dlls
     # Add -DWIN_INSTALLER_USE_64BIT_CRT=1 to the cmake call if you want to build
     # an installer for the x64 verison of iEditor. This will make sure that the
     # correct CRT libs are included in the installer.
@@ -343,10 +351,4 @@ if (MSVC)
         add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
             COMMAND cmake -E copy ${CMAKE_SOURCE_DIR}/installer/vcredist_x86.exe ${TEMP_PACKAGE_DIR}/vendor/vcredist.exe )
     endif()
-
-	# Remove the temp directory used for building the installer 
-    add_custom_command( TARGET makeinstaller POST_BUILD 
-                        COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
-                        COMMENT "Removing temporary directory..." )
-
 endif()
