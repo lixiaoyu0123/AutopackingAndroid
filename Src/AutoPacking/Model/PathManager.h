@@ -40,6 +40,8 @@ public:
 	static QString GetTarget(QString &path);
 	static void SetSdkPath(QString &path);
 	static void SetPasswd(QString &password);
+	static void SetAliasesPasswd(QString &password);
+	static QString GetAliasesPasswd();
 	static QString GetPasswd();
 	static QString GetTmpPath();
 	static bool RemoveDir(const QString &dirName);
@@ -79,6 +81,7 @@ private:
 	static QString SRCPATH;
 	static QString SDKPATH;
 	static QString PASSWD;
+	static QString ALIASESPASSWD;
 	static QString KEYALIASES;
 	static QString VERSION;
 	static QString SIGALG;

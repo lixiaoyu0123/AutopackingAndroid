@@ -128,7 +128,7 @@ void SrcPack::PrePack()
 		.arg(PathManager::GetKeyPath())
 		.arg(PathManager::GetKeyAliases())
 		.arg(PathManager::GetPasswd())
-		.arg(PathManager::GetPasswd());
+		.arg(PathManager::GetAliasesPasswd());
 	PathManager::AppendContentToProperties(content, mtmpSrcPath);
 
 	if (!Pack::ReplaceStrByTable(mtmpPath)){

@@ -15,7 +15,8 @@ private:
 	Ui::SetKey *ui;
 	QString mkeyPath;
 	private slots:
-	void ChangStatusSlot();
+	void ChangStatusKeySlot();
+	void ChangStatusAlisKeySlot();
 	void ButtonScanClickSlot();
 	void ButtonOkClickSlot();
 private:

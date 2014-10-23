@@ -106,7 +106,7 @@ void DecPack::SignPacket(QString inPath, QString outPath)
 	QStringList param;
 	param << QStringLiteral("-sigalg") << PathManager::GetSigalg() << QStringLiteral("-verbose") << QStringLiteral("-digestalg")
 		<< PathManager::GetDigestalg() << QStringLiteral("-keystore") << PathManager::GetKeyPath().insert(0,"\"").append("\"") << QStringLiteral("-storepass") << PathManager::GetPasswd()
-		<< QStringLiteral("-keypass") << PathManager::GetPasswd() << outPath.insert(0, "\"").append("\"") << PathManager::GetKeyAliases().trimmed();
+		<< QStringLiteral("-keypass") << PathManager::GetAliasesPasswd() << outPath.insert(0, "\"").append("\"") << PathManager::GetKeyAliases().trimmed();
 	QString exePath = exe.left(exe.lastIndexOf("/"));
 	ExecuteCmd(exe, param, exePath);
 }

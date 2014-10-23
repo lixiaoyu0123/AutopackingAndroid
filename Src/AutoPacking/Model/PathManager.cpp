@@ -15,6 +15,7 @@ QString PathManager::JDKPATH = "";
 QString PathManager::SRCPATH = "";
 QString PathManager::SDKPATH = "";
 QString PathManager::PASSWD = "";
+QString PathManager::ALIASESPASSWD = "";
 QString PathManager::KEYALIASES = "";
 QString PathManager::VERSION = "";
 QString PathManager::SIGALG = "";
@@ -284,6 +285,18 @@ QString PathManager::GetKeyAliases()
 {
 	ReadSetting();
 	return KEYALIASES;
+}
+
+void PathManager::SetAliasesPasswd(QString &password)
+{
+	ALIASESPASSWD = password;
+	WriteSetting();
+}
+
+QString PathManager::GetAliasesPasswd()
+{
+	ReadSetting();
+	return ALIASESPASSWD;
 }
 
 void PathManager::SetThreadNum(int num)
@@ -721,6 +734,11 @@ bool PathManager::CheckParameter()
 		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
 		return false;
 	}
+	else if (ALIASESPASSWD.isEmpty()){
+		parameter.append(QStringLiteral("别名密码未设置\n"));
+		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
+		return false;
+	}
 	else if (PASSWD.isEmpty()){
 		parameter.append(QStringLiteral("签名密码未设置\n"));
 		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
@@ -765,6 +783,7 @@ void PathManager::WriteSetting()
 	settings.setValue("SdkPath", SDKPATH);
 	settings.setValue("PassWord", PASSWD);
 	settings.setValue("KeyAliases", KEYALIASES);
+	settings.setValue("AliasesPasswd", ALIASESPASSWD);
 	settings.setValue("Version", VERSION);
 	settings.setValue("ThreadNum", THREADNUM);
 	settings.setValue("PackWay", PACKWAY);
@@ -785,6 +804,7 @@ void PathManager::ReadSetting()
 	SDKPATH = settings.value("SdkPath", "").toString();
 	PASSWD = settings.value("PassWord", "").toString();
 	KEYALIASES = settings.value("KeyAliases", "").toString();
+	ALIASESPASSWD = settings.value("AliasesPasswd", "").toString();
 	VERSION = settings.value("Version", "").toString();
 	SIGALG = settings.value("Sigalg", "").toString();
 	DIGESTALG = settings.value("Digestalg", "").toString();
