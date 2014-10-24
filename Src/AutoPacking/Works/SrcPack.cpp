@@ -101,8 +101,21 @@ bool SrcPack::ReplacePakByTable()
 {
 	for (QList<ReplacePakTable>::iterator ite = mpakTableList.begin(); ite != mpakTableList.end(); ite++)
 	{
-		if (!PathManager::ReplacePak(mtmpSrcPath, ite->GetSrcPakName(), ite->GetDestPakName())){
-			emit GenerateError(QStringLiteral("error:替换包名出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		switch (PathManager::ReplacePakInSrc(mtmpSrcPath, ite->GetSrcPakName(), ite->GetDestPakName()))
+		{
+		case 0:
+			break;
+		case 1:
+			emit GenerateError(QStringLiteral("error:替换包名出错,原包名不存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 2:
+			emit GenerateError(QStringLiteral("error:替换包名出错,创建包出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 3:
+			emit GenerateError(QStringLiteral("error:替换包名出错,目的包名已经存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 4:
+			emit GenerateError(QStringLiteral("error:替换包名出错,替换包名过程出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 			return false;
 		}
 	}

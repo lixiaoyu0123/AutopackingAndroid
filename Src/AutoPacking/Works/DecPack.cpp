@@ -72,6 +72,26 @@ void DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelNa
 
 bool DecPack::ReplacePakByTable()
 {
+	for (QList<ReplacePakTable>::iterator ite = mpakTableList.begin(); ite != mpakTableList.end(); ite++)
+	{
+		switch (PathManager::ReplacePakInDec(mtmpUnpacketPath, ite->GetSrcPakName(), ite->GetDestPakName()))
+		{
+		case 0:
+			break;
+		case 1:
+			emit GenerateError(QStringLiteral("error:替换包名出错,原包名不存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 2:
+			emit GenerateError(QStringLiteral("error:替换包名出错,创建包出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 3:
+			emit GenerateError(QStringLiteral("error:替换包名出错,目的包名已经存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 4:
+			emit GenerateError(QStringLiteral("error:替换包名出错,替换包名过程出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		}
+	}
 	return true;
 }
 
@@ -87,8 +107,7 @@ void DecPack::Unpacket(QString &inPath, QString &outPath)
 	QString apkTool = PathManager::GetApkToolPath();
 	QStringList param;
 	param << QString("d") << QString("-f") << inPath << outPath;
-	QString exePath = apkTool.left(apkTool.lastIndexOf("/"));
-	ExecuteCmd(apkTool, param, exePath);
+	ExecuteCmd(apkTool, param, PathManager::GetToolPath());
 }
 
 void DecPack::Dopacket(QString &inPath, QString &outPath)
@@ -96,8 +115,7 @@ void DecPack::Dopacket(QString &inPath, QString &outPath)
 	QString apkTool = PathManager::GetApkToolPath();
 	QStringList param;
 	param << QString("b") << inPath << outPath;
-	QString exePath = apkTool.left(apkTool.lastIndexOf("/"));
-	ExecuteCmd(apkTool, param, exePath);
+	ExecuteCmd(apkTool, param, PathManager::GetToolPath());
 }
 
 void DecPack::SignPacket(QString inPath, QString outPath)
@@ -107,8 +125,40 @@ void DecPack::SignPacket(QString inPath, QString outPath)
 	param << QStringLiteral("-sigalg") << PathManager::GetSigalg() << QStringLiteral("-verbose") << QStringLiteral("-digestalg")
 		<< PathManager::GetDigestalg() << QStringLiteral("-keystore") << PathManager::GetKeyPath().insert(0,"\"").append("\"") << QStringLiteral("-storepass") << PathManager::GetPasswd()
 		<< QStringLiteral("-keypass") << PathManager::GetAliasesPasswd() << outPath.insert(0, "\"").append("\"") << PathManager::GetKeyAliases().trimmed();
-	QString exePath = exe.left(exe.lastIndexOf("/"));
-	ExecuteCmd(exe, param, exePath);
+	//ExecuteCmd(exe, param, PathManager::GetJdkPath());
+	QString arg;
+	for (QStringList::Iterator ite = param.begin(); ite != param.end(); ite++)
+	{
+		arg.append(" ");
+		arg.append(*ite);		
+	}
+	mpprocess->start("cmd");
+	mpprocess->waitForStarted();
+	QTextCodec *gbk = QTextCodec::codecForName("GBK");
+	QString test;
+	test.append("cd ").append(PathManager::GetJdkPath().insert(0, "\"").append("\"")).append("\n");
+	QByteArray byteToolPath = gbk->fromUnicode(test.constData(), test.length());
+	//QByteArray byteArg = gbk->fromUnicode(arg.constData(), arg.length());
+	char *toolPathChar = byteToolPath.data();
+	//char *argChar = byteArg.data();
+	mpprocess->write(toolPathChar);
+	//mpprocess->closeWriteChannel();
+	mpprocess->waitForFinished();
+	QString strOut1 = QString::fromLocal8Bit(mpprocess->readAllStandardOutput());
+
+	QString test2 = arg.insert(0, QString("jarsigner.exe ")).append("\n");
+	QTextCodec *gbk2 = QTextCodec::codecForName("GBK");
+	QByteArray byteToolPath2 = gbk2->fromUnicode(test2.constData(), test2.length());
+	//QByteArray byteArg = gbk->fromUnicode(arg.constData(), arg.length());
+	char *toolPathChar2 = byteToolPath2.data();
+	mpprocess->write(toolPathChar2);
+	mpprocess->waitForFinished();
+
+	//mpprocess->write(argChar);
+	//mpprocess->closeWriteChannel();
+	//mpprocess->waitForFinished();
+	//QString strOut2 = QString::fromLocal8Bit(mpprocess->readAllStandardOutput());
+	SignFinishedSlot(0);
 }
 
 void DecPack::Zipalign()
@@ -126,9 +176,8 @@ void DecPack::Zipalign()
 	}
 	QString exe = PathManager::GetZipalign();
 	QStringList param;
-	param << QStringLiteral("-v") << QStringLiteral("4") << mtmpSignFile << moutFile;
-	QString exePath = exe.left(exe.lastIndexOf("/"));
-	ExecuteCmd(exe, param, exePath);
+	param << QStringLiteral("-v") << QStringLiteral("4") << mtmpSignFile.insert(0, "\"").append("\"") << moutFile.insert(0, "\"").append("\"");
+	ExecuteCmd(exe.insert(0, "\"").append("\""), param, PathManager::GetToolPath());
 }
 
 void DecPack::UnpacketFinishedSlot(int stat)
@@ -148,6 +197,14 @@ void DecPack::UnpacketFinishedSlot(int stat)
 
 	if (!ReplaceResByTable(mtmpUnpacketPath)){
 		emit GenerateError(QStringLiteral("error:替换资源出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+	}
+
+	if (!ReplacePakByTable()){
+		emit FinishSignal(1, mtaskId);
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		}
+		return;
 	}
 	connect(mpprocess, SIGNAL(finished(int)), this, SLOT(DopacketFinishedSlot(int)));
 	Dopacket(mtmpUnpacketPath, mtmpSignFile);

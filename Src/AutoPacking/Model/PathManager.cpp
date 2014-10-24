@@ -513,23 +513,81 @@ bool PathManager::CopyDir(const QString &source, const QString &destination, boo
 	return true;
 }
 
-bool PathManager::RenamePak(QString &path, QString &oldName, QString &newName)
+void PathManager::RemoveEmptyDirFromDeepest(QString &path)
 {
-	QString oldNameTmp = oldName;
-	QString newNameTmp = newName;
-	QString srcDir = path + QString("/src");
-	QString oldPath = srcDir + QString("/") + oldNameTmp.replace(".", "/");
-	QString newPath = srcDir + QString("/") + newName.replace(".", "/");
-	if (!CopyDir(oldPath, newPath, true)){
-		return false;
+	QDir dir(path);
+	dir.setFilter(QDir::NoDotAndDotDot);
+	QStringList allFilesDirs = dir.entryList();
+	if (!allFilesDirs.isEmpty()){
+		return;
 	}
-	if (!RemoveDir(oldPath)){
-		return false;
-	}
-	return true;
+	dir.remove(path);
+	QString newPath = path.left(path.lastIndexOf("/"));
+	RemoveEmptyDirFromDeepest(newPath);
 }
 
-bool PathManager::ReplacePak(QString &path, QString &oldName, QString &newName)
+/**********
+*返回值：0成功
+*1原包名不存在
+*2创建包出错
+*3目的包名已经存在
+*4替换包名过程出错
+***********/
+int PathManager::RenamePak(QString &path, QString &oldPakName, QString &newPakName)
+{
+	QString srcDir = path + "/" + oldPakName.replace(".", "/");;
+	QString destDir = path + "/" + newPakName.replace(".", "/");;
+	QDir dirSrc(srcDir);
+	QDir dirDest(srcDir);
+	if (!dirSrc.exists()){
+		return 1;
+	}
+
+	dirSrc.setFilter(QDir::NoDotAndDotDot | QDir::Files);
+	QStringList allFiles = dirSrc.entryList();
+	if (allFiles.isEmpty()){
+		return 1;
+	}
+
+	if (!dirDest.exists() && !dirDest.mkpath(destDir)){
+		return 2;
+	}
+	dirDest.setFilter(QDir::NoDotAndDotDot | QDir::Files);
+	if (!dirDest.entryInfoList().isEmpty()){
+		return 3;
+	}
+
+	for (QStringList::iterator ite = allFiles.begin(); ite != allFiles.end(); ite++){
+		QString tmpName = ite->mid(ite->lastIndexOf("/"));
+		if (!CopyFile(*ite, destDir + "/" + tmpName, true) || !QFile::remove(*ite)){
+			return 4;
+		}
+	}
+
+	RemoveEmptyDirFromDeepest(srcDir);
+	return 0;
+}
+
+int PathManager::RenamePakInSrc(QString &path, QString &oldName, QString &newName)
+{
+	QString srcDir = path + QString("/src");
+	return RenamePak(srcDir, oldName, newName);
+}
+
+int PathManager::RenamePakInDec(QString &path, QString &oldName, QString &newName)
+{
+	QString srcDir = path + QString("/smali");
+	return RenamePak(srcDir, oldName, newName);
+}
+
+/**********
+*返回值：0成功
+*1原包名不存在
+*2创建包出错
+*3目的包名已经存在
+*4替换包名过程出错
+***********/
+int PathManager::ReplacePakInSrc(QString &path, QString &oldName, QString &newName)
 {
 	QVector<QString> dirNames;
 	QDir dir(path);
@@ -541,7 +599,7 @@ bool PathManager::ReplacePak(QString &path, QString &oldName, QString &newName)
 		dirNames << path;
 	}
 	else{
-		return true;
+		return 0;
 	}
 	//遍历各级文件夹，并将这些文件夹中的文件删除  
 	for (int i = 0; i<dirNames.size(); ++i)
@@ -562,7 +620,7 @@ bool PathManager::ReplacePak(QString &path, QString &oldName, QString &newName)
 				else if (curFi->isFile()){
 					//遇到文件,则删除之  
 					if(!ReplacePakNameInJava(curFi->absoluteFilePath(), oldName, newName) || !ReplacePakNameInXml(curFi->absoluteFilePath(), oldName, newName)){
-						return false;
+						return 1;
 					}
 				}
 				curFi++;
@@ -570,10 +628,61 @@ bool PathManager::ReplacePak(QString &path, QString &oldName, QString &newName)
 		}
 	}
 
-	if (!RenamePak(path, oldName, newName)){
-		return false;
+	int ret = 0;
+	ret = RenamePakInSrc(path, oldName, newName);
+	if (ret != 0){
+		return ret;
 	}
-	return true;
+	return 0;
+}
+
+int PathManager::ReplacePakInDec(QString &path, QString &oldName, QString &newName)
+{
+	QVector<QString> dirNames;
+	QDir dir(path);
+	QFileInfoList filst;
+	QFileInfoList::iterator curFi;
+	//初始化
+	dirNames.clear();
+	if (dir.exists()){
+		dirNames << path;
+	}
+	else{
+		return 0;
+	}
+	//遍历各级文件夹，并将这些文件夹中的文件删除  
+	for (int i = 0; i<dirNames.size(); ++i)
+	{
+		dir.setPath(dirNames[i]);
+		filst = dir.entryInfoList(QDir::Dirs | QDir::Files
+			| QDir::Readable | QDir::Writable
+			| QDir::Hidden | QDir::NoDotAndDotDot
+			, QDir::Name);
+		if (filst.size()>0){
+			curFi = filst.begin();
+			while (curFi != filst.end())
+			{
+				//遇到文件夹,则添加至文件夹列表dirs尾部  
+				if (curFi->isDir()){
+					dirNames.push_back(curFi->filePath());
+				}
+				else if (curFi->isFile()){
+					//遇到文件,则删除之  
+					if (!ReplacePakNameInSmali(curFi->absoluteFilePath(), oldName, newName) || !ReplacePakNameInXml(curFi->absoluteFilePath(), oldName, newName)){
+						return 1;
+					}
+				}
+				curFi++;
+			}//end of while  
+		}
+	}
+
+	int ret = 0;
+	ret = RenamePakInDec(path, oldName, newName);
+	if (ret != 0){
+		return ret;
+	}
+	return 0;
 }
 
 bool PathManager::SearchDirContianSuffix(const QString &dirFrom, QStringList &result, QString &suffix)
@@ -645,9 +754,19 @@ bool PathManager::ReplaceStr(QString &fileName, QString &beforeStr, QString &aft
 
 bool PathManager::ReplacePakNameInXml(QString &fileName, QString &oldName, QString &newName)
 {
-	if (fileName.toLower().endsWith("xml")){
-		QString oldNameTmp = QString("\"") + oldName + QString("\"");
-		QString newNameTmp = QString("\"") + newName + QString("\"");
+	if (fileName.toLower().endsWith(".xml")){
+		return ReplaceStr(fileName, oldName, newName);
+	}
+	return true;
+}
+
+bool PathManager::ReplacePakNameInSmali(QString &fileName, QString &oldName, QString &newName)
+{
+	if (fileName.toLower().endsWith(".smali")){
+		QString oldNameTmp = oldName;
+		QString newNameTmp = newName;
+		oldNameTmp.replace(".", "/");
+		newNameTmp.replace(".", "/");
 		return ReplaceStr(fileName, oldNameTmp, newNameTmp);
 	}
 	return true;
@@ -655,7 +774,7 @@ bool PathManager::ReplacePakNameInXml(QString &fileName, QString &oldName, QStri
 
 bool PathManager::ReplacePakNameInJava(QString &fileName, QString &oldName, QString &newName)
 {
-	if (fileName.toLower().endsWith("java")){
+	if (fileName.toLower().endsWith(".java")){
 		return ReplaceStr(fileName, oldName, newName);
 	}
 	return true;
@@ -731,6 +850,11 @@ bool PathManager::CheckParameter()
 	}
 	else if (JDKPATH.isEmpty()){
 		parameter.append(QStringLiteral("jdk位置未设置\n"));
+		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
+		return false;
+	}
+	else if (KEYALIASES.isEmpty()){
+		parameter.append(QStringLiteral("密钥别名未设置\n"));
 		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
 		return false;
 	}

@@ -55,8 +55,13 @@ public:
 	static bool ReplaceStr(QString &fileName, QString &beforeStr, QString &afterStr);
 	static bool ReplacePakNameInXml(QString &fileName,QString &oldName,QString &newName);
 	static bool ReplacePakNameInJava(QString &fileName, QString &oldName, QString &newName);
-	static bool RenamePak(QString &path, QString &oldName, QString &newName);
-	static bool ReplacePak(QString &path, QString &oldName, QString &newName);
+	static bool ReplacePakNameInSmali(QString &fileName, QString &oldName, QString &newName);
+	static void RemoveEmptyDirFromDeepest(QString &path);
+	static int RenamePak(QString &path,QString &oldPakName, QString &newPakName);
+	static int RenamePakInSrc(QString &path, QString &oldName, QString &newName);
+	static int RenamePakInDec(QString &path, QString &oldName, QString &newName);
+	static int ReplacePakInSrc(QString &path, QString &oldName, QString &newName);
+	static int ReplacePakInDec(QString &path, QString &oldName, QString &newName);
 	static void SetKeyAliases(QString &aliases);
 	static QString GetKeyAliases();
 	static void SetThreadNum(int num);

@@ -111,15 +111,21 @@ void Pack::ExecuteCmd(QString exe, QStringList argument, QString workPath)
 	//QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
 	//env.insert("PATH", env.value("Path") + exePath);
 	//mpprocess->setProcessEnvironment(env);
+
+	//mpprocess->setProcessChannelMode(QProcess::MergedChannels);
+
 	mpprocess->setWorkingDirectory(workPath);
-	mpprocess->start(exe, argument);
+	mpprocess->start(exe,argument);
 }
 
 bool Pack::CheckError()
 {
 	QTextCodec *gbk = QTextCodec::codecForName("GBK");
 	QString error = gbk->toUnicode(mpprocess->readAllStandardError());
-	if (error.toLower().contains("error") || error.toLower().contains("exception")){
+	if (error.toLower().contains("error:") 
+		|| error.toLower().contains("exception:")
+		|| error.toLower().contains(" error")
+		|| error.toLower().contains(" exception")){
 		emit GenerateError(error);
 		return false;
 	}
