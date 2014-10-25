@@ -173,7 +173,8 @@ void MainWindow::StartDecPack()
 		QList<ReplacePakTable> pakTableList;
 		DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(mcurrentTaskIndex), QStringLiteral("打包开始！"));
 		DatabaseManager::GetInstance()->ReadyData(id, strTableList, resTableList, pakTableList);
-		ppack->Start(PathManager::GetDecPackPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, mcurrentTaskIndex);
+		ppack->Init(PathManager::GetDecPackPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, mcurrentTaskIndex);
+		ppack->start();
 	}
 
 	if (mtaskList.isEmpty()){
@@ -208,7 +209,8 @@ void MainWindow::StartSrcPack()
 		QList<ReplacePakTable> pakTableList;
 		DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(mcurrentTaskIndex), QStringLiteral("打包开始！"));
 		DatabaseManager::GetInstance()->ReadyData(id, strTableList, resTableList, pakTableList);
-		ppack->Start(PathManager::GetSrcPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, mcurrentTaskIndex);
+		ppack->Init(PathManager::GetSrcPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, mcurrentTaskIndex);
+		ppack->start();
 	}
 
 	if (mtaskList.isEmpty()){

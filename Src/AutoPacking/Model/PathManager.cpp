@@ -55,24 +55,9 @@ QString PathManager::GetToolPath()
 	return GetStartPath() + "/Tools";
 }
 
-QString PathManager::GetApkToolPath()
-{
-	return GetToolPath() + QStringLiteral("/apktool.bat");
-}
-
 QString PathManager::GetDocumentsPath()
 {
 	return GetStartPath() + QStringLiteral("/Documents");
-}
-
-QString PathManager::GetSrcPack()
-{
-	return GetToolPath() + QStringLiteral("/srcpack.bat");
-}
-
-QString PathManager::GetPrePack()
-{
-	return GetToolPath() + QStringLiteral("/prepack.bat");
 }
 
 bool PathManager::AppendContentToProperties(QString &content,QString &path)
@@ -102,11 +87,6 @@ QString PathManager::GetTarget(QString &path)
 	}
 	file.close();
 	return QString("");
-}
-
-QString PathManager::GetZipalign()
-{
-	return GetToolPath() + QStringLiteral("/zipalign.exe");
 }
 
 QString PathManager::GetAntPath()
@@ -155,11 +135,6 @@ QString PathManager::GetReleaseUnsignApk(QString &path)
 		}		
 	}
 	return QString("");
-}
-
-QString PathManager::GetJarSigner()
-{
-	return GetJdkPath() + QStringLiteral("/jarsigner.exe");
 }
 
 QString PathManager::GetTmpPath()

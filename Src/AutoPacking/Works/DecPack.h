@@ -11,24 +11,20 @@ class DecPack :public Pack
 public:
 	explicit DecPack(QObject *parent = 0);
 	virtual ~DecPack();
-	virtual void Start(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
+	virtual void Init(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
 		QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, int taskId);
 	virtual void Stop();
 	virtual bool ReplacePakByTable();
-	void Unpacket(QString &inPath, QString &outPath);
-	void Dopacket(QString &inPath, QString &outPath);
-	void SignPacket(QString inPath, QString outPath);
-	void Zipalign();
+	bool Unpacket(QString &inPath, QString &outPath,QProcess &pprocess);
+	bool Dopacket(QString &inPath, QString &outPath, QProcess &pprocess);
+	bool SignPacket(QString inPath, QString outPath, QProcess &pprocess);
+	bool Zipalign(QProcess &pprocess);
 	void CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId);
+	void run();
 
 private:
 	QString mtmpUnpacketPath;
+	QString minputPath;
 
-
-private slots :
-	void UnpacketFinishedSlot(int stat);
-	void DopacketFinishedSlot(int stat);
-	void SignFinishedSlot(int stat);
-	void ZipalignFinishedSlot(int stat);
 };
 #endif

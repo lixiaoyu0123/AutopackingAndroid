@@ -11,9 +11,7 @@ public:
 	static QString GetConfigPath();
 	static QString GetDataBasePath();
 	static QString GetToolPath();
-	static QString GetApkToolPath();
 	static QString GetDocumentsPath();
-	static QString GetSrcPack();
 	static void CreatDir(QString &dir);
 	static void SetOutPath(QString &path);
 	static QString GetOutPath();
@@ -27,15 +25,12 @@ public:
 	static QString GetSrcPath();
 	static QString GetSdkPath();
 	static QString GetSdkToolsPath();
-	static QString GetPrePack();
-	static QString GetZipalign();
 	static QString GetAntPath();
 	static QString GetAnt();
 	static QString GetAndroid();
 	static QString GetBin(QString &projectPath);
 	static QString GetReleaseApk(QString &path);
 	static QString GetReleaseUnsignApk(QString &path);
-	static QString GetJarSigner();
 	static bool AppendContentToProperties(QString &content,QString &path);
 	static QString GetTarget(QString &path);
 	static void SetSdkPath(QString &path);

@@ -5,15 +5,13 @@
 SrcPack::SrcPack(QObject *parent):
 Pack(parent)
 {
-	mpprocess = new QProcess(this);
 }
 
 SrcPack::~SrcPack()
 {
-	mpprocess->deleteLater();
 }
 
-void SrcPack::Start(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
+void SrcPack::Init(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
 	QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, int taskId)
 {
 	if (inPath.isEmpty() || outPath.isEmpty()){
@@ -34,7 +32,14 @@ void SrcPack::Start(QString &inPath, QString &outPath, QString &channelId, QStri
 	mstrTableList = strTableList;
 	mresTableList = resTableList;
 	mpakTableList = pakTableList;
-	CreatPath(outPath, channelId, channelName, channeltbID);
+	moutputPath = outPath;
+	mchanneltbId = channeltbID;
+}
+
+void SrcPack::run()
+{
+	QProcess *pprocess= new QProcess(NULL);
+	CreatPath(moutputPath, mchannelId, mchannelName, mchanneltbId);
 	if (!CopySrc(PathManager::GetSrcPath(), mtmpSrcPath)){
 		emit GenerateError(QStringLiteral("error:拷贝源码文件失败！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
 		emit FinishSignal(1, mtaskId);
@@ -53,18 +58,56 @@ void SrcPack::Start(QString &inPath, QString &outPath, QString &channelId, QStri
 		}
 		return;
 	}
-	PrePack();
+
+	if (!PrePack(*pprocess)){
+		return;
+	}
+
+	if (!CheckError(*pprocess)){
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		}
+		emit FinishSignal(1, mtaskId);
+		return;
+	}
+
+	if (!PackFromSrc(*pprocess)){
+		return;
+	}
+
+	if (!CheckError(*pprocess)){
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		}
+		emit FinishSignal(1, mtaskId);
+		return;
+	}
+
+	QString apk = PathManager::GetReleaseApk(PathManager::GetBin(mtmpSrcPath));
+	if (apk.isEmpty()){
+		emit GenerateError(QStringLiteral("error:打包后的apk文件未找到！渠道ID: %1, 渠道名: %2\n").arg(mchannelId).arg(mchannelName));
+		emit FinishSignal(1, mtaskId);
+		return;
+	}
+	if (!PathManager::CopyFile(PathManager::GetBin(mtmpSrcPath) + QString("/") + apk, moutFile,true)){
+		emit GenerateError(QStringLiteral("error:拷贝签名文件出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		}
+		emit FinishSignal(1, mtaskId);
+		return;
+	}
+
+	if (!PathManager::RemoveDir(mtmpPath)){
+		emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+	}
+
+	emit FinishSignal(0, mtaskId);
 }
 
 void SrcPack::Stop()
 {
-	if (mpprocess->state() == QProcess::Running){
-		mpprocess->close();
-	}
-	if (!PathManager::RemoveDir(mtmpPath)){
-		emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-	}
-	emit FinishSignal(2, mtaskId);
+	this->terminate();
 }
 
 void SrcPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
@@ -122,21 +165,20 @@ bool SrcPack::ReplacePakByTable()
 	return true;
 }
 
-void SrcPack::PrePack()
+bool SrcPack::PrePack(QProcess &pprocess)
 {
-	connect(mpprocess, SIGNAL(finished(int)), this, SLOT(PrePackFinishedSlot(int)));
 	QString target = PathManager::GetTarget(mtmpSrcPath);
 	if (target.isEmpty()){
 		emit GenerateError(QStringLiteral("error:未找到project.properties文件或者未指定target"));
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
-		return;
+		return false;
 	}
-	QString prepackBat = PathManager::GetPrePack();
+	QString prepackBat = QStringLiteral("prepack.bat");
 	QStringList param;
 	target = target.remove("").remove("target=android-");
-	param << PathManager::GetAndroid() << PathManager::GetSdkToolsPath() << QString::number(target.toInt() - 13) << mtmpSrcPath;
+	param << "\"" + PathManager::GetAndroid() + "\"" << "\"" + PathManager::GetSdkToolsPath() + "\"" << QString::number(target.toInt() - 13) << "\"" + mtmpSrcPath + "\"";
 	QString content = QStringLiteral("\nkey.store=%1\nkey.alias=%2\nkey.store.password=%3\nkey.alias.password=%4\n")
 		.arg(PathManager::GetKeyPath())
 		.arg(PathManager::GetKeyAliases())
@@ -149,7 +191,7 @@ void SrcPack::PrePack()
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
-		return;
+		return false;
 	}
 
 	if (!Pack::ReplaceResByTable(mtmpPath)){
@@ -157,7 +199,7 @@ void SrcPack::PrePack()
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
-		return;
+		return false;
 	}
 
 	if (!ReplacePakByTable()){
@@ -165,61 +207,31 @@ void SrcPack::PrePack()
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
-		return;
+		return false;
 	}
-	ExecuteCmd(prepackBat, param, PathManager::GetSdkPath());
+	if (!ExecuteCmd(prepackBat, param, pprocess,PathManager::GetToolPath())){
+		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		emit FinishSignal(1, mtaskId);
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		}
+		return false;
+	}
+	return true;
 }
 
-void SrcPack::PackFromSrc()
+bool SrcPack::PackFromSrc(QProcess &pprocess)
 {
-	connect(mpprocess, SIGNAL(finished(int)), this, SLOT(PackFromSrcFinishedSlot(int)));
-	QString srcpackBat = PathManager::GetSrcPack();
+	QString srcpackBat = QStringLiteral("srcpack.bat");
 	QStringList param;
-	param << PathManager::GetAnt() << mtmpSrcPath;
-	ExecuteCmd(srcpackBat, param, PathManager::GetAntPath());
-}
-
-void SrcPack::PrePackFinishedSlot(int stat)
-{
-	disconnect(mpprocess, SIGNAL(finished(int)), this, SLOT(PrePackFinishedSlot(int)));
-	if (!CheckError()){
+	param << "\"" + PathManager::GetAnt() + "\"" << mtmpSrcPath;
+	if (!ExecuteCmd(srcpackBat, param, pprocess,PathManager::GetToolPath())){
+		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		emit FinishSignal(1, mtaskId);
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
-		emit FinishSignal(1, mtaskId);
-		return;
+		return false;
 	}
-	PackFromSrc();
-}
-
-void SrcPack::PackFromSrcFinishedSlot(int stat)
-{
-	disconnect(mpprocess, SIGNAL(finished(int)), this, SLOT(PackFromSrcFinishedSlot(int)));
-	if (!CheckError()){
-		if (!PathManager::RemoveDir(mtmpPath)){
-			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-		}
-		emit FinishSignal(1, mtaskId);
-		return;
-	}
-	QString apk = PathManager::GetReleaseApk(PathManager::GetBin(mtmpSrcPath));
-	if (apk.isEmpty()){
-		emit GenerateError(QStringLiteral("error:打包后的apk文件未找到！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
-		emit FinishSignal(1, mtaskId);
-		return;
-	}
-	if (!QFile::copy(PathManager::GetBin(mtmpSrcPath) + QString("/") + apk, moutFile)){
-		emit GenerateError(QStringLiteral("error:拷贝签名文件出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-		if (!PathManager::RemoveDir(mtmpPath)){
-			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-		}
-		emit FinishSignal(1, mtaskId);
-		return;
-	}
-
-	if (!PathManager::RemoveDir(mtmpPath)){
-		emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-	}
-
-	emit FinishSignal(0, mtaskId);
+	return true;
 }

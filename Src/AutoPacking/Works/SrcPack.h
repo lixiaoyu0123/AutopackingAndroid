@@ -9,21 +9,20 @@ class SrcPack:public Pack
 public:
 	explicit SrcPack(QObject *parent = 0);
 	virtual ~SrcPack();
-	virtual void Start(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
+	virtual void Init(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
 		QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, int taskId);
 	virtual void Stop();
-
-	bool CopySrc(QString &srcPath,QString &destPath);
 	virtual bool ReplacePakByTable();
-	void PrePack();
-	void PackFromSrc();
+	bool CopySrc(QString &srcPath,QString &destPath);	
+	bool PrePack(QProcess &pprocess);
+	bool PackFromSrc(QProcess &pprocess);
 	void CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId);
 protected:
+	void run();
 private:
 
 	QString mtmpSrcPath;
-private slots:
-void PrePackFinishedSlot(int stat);
-void PackFromSrcFinishedSlot(int stat);
+	QString moutputPath;
+	QString mchanneltbId;
 };
 #endif

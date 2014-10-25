@@ -4,7 +4,7 @@
 #include "Model/PathManager.h"
 
 Pack::Pack(QObject *parent):
-QObject(parent),
+QThread(parent),
 moutFile(""),
 mtmpSignFile(""),
 mchannelId(""),
@@ -84,49 +84,45 @@ bool Pack::ReplaceResByTable(QString &path)
 	return true;
 }
 
-void Pack::ExecuteCmd(QString exe, QStringList argument, QString workPath)
+bool Pack::ExecuteCmd(QString exe, QStringList argument, QProcess &pprocess, QString workPath)
 {
-	//QString exePath = QStringLiteral("cd ") + exe.left(exe.lastIndexOf("/")) + QStringLiteral("\n");
-	//QString exeName = exe.mid(exe.lastIndexOf("/") + 1);
-	//QString arg;
-	//arg.append(exeName);
-	//for (QStringList::Iterator ite = argument.begin(); ite != argument.end(); ite++)
-	//{
-	//	arg.append(" ");
-	//	arg.append(*ite);		
-	//}
-	//arg.append("\n");
-	//mpprocess->start("cmd");
-	//mpprocess->waitForStarted();
-	//QTextCodec *gbk = QTextCodec::codecForName("GBK");
-	//QByteArray byteToolPath = gbk->fromUnicode(exePath.constData(), exePath.length());
-	//QByteArray byteArg = gbk->fromUnicode(arg.constData(), arg.length());
-	//char *toolPathChar = byteToolPath.data();
-	//char *argChar = byteArg.data();
-	//mpprocess->write(toolPathChar);
-	//mpprocess->write(argChar);
-	//mpprocess->closeWriteChannel();
-	//mpprocess->waitForFinished();
-	//QString strOut = QString::fromLocal8Bit(mpprocess->readAllStandardOutput());
-	//QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-	//env.insert("PATH", env.value("Path") + exePath);
-	//mpprocess->setProcessEnvironment(env);
-
-	//mpprocess->setProcessChannelMode(QProcess::MergedChannels);
-
-	mpprocess->setWorkingDirectory(workPath);
-	mpprocess->start(exe,argument);
+	QString enterPath = QStringLiteral("cd ") + "\"" + workPath + "\"" + QStringLiteral("\n");
+	QString arg;
+	arg.append(exe);
+	for (QStringList::Iterator ite = argument.begin(); ite != argument.end(); ite++)
+	{
+		arg.append(" ");
+		arg.append(*ite);		
+	}
+	arg.append("\n");
+	pprocess.start("cmd");
+	pprocess.waitForStarted();
+	QTextCodec *gbk = QTextCodec::codecForName("GBK");
+	QByteArray byteEnterPath = gbk->fromUnicode(enterPath.constData(), enterPath.length());
+	QByteArray byteCommand = gbk->fromUnicode(arg.constData(), arg.length());
+	char *charEnterPath = byteEnterPath.data();
+	char *charCommand = byteCommand.data();
+	pprocess.write(byteEnterPath);
+	pprocess.write(charCommand);
+	pprocess.closeWriteChannel();
+	if (!pprocess.waitForFinished(1000 * 60 * 20)){
+		return false;
+	}
+	return true;
+	//mpprocess->setWorkingDirectory(workPath);
+	//mpprocess->start(exe,argument);
 }
 
-bool Pack::CheckError()
+bool Pack::CheckError(QProcess &pprocess)
 {
 	QTextCodec *gbk = QTextCodec::codecForName("GBK");
-	QString error = gbk->toUnicode(mpprocess->readAllStandardError());
+	QString error = gbk->toUnicode(pprocess.readAllStandardError());
 	if (error.toLower().contains("error:") 
 		|| error.toLower().contains("exception:")
 		|| error.toLower().contains(" error")
 		|| error.toLower().contains(" exception")){
-		emit GenerateError(error);
+		QString standardOut = gbk->toUnicode(pprocess.readAllStandardOutput());
+		emit GenerateError(error.append(standardOut));
 		return false;
 	}
 	return true;
