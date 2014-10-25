@@ -7,6 +7,7 @@
 #include "Adapter/TableContralAdapterStr.h"
 #include "Adapter/TableContralAdapterRes.h"
 #include "Adapter/TableContralAdapterPak.h"
+#include "Adapter/TableContralAdapterAppPak.h"
 
 class EditTable:public QDialog
 {
@@ -20,6 +21,7 @@ private:
 	TableContralAdapterStr madapterStr;
 	TableContralAdapterRes madapterRes;
 	TableContralAdapterPak madapterPak;
+	TableContralAdapterAppPak madapterAppPak;
 	const QModelIndex *mpindex;
 
 private:

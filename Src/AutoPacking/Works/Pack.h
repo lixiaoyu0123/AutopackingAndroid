@@ -5,6 +5,7 @@
 #include "Table/ReplaceStrTable.h"
 #include "Table/ReplaceResTable.h"
 #include "Table/ReplacePakTable.h"
+#include "Table/ReplaceAppPakTable.h"
 
 class Pack:public QThread
 {
@@ -13,7 +14,7 @@ public:
 	explicit Pack(QObject *parent = 0);
 	virtual ~Pack() = 0;
 	virtual void Init(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
-		QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList,int taskId) = 0;
+		QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, QList<ReplaceAppPakTable> &appPakTableList,int taskId) = 0;
 	virtual void Stop() = 0;
 	virtual int GetTaskId();
 protected:	
@@ -36,6 +37,7 @@ protected:
 	QList<ReplaceStrTable> mstrTableList;
 	QList<ReplaceResTable> mresTableList;
 	QList<ReplacePakTable> mpakTableList;
+	QList<ReplaceAppPakTable> mappPakTableList;
 private:
 signals :
 	void FinishSignal(int stat,int taskId);

@@ -15,7 +15,7 @@ DecPack::~DecPack()
 }
 
 void DecPack::Init(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
-	QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, int taskId)
+	QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, QList<ReplaceAppPakTable> &appPakTableList, int taskId)
 {
 	if (inPath.isEmpty() || outPath.isEmpty()){
 		emit GenerateError(QStringLiteral("error:输入输出路径为空！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
@@ -35,6 +35,7 @@ void DecPack::Init(QString &inPath, QString &outPath, QString &channelId, QStrin
 	mstrTableList = strTableList;
 	mresTableList = resTableList;
 	mpakTableList = pakTableList;
+	mappPakTableList = appPakTableList;
 	minputPath = inPath;
 	moutputPath = outPath;
 	mchanneltbId = channeltbID;

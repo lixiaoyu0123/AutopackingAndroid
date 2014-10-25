@@ -18,7 +18,8 @@ mptableModelRes(NULL),
 mptableModelPak(NULL),
 mmodelIndexStr(),
 mmodelIndexRes(),
-mmodelIndexPak()
+mmodelIndexPak(),
+mmodelIndexAppPak()
 {
 	InitDataModel();
 }
@@ -42,6 +43,10 @@ DatabaseManager::~DatabaseManager()
 	if (mptableModelPak != NULL){
 		mptableModelPak->deleteLater();
 		mptableModelPak = NULL;
+	}
+	if (mptableModelAppPak != NULL){
+		mptableModelAppPak->deleteLater();
+		mptableModelAppPak = NULL;
 	}
 }
 
@@ -80,6 +85,7 @@ void DatabaseManager::InitDataModel()
 			"ReplaceString VARCHAR(256), "
 			"ReplaceRes VARCHAR(256), "
 			"ReplacePak VARCHAR(256), "
+			"ReplaceAppPak VARCHAR(256), "
 			"PackStatus VARCHAR(80))");
 
 		if (!isSuccess){
@@ -136,6 +142,21 @@ void DatabaseManager::InitDataModel()
 			exit(1);
 			return;
 		}
+
+		isSuccess = query.exec("CREATE TABLE AppPackageRenametb ("
+			"ID INTEGER PRIMARY KEY AUTOINCREMENT, "
+			"ChanneltbID INTEGER, "
+			"SourcePackage VARCHAR(256), "
+			"TargetPackage VARCHAR(256)) ");
+		if (!isSuccess){
+			BjMessageBox msg;
+			msg.setText(QStringLiteral("创建AppPackageRenametb失败！"));
+			msg.exec();
+			mdatabase.close();
+			QFile::remove(PathManager::GetDataBasePath());
+			exit(1);
+			return;
+		}
 	}
 	else{
 		if (!mdatabase.open()){
@@ -159,8 +180,9 @@ void DatabaseManager::InitDataModel()
 	mptableModel->setHeaderData(2, Qt::Horizontal, QStringLiteral("渠道名称"));
 	mptableModel->setHeaderData(3, Qt::Horizontal, QStringLiteral("编辑替换字符串"));
 	mptableModel->setHeaderData(4, Qt::Horizontal, QStringLiteral("编辑替换资源"));
-	mptableModel->setHeaderData(5, Qt::Horizontal, QStringLiteral("编辑替换包名"));
-	mptableModel->setHeaderData(6, Qt::Horizontal, QStringLiteral("状态"));
+	mptableModel->setHeaderData(5, Qt::Horizontal, QStringLiteral("编辑替换内部包名"));
+	mptableModel->setHeaderData(6, Qt::Horizontal, QStringLiteral("编辑替换应用包名"));
+	mptableModel->setHeaderData(7, Qt::Horizontal, QStringLiteral("状态"));
 
 
 	mptableModelStr = new BjTableModel(NULL, mdatabase);
@@ -196,6 +218,17 @@ void DatabaseManager::InitDataModel()
 	}
 	mptableModelPak->setHeaderData(2, Qt::Horizontal, QStringLiteral("原包名"));
 	mptableModelPak->setHeaderData(3, Qt::Horizontal, QStringLiteral("替换后的包名"));
+
+	mptableModelAppPak = new BjTableModel(NULL, mdatabase);
+	mptableModelAppPak->setEditStrategy(QSqlTableModel::OnManualSubmit);
+	mptableModelAppPak->setTable("AppPackageRenametb");
+	if (!mptableModelAppPak->select()){
+		BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModelAppPak->lastError().text()), QMessageBox::Ok, QMessageBox::NoButton);
+		mptableModelAppPak->revertAll();//如果不删除，则撤销
+		return;
+	}
+	mptableModelAppPak->setHeaderData(2, Qt::Horizontal, QStringLiteral("原包名"));
+	mptableModelAppPak->setHeaderData(3, Qt::Horizontal, QStringLiteral("替换后的包名"));
 }
 
 void DatabaseManager::AddRow()
@@ -205,12 +238,15 @@ void DatabaseManager::AddRow()
 	QSqlField fieldStr("ReplaceString", QVariant::Char);
 	QSqlField fieldRes("ReplaceRes", QVariant::Char);
 	QSqlField fieldPak("ReplacePak", QVariant::Char);
+	QSqlField fieldAppPak("ReplaceAppPak", QVariant::Char);
 	fieldStr.setValue(QStringLiteral("双击编辑"));
 	fieldRes.setValue(QStringLiteral("双击编辑"));
 	fieldPak.setValue(QStringLiteral("双击编辑"));
+	fieldAppPak.setValue(QStringLiteral("双击编辑"));
 	record.append(fieldStr);
 	record.append(fieldRes);
 	record.append(fieldPak);
+	record.append(fieldAppPak);
 
 	if (!mptableModel->insertRecord(rowNum, record)){
 		BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModel->lastError().text()), QMessageBox::Ok, QMessageBox::NoButton);
@@ -255,6 +291,13 @@ void DatabaseManager::DelRow(QModelIndexList &selecteds)
 			mptableModelPak->revertAll();//如果不删除，则撤销
 		}
 		DeleteAll(*mptableModelPak);
+
+		mptableModelAppPak->setFilter(QString("ChanneltbID=\'%1\'").arg(id));
+		if (!mptableModelAppPak->select()){
+			BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModelAppPak->lastError().text()));
+			mptableModelAppPak->revertAll();//如果不删除，则撤销
+		}
+		DeleteAll(*mptableModelAppPak);
 	}
 
 	if (!mptableModel->submitAll()){
@@ -383,6 +426,46 @@ void DatabaseManager::DelRowPak(QModelIndexList &selecteds)
 	}
 }
 
+void DatabaseManager::AddRowAppPak()
+{
+	int rowNum = mptableModelAppPak->rowCount();//获得表的行数
+	QString id = mptableModel->record(mmodelIndexAppPak.row()).value("ID").toString();
+	QSqlRecord record = mptableModelAppPak->record();
+	QSqlField fieldChannltbId("ChanneltbID", QVariant::Int);
+	fieldChannltbId.setValue(id);
+	record.append(fieldChannltbId);
+
+
+	if (!mptableModelAppPak->insertRecord(rowNum, record)){
+		BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModelAppPak->lastError().text()), QMessageBox::Ok, QMessageBox::NoButton);
+		mptableModelAppPak->revertAll();//如果不删除，则撤销
+		return;
+	}
+
+	if (!mptableModelAppPak->submitAll()){
+		BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModelAppPak->lastError().text()));
+		mptableModelAppPak->revertAll();//如果不删除，则撤销
+	}
+}
+
+void DatabaseManager::DelRowAppPak(QModelIndexList &selecteds)
+{
+	foreach(QModelIndex index, selecteds)
+	{
+		int curRow = index.row(); //删除所有被选中的行		
+		if (!mptableModelAppPak->removeRow(curRow)){
+			BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModelAppPak->lastError().text()));
+			mptableModelAppPak->revertAll();//如果不删除，则撤销
+			return;
+		}
+	}
+
+	if (!mptableModelAppPak->submitAll()){
+		BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModelAppPak->lastError().text()));
+		mptableModelAppPak->revertAll();//如果不删除，则撤销
+	}
+}
+
 void DatabaseManager::DeleteAll(QSqlTableModel &model)
 {
 	int rowNum = model.rowCount();
@@ -455,6 +538,23 @@ BjTableModel *DatabaseManager::GetTableModelPak(const QModelIndex &modelIndexPak
 	return mptableModelPak;
 }
 
+BjTableModel *DatabaseManager::GetTableModelAppPak(const QModelIndex &modelIndexAppPak)
+{
+	mmodelIndexAppPak = modelIndexAppPak;
+	QString id = mptableModel->record(mmodelIndexAppPak.row()).value("ID").toString();
+	mptableModelAppPak->setFilter(QString("ChanneltbID=\'%1\'").arg(id));
+	if (!mptableModelAppPak->select()){
+		BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModelAppPak->lastError().text()), QMessageBox::Ok, QMessageBox::NoButton);
+		mptableModel->revertAll();//如果不删除，则撤销
+	}
+	return mptableModelAppPak;
+}
+
+int DatabaseManager::GetTableModelAppPakCounts()
+{
+	return mptableModelAppPak->rowCount();
+}
+
 BjTableModel *DatabaseManager::GetTableModelStr()
 {
 	return mptableModelStr;
@@ -468,6 +568,11 @@ BjTableModel *DatabaseManager::GetTableModelRes()
 BjTableModel *DatabaseManager::GetTableModelPak()
 {
 	return mptableModelPak;
+}
+
+BjTableModel *DatabaseManager::GetTableModelAppPak()
+{
+	return mptableModelAppPak;
 }
 
 void DatabaseManager::ChangStatInDatabase(int row, QString &status)
@@ -484,7 +589,7 @@ void DatabaseManager::ChangStatInDatabase(int row, QString &status)
 	}
 }
 
-void DatabaseManager::ReadyData(QString &id, QList<ReplaceStrTable> &strTable, QList<ReplaceResTable>  &resTable, QList<ReplacePakTable>  &pakTable)
+void DatabaseManager::ReadyData(QString &id, QList<ReplaceStrTable> &strTable, QList<ReplaceResTable>  &resTable, QList<ReplacePakTable>  &pakTable, QList<ReplaceAppPakTable> &appPakTable)
 {
 	mptableModelStr->setFilter(QString("ChanneltbID=\'%1\'").arg(id));
 	int rowNum = mptableModelStr->rowCount();
@@ -522,6 +627,18 @@ void DatabaseManager::ReadyData(QString &id, QList<ReplaceStrTable> &strTable, Q
 		rePakTable.SetSrcPakName(srcPak);
 		rePakTable.SetDestPakName(destPak);
 		pakTable.push_back(rePakTable);
+	}
+
+	mptableModelAppPak->setFilter(QString("ChanneltbID=\'%1\'").arg(id));
+	rowNum = mptableModelAppPak->rowCount();
+	for (int i = 0; i < rowNum; i++)
+	{
+		QString srcPak = mptableModelAppPak->record(i).value("SourcePackage").toString().trimmed();
+		QString destPak = mptableModelAppPak->record(i).value("TargetPackage").toString().trimmed();
+		ReplaceAppPakTable reAppPakTable;
+		reAppPakTable.SetSrcPakName(srcPak);
+		reAppPakTable.SetDestPakName(destPak);
+		appPakTable.push_back(reAppPakTable);
 	}
 }
 
@@ -568,6 +685,10 @@ void DatabaseManager::ReloadData()
 		mptableModelPak->deleteLater();
 		mptableModelPak = NULL;
 	}
+	if (mptableModelAppPak != NULL){
+		mptableModelAppPak->deleteLater();
+		mptableModelAppPak = NULL;
+	}
 	if (!mdatabase.open()){
 		BjMessageBox::warning(NULL, QStringLiteral("数据库打开出错！"), QStringLiteral("数据库打开失败!"), QMessageBox::Ok, QMessageBox::NoButton);
 	}
@@ -581,12 +702,13 @@ void DatabaseManager::Commit()
 		BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("开始事务处理出错!"), QMessageBox::Ok, QMessageBox::NoButton);
 		return;
 	}
-	if (!mptableModel->submitAll() || !mptableModelStr->submitAll() || !mptableModelRes->submitAll() || !mptableModelPak->submitAll()){
-		BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1 %2 %3")
+	if (!mptableModel->submitAll() || !mptableModelStr->submitAll() || !mptableModelRes->submitAll() || !mptableModelPak->submitAll() || !mptableModelAppPak->submitAll()){
+		BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1 %2 %3 %4")
 			.arg(mptableModel->lastError().text())
 			.arg(mptableModelStr->lastError().text())
 			.arg(mptableModelRes->lastError().text())
-			.arg(mptableModelPak->lastError().text()));
+			.arg(mptableModelPak->lastError().text())
+			.arg(mptableModelAppPak->lastError().text()));
 		mdatabase.rollback();//回滚
 		return;
 	}

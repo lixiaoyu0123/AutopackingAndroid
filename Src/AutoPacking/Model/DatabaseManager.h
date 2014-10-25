@@ -11,6 +11,7 @@
 #include "Table/ReplaceStrTable.h"
 #include "Table/ReplaceResTable.h"
 #include "Table/ReplacePakTable.h"
+#include "Table/ReplaceAppPakTable.h"
 
 class DatabaseManager:public QObject
 {
@@ -18,8 +19,8 @@ class DatabaseManager:public QObject
 public:
 	static DatabaseManager *GetInstance();
 	static void Destroyed();
-	DatabaseManager::DatabaseManager();
-	DatabaseManager::~DatabaseManager();
+	DatabaseManager();
+	~DatabaseManager();
 	void InitDataModel();
 	void AddRow();
 	void DelRow(QModelIndexList &selecteds);
@@ -29,19 +30,24 @@ public:
 	void DelRowRes(QModelIndexList &selecteds);
 	void AddRowPak();
 	void DelRowPak(QModelIndexList &selecteds);
+	void AddRowAppPak();
+	void DelRowAppPak(QModelIndexList &selecteds);
 	BjTableModel *GetTableModel();
 	BjTableModel *GetTableModelStr(const QModelIndex &modelIndexStr);
 	BjTableModel *GetTableModelRes(const QModelIndex &modelIndexRes);
-	BjTableModel *GetTableModelPak(const QModelIndex &modelIndexRes);
+	BjTableModel *GetTableModelPak(const QModelIndex &modelIndexPak);
+	BjTableModel *GetTableModelAppPak(const QModelIndex &modelIndexAppPak);
 	BjTableModel *GetTableModelStr();
 	BjTableModel *GetTableModelRes();
 	BjTableModel *GetTableModelPak();
+	BjTableModel *GetTableModelAppPak();
+	int GetTableModelAppPakCounts();
 	QSqlDatabase *GetDatabase();
 	void Commit();
 	void DeleteAll(QSqlTableModel &model);
 	bool isDatabaseEmpty();
 	void ChangStatInDatabase(int row, QString &status);
-	void DatabaseManager::ReadyData(QString &id, QList<ReplaceStrTable> &strTable, QList<ReplaceResTable>  &resTable, QList<ReplacePakTable>  &pakTable);
+	void ReadyData(QString &id, QList<ReplaceStrTable> &strTable, QList<ReplaceResTable>  &resTable, QList<ReplacePakTable>  &pakTable,QList<ReplaceAppPakTable> &appPakTable);
 	void ExportData(QString &fileName);
 	void ImportData(QString &fileName);
 	void ReloadData();
@@ -52,9 +58,11 @@ private:
 	BjTableModel *mptableModelStr;
 	BjTableModel *mptableModelRes;
 	BjTableModel *mptableModelPak;
+	BjTableModel *mptableModelAppPak;
 	QModelIndex mmodelIndexStr;
 	QModelIndex mmodelIndexRes;
 	QModelIndex mmodelIndexPak;
+	QModelIndex mmodelIndexAppPak;
 	static DatabaseManager *mpinstance;
 signals:
 	void ReloadDataSignal();

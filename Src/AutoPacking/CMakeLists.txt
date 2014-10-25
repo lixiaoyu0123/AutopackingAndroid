@@ -144,6 +144,8 @@ set( ADAPTER_FILES
 	Adapter/TableContralAdapterRes.h
 	Adapter/TableContralAdapterPak.cpp
 	Adapter/TableContralAdapterPak.h
+	Adapter/TableContralAdapterAppPak.cpp
+	Adapter/TableContralAdapterAppPak.h
     )
 set( TABLE_FILES 
 	Table/ReplaceStrTable.cpp
@@ -152,6 +154,8 @@ set( TABLE_FILES
 	Table/ReplaceResTable.h
 	Table/ReplacePakTable.cpp
 	Table/ReplacePakTable.h
+	Table/ReplaceAppPakTable.cpp
+	Table/ReplaceAppPakTable.h
 	)
 
 set( RAW_SOURCES ${MAIN_FILES} ${MAINUI_WINDOW} ${MODEL_FILES} ${DIALOG_FILES} ${WORKS_FILES} ${INTERFACE_FILES} ${ADAPTER_FILES} ${TABLE_FILES})

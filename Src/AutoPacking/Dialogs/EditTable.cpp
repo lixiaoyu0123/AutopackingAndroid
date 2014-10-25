@@ -10,6 +10,7 @@ ui(new Ui::EditTable),
 madapterStr(),
 madapterRes(),
 madapterPak(),
+madapterAppPak(),
 mpindex(index)
 {
 	ui->setupUi(this);
@@ -36,6 +37,10 @@ void EditTable::InitModel(const QModelIndex *index)
 	else if (index->column() == 5){
 		ui->TableView->setModel(DatabaseManager::GetInstance()->GetTableModelPak(*index));
 		ui->TableView->SetAapter(&madapterPak);
+	}
+	else if (index->column() == 6){
+		ui->TableView->setModel(DatabaseManager::GetInstance()->GetTableModelAppPak(*index));
+		ui->TableView->SetAapter(&madapterAppPak);
 	}
 	ui->TableView->hideColumn(0);
 	ui->TableView->hideColumn(1);
@@ -64,6 +69,9 @@ void EditTable::NewItem()
 	else if (mpindex->column() == 5){
 		madapterPak.AddRow();
 	}
+	else if (mpindex->column() == 6){
+		madapterAppPak.AddRow();
+	}
 }
 
 void EditTable::DelItem()
@@ -76,6 +84,9 @@ void EditTable::DelItem()
 	}
 	else if (mpindex->column() == 5){
 		madapterPak.DelRow(ui->TableView->GetSelectIndexs());
+	}
+	else if (mpindex->column() == 6){
+		madapterAppPak.DelRow(ui->TableView->GetSelectIndexs());
 	}
 }
 
