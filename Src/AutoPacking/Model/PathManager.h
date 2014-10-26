@@ -48,8 +48,9 @@ public:
 	static bool CopyFile(const QString &SrcFile, const QString &DestFile, bool isCover);
 	static bool SearchDirContianSuffix(const QString &dirFrom, QStringList &result, QString &suffix);
 	static bool ReplaceStr(QString &fileName, QString &beforeStr, QString &afterStr);
+	static bool ReplaceStrByRegular(QString &fileName, QString &regular, QString &replaceStr);
 	static bool ReplacePakNameInXml(QString &fileName,QString &oldName,QString &newName);
-	static bool ReplacePakNameInJava(QString &fileName, QString &oldName, QString &newName);
+	static bool ReplacePakNameInJava(QString &srcPath,QString &fileName, QString &oldName, QString &newName);
 	static bool ReplacePakNameInSmali(QString &fileName, QString &oldName, QString &newName);
 	static void RemoveEmptyDirFromDeepest(QString &path);
 	static int RenamePak(QString &path,QString &oldPakName, QString &newPakName);

@@ -45,11 +45,29 @@ void DecPack::run()
 {
 	QProcess *pprocess = new QProcess(NULL);
 	CreatPath(moutputPath, mchannelId, mchannelName, mchanneltbId);
+	QDir dir(mtmpUnpacketPath);
+	if (dir.exists()){
+		pprocess->close();
+		pprocess->deleteLater();
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除上次缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			emit FinishSignal(1, mtaskId);
+			return;
+		}
+	}
 	if (!Unpacket(minputPath, mtmpUnpacketPath, *pprocess)){
+		pprocess->close();
+		pprocess->deleteLater();
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		}
+		emit FinishSignal(1, mtaskId);
 		return;
 	}
 
 	if (!CheckError(*pprocess)){
+		pprocess->close();
+		pprocess->deleteLater();
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -66,18 +84,29 @@ void DecPack::run()
 	}
 
 	if (!ReplacePakByTable()){
-		emit FinishSignal(1, mtaskId);
+		emit GenerateError(QStringLiteral("error:替换内部包名出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		pprocess->close();
+		pprocess->deleteLater();
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
+		emit FinishSignal(1, mtaskId);
 		return;
 	}
 
 	if (!Dopacket(mtmpUnpacketPath, mtmpSignFile, *pprocess)){
+		pprocess->close();
+		pprocess->deleteLater();
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		}
+		emit FinishSignal(1, mtaskId);
 		return;
 	}
 
 	if (!CheckError(*pprocess)){
+		pprocess->close();
+		pprocess->deleteLater();
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -86,10 +115,18 @@ void DecPack::run()
 	}
 
 	if (!SignPacket(mtmpSignFile, mtmpSignFile, *pprocess)){
+		pprocess->close();
+		pprocess->deleteLater();
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		}
+		emit FinishSignal(1, mtaskId);
 		return;
 	}
 
 	if (!CheckError(*pprocess)){
+		pprocess->close();
+		pprocess->deleteLater();
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -98,10 +135,18 @@ void DecPack::run()
 	}
 
 	if (!Zipalign(*pprocess)){
+		pprocess->close();
+		pprocess->deleteLater();
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		}
+		emit FinishSignal(1, mtaskId);
 		return;
 	}
 
 	if (!CheckError(*pprocess)){
+		pprocess->close();
+		pprocess->deleteLater();
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -113,12 +158,18 @@ void DecPack::run()
 		emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 	}
 
+	pprocess->close();
+	pprocess->deleteLater();
 	emit FinishSignal(0, mtaskId);
 }
 
 void DecPack::Stop()
-{
-	this->terminate();
+{	
+	if (this->isRunning()){
+		this->terminate();
+		this->wait();
+	}
+	emit FinishSignal(2, mtaskId);
 }
 
 void DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
@@ -166,22 +217,11 @@ bool DecPack::ReplacePakByTable()
 
 bool DecPack::Unpacket(QString &inPath, QString &outPath, QProcess &pprocess)
 {
-	QDir dir(outPath);
-	if (dir.exists()){
-		if (!PathManager::RemoveDir(mtmpPath)){
-			emit GenerateError(QStringLiteral("error:清除上次缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-		}
-	}
-
 	QString apkTool = QStringLiteral("apktool.bat");
 	QStringList param;
 	param << QString("d") << QString("-f") << "\"" + inPath + "\"" << "\"" + outPath + "\"";
 	if (!ExecuteCmd(apkTool, param, pprocess,PathManager::GetToolPath())){
 		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-		emit FinishSignal(1, mtaskId);
-		if (!PathManager::RemoveDir(mtmpPath)){
-			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-		}
 		return false;
 	}
 	return true;
@@ -194,10 +234,6 @@ bool DecPack::Dopacket(QString &inPath, QString &outPath, QProcess &pprocess)
 	param << QString("b") << "\"" + inPath + "\"" << "\"" + outPath + "\"";
 	if (!ExecuteCmd(apkTool, param, pprocess, PathManager::GetToolPath())){
 		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-		emit FinishSignal(1, mtaskId);
-		if (!PathManager::RemoveDir(mtmpPath)){
-			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-		}
 		return false;
 	}
 	return true;
@@ -212,10 +248,6 @@ bool DecPack::SignPacket(QString inPath, QString outPath, QProcess &pprocess)
 		<< QStringLiteral("-keypass") << PathManager::GetAliasesPasswd() << "\"" + outPath + "\"" << PathManager::GetKeyAliases().trimmed();
 	if (!ExecuteCmd(exe, param, pprocess, PathManager::GetJdkPath())){
 		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-		emit FinishSignal(1, mtaskId);
-		if (!PathManager::RemoveDir(mtmpPath)){
-			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-		}
 		return false;
 	}
 	return true;
@@ -226,10 +258,6 @@ bool DecPack::Zipalign(QProcess &pprocess)
 	if (QFile::exists(moutFile)){
 		if (!QFile::remove(moutFile)){
 			emit GenerateError(QStringLiteral("error:清除输入目录原包出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-			if (!PathManager::RemoveDir(mtmpPath)){
-				emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-			}
-			emit FinishSignal(1, mtaskId);
 			return false;
 		}
 	}
@@ -238,10 +266,6 @@ bool DecPack::Zipalign(QProcess &pprocess)
 	param << QStringLiteral("-v") << QStringLiteral("4") << "\"" + mtmpSignFile + "\"" << "\"" + moutFile + "\"";
 	if (!ExecuteCmd(exe, param, pprocess, PathManager::GetToolPath())){
 		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-		emit FinishSignal(1, mtaskId);
-		if (!PathManager::RemoveDir(mtmpPath)){
-			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-		}
 		return false;
 	}
 	return true;
