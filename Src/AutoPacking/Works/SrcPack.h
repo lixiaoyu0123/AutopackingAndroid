@@ -11,8 +11,8 @@ public:
 	virtual ~SrcPack();
 	virtual void Init(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
 		QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, QList<ReplaceAppPakTable> &appPakTableList, int taskId);
-	virtual void Stop();
 	virtual bool ReplacePakByTable();
+	virtual bool ReplaceAppPakByTable();
 	bool CopySrc(QString &srcPath,QString &destPath);	
 	bool PrePack(QProcess &pprocess);
 	bool PackFromSrc(QProcess &pprocess);

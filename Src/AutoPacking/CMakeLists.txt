@@ -157,8 +157,16 @@ set( TABLE_FILES
 	Table/ReplaceAppPakTable.cpp
 	Table/ReplaceAppPakTable.h
 	)
+set( SPCRE_FILES
+    PCRE/SPCRE.cpp
+    PCRE/SPCRE.h
+    PCRE/PCRECache.cpp
+    PCRE/PCRECache.h
+    PCRE/PCREReplaceTextBuilder.cpp
+    PCRE/PCREReplaceTextBuilder.h
+    )
 
-set( RAW_SOURCES ${MAIN_FILES} ${MAINUI_WINDOW} ${MODEL_FILES} ${DIALOG_FILES} ${WORKS_FILES} ${INTERFACE_FILES} ${ADAPTER_FILES} ${TABLE_FILES})
+set( RAW_SOURCES ${MAIN_FILES} ${MAINUI_WINDOW} ${MODEL_FILES} ${DIALOG_FILES} ${WORKS_FILES} ${INTERFACE_FILES} ${ADAPTER_FILES} ${TABLE_FILES} ${SPCRE_FILES})
 
 #############################################################################
 
@@ -179,6 +187,7 @@ source_group( "Works"            FILES ${WORKS_FILES} )
 source_group( "Interface"        FILES ${INTERFACE_FILES} )
 source_group( "Adapter"          FILES ${ADAPTER_FILES} )
 source_group( "Table"			 FILES ${TABLE_FILES} )
+source_group( "SPCRE"            FILES ${SPCRE_FILES} )
 
 #############################################################################
 
@@ -206,7 +215,8 @@ endif()
 #############################################################################
 include_directories( BEFORE
                      ${CMAKE_CURRENT_SOURCE_DIR}
-                     ${CMAKE_CURRENT_BINARY_DIR} )
+                     ${CMAKE_CURRENT_BINARY_DIR}
+					 ${PCRE_INCLUDE_DIRS})
 					 
 add_executable( ${PROJECT_NAME} WIN32 ${ALL_SOURCES} )
 
@@ -214,11 +224,18 @@ if (MSVC)
     set(QT_MAIN Qt5::WinMain)
 endif()
 
-target_link_libraries( ${PROJECT_NAME} ${QT_MAIN} )
-qt5_use_modules(${PROJECT_NAME} Widgets Sql)
+target_link_libraries( ${PROJECT_NAME} ${QT_MAIN} ${PCRE_LIBRARIES})
+qt5_use_modules(${PROJECT_NAME} Widgets Sql Xml)
 
 #############################################################################
 
+if( FORCE_BUNDLED_COPIES OR NOT PCRE_FOUND )
+    add_definitions( -DPCRE_STATIC )
+endif()
+
+# Speed up stirng building
+add_definitions( -DQT_USE_FAST_CONCATENATION )
+add_definitions( -DQT_USE_FAST_OPERATOR_PLUS )
 
 #############################################################################
 

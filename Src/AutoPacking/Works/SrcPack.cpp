@@ -141,15 +141,6 @@ void SrcPack::run()
 	emit FinishSignal(0, mtaskId);
 }
 
-void SrcPack::Stop()
-{
-	if (this->isRunning()){
-		this->terminate();
-		this->wait();
-	}
-	emit FinishSignal(2, mtaskId);
-}
-
 void SrcPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
 {
 	if (outPath.endsWith("/")){
@@ -165,12 +156,18 @@ void SrcPack::CreatPath(QString &outPath, QString &channelId, QString &channelNa
 	PathManager::CreatDir(srcPath);
 	PathManager::CreatDir(signPath);
 	mtmpSrcPath = srcPath;
-	mtmpSignFile = signPath + "/" + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
+	mtmpSignFile = signPath + "/" + channelName + "_" + PathManager::GetVersion() + channelId + "_" + ".apk";
 }
 
 bool SrcPack::CopySrc(QString &srcPath, QString &destPath)
 {
-	return PathManager::CopyDir(srcPath, destPath,true);
+	if (!PathManager::CopyDir(srcPath, destPath, true)){
+		return false;
+	}
+	if (!PathManager::RemoveDir(destPath + "/bin")){
+		return false;
+	}
+	return true;
 }
 
 bool SrcPack::ReplacePakByTable()
@@ -198,6 +195,34 @@ bool SrcPack::ReplacePakByTable()
 	return true;
 }
 
+bool SrcPack::ReplaceAppPakByTable()
+{
+	for (QList<ReplaceAppPakTable>::iterator ite = mappPakTableList.begin(); ite != mappPakTableList.end(); ite++)
+	{
+		switch (PathManager::ReplaceAppPakInSrc(mtmpSrcPath, ite->GetSrcPakName(), ite->GetDestPakName()))
+		{
+		case 0:
+			break;
+		case 1:
+			emit GenerateError(QStringLiteral("error:替换包名出错,原包名不存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 2:
+			emit GenerateError(QStringLiteral("error:替换包名出错,创建包出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 3:
+			emit GenerateError(QStringLiteral("error:替换包名出错,目的包名已经存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 4:
+			emit GenerateError(QStringLiteral("error:替换包名出错,替换包名过程出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 5:
+			emit GenerateError(QStringLiteral("error:替换App包名出错,替换包名过程出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		}
+	}
+	return true;
+}
+
 bool SrcPack::PrePack(QProcess &pprocess)
 {
 	QString target = PathManager::GetTarget(mtmpSrcPath);
@@ -216,17 +241,22 @@ bool SrcPack::PrePack(QProcess &pprocess)
 		.arg(PathManager::GetAliasesPasswd());
 	PathManager::AppendContentToProperties(content, mtmpSrcPath);
 
-	if (!Pack::ReplaceStrByTable(mtmpPath)){
+	if (!Pack::ReplaceStrByTable(mtmpSrcPath)){
 		return false;
 	}
 
-	if (!Pack::ReplaceResByTable(mtmpPath)){
+	if (!Pack::ReplaceResByTable(mtmpSrcPath)){
 		return false;
 	}
 
 	if (!ReplacePakByTable()){
 		return false;
 	}
+
+	if (!ReplaceAppPakByTable()){
+		return false;
+	}
+
 	if (!ExecuteCmd(prepackBat, param, pprocess,PathManager::GetToolPath())){
 		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;

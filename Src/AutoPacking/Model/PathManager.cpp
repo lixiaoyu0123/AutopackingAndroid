@@ -4,9 +4,13 @@
 #include <QTextStream>
 #include <QProcess>
 #include <QRegularExpression>
+#include <QtXml/QtXml>
+#include <QtXml/QDomNodeList>
 #include <QDebug>
 #include "PathManager.h"
 #include "Dialogs/BjMessageBox.h"
+#include "PCRE/SPCRE.h"
+#include "PCRE/PCRECache.h"
 
 
 QString PathManager::OUTPATH = "";
@@ -489,11 +493,53 @@ bool PathManager::CopyDir(const QString &source, const QString &destination, boo
 	return true;
 }
 
+bool PathManager::SearchDirContianSuffix(const QString &dirFrom, QStringList &result, QString &suffix)
+{
+	QVector<QString> dirNames;
+	QDir dir(dirFrom);
+	QFileInfoList filst;
+	QFileInfoList::iterator curFi;
+	//初始化
+	dirNames.clear();
+	if (dir.exists()){
+		dirNames << dirFrom;
+	}
+	else{
+		return true;
+	}
+	//遍历各级文件夹，并将这些文件夹中的文件删除  
+	for (int i = 0; i < dirNames.size(); ++i)
+	{
+		dir.setPath(dirNames[i]);
+		filst = dir.entryInfoList(QDir::Dirs | QDir::Files
+			| QDir::Readable | QDir::Writable
+			| QDir::Hidden | QDir::NoDotAndDotDot
+			, QDir::DirsFirst);
+		if (filst.size()>0){
+			curFi = filst.begin();
+			while (curFi != filst.end())
+			{
+				//遇到文件夹,则添加至文件夹列表dirs尾部  
+				if (curFi->isDir()){
+					dirNames.push_back(curFi->filePath());
+				}
+				else if (curFi->isFile()){
+					if (curFi->fileName().endsWith(suffix)){
+						result.push_back(curFi->absolutePath());
+						break;
+					}
+				}
+				curFi++;
+			}//end of while  
+		}
+	}
+	return true;
+}
+
 void PathManager::RemoveEmptyDirFromDeepest(QString &path)
 {
 	QDir dir(path);
-	dir.setFilter(QDir::NoDotAndDotDot);
-	QStringList allFilesDirs = dir.entryList();
+	QStringList allFilesDirs = dir.entryList(QDir::NoDotAndDotDot|QDir::AllDirs|QDir::Files);
 	if (!allFilesDirs.isEmpty()){
 		return;
 	}
@@ -604,8 +650,15 @@ int PathManager::ReplacePakInSrc(QString &path, QString &oldName, QString &newNa
 				}
 				else if (curFi->isFile()){
 					//遇到文件,则删除之  
-					if(!ReplacePakNameInJava(path,curFi->absoluteFilePath(), oldName, newName) || !ReplacePakNameInXml(curFi->absoluteFilePath(), oldName, newName)){
-						return 1;
+					if (curFi->absoluteFilePath().toLower().endsWith(".java")){
+						if (!ReplacePakNameInJava(path, curFi->absoluteFilePath(), oldName, newName)){
+							return 1;
+						}
+					}
+					else if (curFi->absoluteFilePath().toLower().endsWith(".xml")){
+						if (!ReplacePakNameInXml(path,curFi->absoluteFilePath(), oldName, newName)){
+							return 1;
+						}
 					}
 				}
 				curFi++;
@@ -653,8 +706,15 @@ int PathManager::ReplacePakInDec(QString &path, QString &oldName, QString &newNa
 				}
 				else if (curFi->isFile()){
 					//遇到文件,则删除之  
-					if (!ReplacePakNameInSmali(curFi->absoluteFilePath(), oldName, newName) || !ReplacePakNameInXml(curFi->absoluteFilePath(), oldName, newName)){
-						return 1;
+					if (curFi->absoluteFilePath().toLower().endsWith(".smali")){
+						if (!ReplacePakNameInSmali(curFi->absoluteFilePath(), oldName, newName)){
+							return 1;
+						}
+					}
+					else if (curFi->absoluteFilePath().toLower().endsWith(".xml")){
+						if (!ReplacePakNameInXml(path, curFi->absoluteFilePath(), oldName, newName)){
+							return 1;
+						}
 					}
 				}
 				curFi++;
@@ -670,28 +730,146 @@ int PathManager::ReplacePakInDec(QString &path, QString &oldName, QString &newNa
 	return 0;
 }
 
-bool PathManager::SearchDirContianSuffix(const QString &dirFrom, QStringList &result, QString &suffix)
+bool PathManager::ReplaceStr(QString &fileName, QString &srcStr, QString &replaceStr)
+{
+	QFile file(fileName);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+		return false;
+	}
+	QTextStream in(&file);
+	in.setCodec("UTF-8");
+	QString content;
+	content = in.readAll();
+	content.replace(srcStr, replaceStr);
+
+	file.close();
+	if (!QFile::remove(fileName)){
+		return false;
+	}
+	QFile newfile(fileName);
+	if (!newfile.open(QIODevice::ReadWrite | QIODevice::Text)){
+		return false;
+	}
+	newfile.write(content.toUtf8());
+	newfile.close();
+	return true;
+}
+
+bool PathManager::ReplaceByRegular(QString &regular,QString &text,QString &replaceStr)
+{
+	SPCRE *spcre = PCRECache::instance()->getObject(regular);
+	QList<SPCRE::MatchInfo> match_info = spcre->getEveryMatchInfo(text);
+	for (int i = match_info.count() - 1; i >= 0; i--) 
+	{
+		QString replaced_text;
+		bool replacement_made = spcre->replaceText(text.mid(match_info.at(i).offset.first, match_info.at(i).offset.second - match_info.at(i).offset.first), match_info.at(i).capture_groups_offsets, replaceStr, replaced_text);
+		if (replacement_made) {
+			// Replace the text.
+			text = text.replace(match_info.at(i).offset.first, match_info.at(i).offset.second - match_info.at(i).offset.first, replaced_text);
+		}
+	}
+	return true;
+}
+
+bool PathManager::ReplacePakNameInXml(QString &srcPath,QString &fileName, QString &oldName, QString &newName)
+{
+	if (fileName.toLower().endsWith(".xml")){
+
+		QFile file(fileName);
+		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+			return false;
+		}
+		QTextStream in(&file);
+		in.setCodec("UTF-8");
+		QString content;
+		content = in.readAll();
+		file.close();
+		QString contentEx = QString("<[^<>]*%1[^<>]*>").arg(oldName);
+
+		for (int i = 0; i < content.length();)
+		{
+			i = content.indexOf(QRegExp(contentEx), i);
+			if (i < 0){
+				break;
+			}
+
+			i = content.indexOf(oldName, i);
+			if (i < 0){
+				break;
+			}
+			int offset = i + oldName.length();
+			if (offset >= content.length()){
+				break;
+			}
+			QString remain = content.mid(i + oldName.length() + 1);
+			int newOffset = remain.indexOf(QRegExp("\\.|\""), 0);
+			if (newOffset < 0){
+				break;
+			}
+			QString packName = oldName;
+			QString className = remain.left(newOffset);
+			QFile javaClass(srcPath + "/src/" + packName.replace(".", "/") + "/" + className + ".java");
+			if (javaClass.exists()){
+				content.remove(i, oldName.length());
+				content.insert(i, newName);
+			}
+			i = offset;
+		}
+
+		if (!QFile::remove(fileName)){
+			return false;
+		}
+		QFile newfile(fileName);
+		if (!newfile.open(QIODevice::ReadWrite | QIODevice::Text)){
+			return false;
+		}
+		newfile.write(content.toUtf8());
+		newfile.close();
+		return true;
+	}
+	return true;
+}
+
+bool PathManager::ReplaceAppPakNameInXml(QString &srcPath, QString &fileName, QString &oldName, QString &newName)
+{
+	QString oldNmSpace = "\"http://schemas.android.com/apk/res/" + oldName + "\"";
+	QString newNmSpace = "\"http://schemas.android.com/apk/res/" + newName + "\"";
+	if (!ReplaceStr(fileName, oldNmSpace, newNmSpace)){
+		return false;
+	}
+	return true;
+}
+
+/**********
+*返回值：0成功
+*1原包名不存在
+*2创建包出错
+*3目的包名已经存在
+*4替换包名过程出错
+*5替换app包名出错
+***********/
+int PathManager::ReplaceAppPakInSrc(QString &path, QString &oldName, QString &newName)
 {
 	QVector<QString> dirNames;
-	QDir dir(dirFrom);
+	QDir dir(path);
 	QFileInfoList filst;
 	QFileInfoList::iterator curFi;
 	//初始化
 	dirNames.clear();
 	if (dir.exists()){
-		dirNames << dirFrom;
+		dirNames << path;
 	}
 	else{
-		return true;
+		return 0;
 	}
 	//遍历各级文件夹，并将这些文件夹中的文件删除  
-	for (int i = 0; i < dirNames.size(); ++i)
+	for (int i = 0; i<dirNames.size(); ++i)
 	{
 		dir.setPath(dirNames[i]);
 		filst = dir.entryInfoList(QDir::Dirs | QDir::Files
 			| QDir::Readable | QDir::Writable
 			| QDir::Hidden | QDir::NoDotAndDotDot
-			, QDir::DirsFirst);
+			, QDir::Name);
 		if (filst.size()>0){
 			curFi = filst.begin();
 			while (curFi != filst.end())
@@ -701,71 +879,126 @@ bool PathManager::SearchDirContianSuffix(const QString &dirFrom, QStringList &re
 					dirNames.push_back(curFi->filePath());
 				}
 				else if (curFi->isFile()){
-					if (curFi->fileName().endsWith(suffix)){
-						result.push_back(curFi->absolutePath());
-						break;
+					//遇到文件,则删除之  
+					if (curFi->absoluteFilePath().toLower().endsWith(".java")){
+						if (!ReplaceAppPakNameInJava(path, curFi->absoluteFilePath(), oldName, newName)){
+							return 1;
+						}
+					}
+					else if (curFi->absoluteFilePath().toLower().endsWith(".xml")){
+						if (!ReplaceAppPakNameInXml(path, curFi->absoluteFilePath(), oldName, newName)){
+							return 1;
+						}
 					}
 				}
 				curFi++;
 			}//end of while  
 		}
 	}
-	return true;
+
+	if (!ReplaceAppPakNameInManifest(path, oldName, newName)){
+		return 5;
+	}
+
+	return 0;
 }
 
-bool PathManager::ReplaceStr(QString &fileName, QString &beforeStr, QString &afterStr)
+/**********
+*返回值：0成功
+*1原包名不存在
+*2创建包出错
+*3目的包名已经存在
+*4替换包名过程出错
+*5替换app包名出错
+***********/
+int PathManager::ReplaceAppPakInDec(QString &path, QString &oldName, QString &newName)
 {
-	QFile file(fileName);
+	QVector<QString> dirNames;
+	QDir dir(path);
+	QFileInfoList filst;
+	QFileInfoList::iterator curFi;
+	//初始化
+	dirNames.clear();
+	if (dir.exists()){
+		dirNames << path;
+	}
+	else{
+		return 0;
+	}
+	//遍历各级文件夹，并将这些文件夹中的文件删除  
+	for (int i = 0; i<dirNames.size(); ++i)
+	{
+		dir.setPath(dirNames[i]);
+		filst = dir.entryInfoList(QDir::Dirs | QDir::Files
+			| QDir::Readable | QDir::Writable
+			| QDir::Hidden | QDir::NoDotAndDotDot
+			, QDir::Name);
+		if (filst.size()>0){
+			curFi = filst.begin();
+			while (curFi != filst.end())
+			{
+				//遇到文件夹,则添加至文件夹列表dirs尾部  
+				if (curFi->isDir()){
+					dirNames.push_back(curFi->filePath());
+				}
+				else if (curFi->isFile()){
+					//遇到文件,则删除之  
+					if (curFi->absoluteFilePath().toLower().endsWith(".smali")){
+						if (!ReplaceAppPakNameInSmali(curFi->absoluteFilePath(), oldName, newName)){
+							return 1;
+						}
+					}
+					else if (curFi->absoluteFilePath().toLower().endsWith(".xml")){
+						if (!ReplaceAppPakNameInXml(path, curFi->absoluteFilePath(), oldName, newName)){
+							return 1;
+						}
+					}
+				}
+				curFi++;
+			}//end of while  
+		}
+	}
+
+	if (!ReplaceAppPakNameInManifest(path, oldName, newName)){
+		return 5;
+	}
+
+	return 0;
+}
+
+bool PathManager::ReplaceAppPakNameInManifest(QString &path, QString &oldName, QString &newName)
+{
+	QString manifest = path + "/" + "AndroidManifest.xml";
+	QFile file(manifest);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
 		return false;
 	}
-	QTextStream in(&file);
-	in.setCodec("UTF-8");
-	QString content;
-	content = in.readAll();
-	content.replace(QRegularExpression(beforeStr), afterStr);
+	QDomDocument doc;
+	if (!doc.setContent(&file)){
+		file.close();
+		return false;
+	}
 	file.close();
-	if (!QFile::remove(fileName)){
+	QDomElement root = doc.documentElement();
+	if (root.tagName() != "manifest"){
 		return false;
 	}
-	QFile newfile(fileName);
-	if (!newfile.open(QIODevice::ReadWrite | QIODevice::Text)){
+	QString pack = root.attribute("package");
+	if (pack.isEmpty()){
 		return false;
 	}
-	newfile.write(content.toUtf8());
-	newfile.close();
-	return true;
-}
+	root.setAttribute("package", newName);
 
-bool PathManager::ReplaceStrByRegular(QString &fileName, QString &regular, QString &replaceStr)
-{
-	QFile file(fileName);
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+	QFile filexml(manifest);
+	if (!filexml.open(QFile::WriteOnly | QFile::Truncate)){
+		qWarning("error::ParserXML->writeOperateXml->file.open\n");
 		return false;
 	}
-	QTextStream in(&file);
-	in.setCodec("UTF-8");
-	QString content;
-	content = in.readAll();
-	content.replace(QRegularExpression(regular), replaceStr);
-	file.close();
-	if (!QFile::remove(fileName)){
-		return false;
-	}
-	QFile newfile(fileName);
-	if (!newfile.open(QIODevice::ReadWrite | QIODevice::Text)){
-		return false;
-	}
-	newfile.write(content.toUtf8());
-	newfile.close();
-	return true;
-}
-
-bool PathManager::ReplacePakNameInXml(QString &fileName, QString &oldName, QString &newName)
-{
-	if (fileName.toLower().endsWith(".xml")){
-		return ReplaceStr(fileName, oldName, newName);
-	}
+	QTextStream ts(&filexml);
+	ts.reset();
+	ts.setCodec("utf-8");
+	doc.save(ts, 4, QDomNode::EncodingFromTextStream);
+	filexml.close();
 	return true;
 }
 
@@ -781,14 +1014,23 @@ bool PathManager::ReplacePakNameInSmali(QString &fileName, QString &oldName, QSt
 	return true;
 }
 
+bool PathManager::ReplaceAppPakNameInSmali(QString &fileName, QString &oldName, QString &newName)
+{
+	if (fileName.toLower().endsWith(".smali")){
+		QString oldNameTmp = oldName;
+		QString newNameTmp = newName;
+		//oldNameTmp.replace(".", "/");
+		//newNameTmp.replace(".", "/");
+		return ReplaceStr(fileName, oldNameTmp, newNameTmp);
+	}
+	return true;
+}
+
 bool PathManager::ReplacePakNameInJava(QString &srcPath,QString &fileName, QString &oldName, QString &newName)
 {
 	if (fileName.toLower().endsWith(".java")){
-		QString regularExIm = QString("\\bimport[\\s\\t\\r\\n]+%1[\\s\\t\\r\\n]*;").arg(oldName);
-		QString replaceNameIm = QString("import ") + newName + ";";
-		QString regularExPk = QString("\\bpackage[\\s\\t\\r\\n]+%1[\\s\\t\\r\\n]*;").arg(oldName);
-		QString replaceNamePk = QString("package ") + newName + ";";
-
+		QString regularEx = QString("(?<=(\\bpackage)|(\\bimport))[\\s\\t\\r\\n]+%1[\\s\\t\\r\\n]*;").arg(oldName);
+		QString replaceName = QString(" ") + newName + ";";
 		QFile file(fileName);
 		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
 			return false;
@@ -798,40 +1040,62 @@ bool PathManager::ReplacePakNameInJava(QString &srcPath,QString &fileName, QStri
 		QString content;
 		content = in.readAll();
 		file.close();
-		content.replace(QRegularExpression(regularExIm), replaceNameIm);
-		content.replace(QRegularExpression(regularExPk), replaceNamePk);
-		QString contentEx = QString("[({};][\\s\\t\\r\\n]+%1\\.").arg(oldName);
-
-		for (int i = 0; i < content.length();)
+		ReplaceByRegular(regularEx, content, replaceName);
+		QString contentEx = QString("(?<=[({};])[\\s\\t\\r\\n]*%1\\.").arg(oldName);
+		SPCRE *spcre = PCRECache::instance()->getObject(contentEx);
+		QList<SPCRE::MatchInfo> match_info = spcre->getEveryMatchInfo(content);
+		for (int i = match_info.count() - 1; i >= 0; i--)
 		{
-			i = content.indexOf(QRegularExpression(contentEx), i);
-			if (i < 0){
-				break;
+			QString replaced_text;
+			bool replacement_made = spcre->replaceText(content.mid(match_info.at(i).offset.first, match_info.at(i).offset.second - match_info.at(i).offset.first), match_info.at(i).capture_groups_offsets, newName + ".", replaced_text);
+			if (replacement_made) {
+				int pos = content.indexOf(QRegExp("\\.|\\s"),match_info.at(i).offset.second);
+				// Replace the text.
+				if (pos < 0){
+					continue;
+				}
+				QString classNm = content.mid(match_info.at(i).offset.second, pos - match_info.at(i).offset.second);
+				QString packName = oldName;
+				QFile javaClass(srcPath + "/src/" + packName.replace(".", "/") + "/" + classNm + ".java");
+				if (javaClass.exists()){
+					content = content.replace(match_info.at(i).offset.first, match_info.at(i).offset.second - match_info.at(i).offset.first, replaced_text);
+				}
 			}
-
-			i = content.indexOf(oldName, i);
-			if (i < 0){
-				break;
-			}
-			int offset = i + oldName.length();
-			if (offset >= content.length()){
-				break;
-			}
-			QString remain = content.mid(i + oldName.length() + 1);
-			int newOffset = remain.indexOf(QRegularExpression("\\.|\\s"),0);
-			if (newOffset < 0){
-				break;
-			}
-			QString packName = oldName;
-			QString className = remain.left(newOffset);
-			QFile javaClass(srcPath + "/src/" + packName.replace(".", "/") + "/" + className + ".java");
-			if (javaClass.exists()){
-				content.remove(i, oldName.length());
-				content.insert(i,newName);
-			}
-			i = offset;
 		}
 		
+		if (!QFile::remove(fileName)){
+			return false;
+		}
+		QFile newfile(fileName);
+		if (!newfile.open(QIODevice::ReadWrite | QIODevice::Text)){
+			return false;
+		}
+		newfile.write(content.toUtf8());
+		newfile.close();
+		return true;
+	}
+	return true;
+}
+
+bool PathManager::ReplaceAppPakNameInJava(QString &srcPath, QString &fileName, QString &oldName, QString &newName)
+{
+	if (fileName.toLower().endsWith(".java")){
+		QString regularEx = QString("(?<=(\\bpackage)|(\\bimport))[\\s\\t\\r\\n]+%1[\\s\\t\\r\\n]*;").arg(oldName);
+		QString replaceName = QString(" ") + newName + ";";
+		QFile file(fileName);
+		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+			return false;
+		}
+		QTextStream in(&file);
+		in.setCodec("UTF-8");
+		QString content;
+		content = in.readAll();
+		file.close();
+		ReplaceByRegular(regularEx, content, replaceName);
+		QString regularExR = QString("(?<=(\\bpackage)|(\\bimport))[\\s\\t\\r\\n]+%1%2[\\s\\t\\r\\n]*;").arg(oldName).arg(".R");
+		QString replaceNameR = QString(" ") + newName + ".R;";
+		ReplaceByRegular(regularExR, content, replaceNameR);
+		content.replace(" " + oldName + ".R.", " " + newName + ".R.");
 		if (!QFile::remove(fileName)){
 			return false;
 		}

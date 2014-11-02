@@ -15,12 +15,13 @@ public:
 	virtual ~Pack() = 0;
 	virtual void Init(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
 		QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, QList<ReplaceAppPakTable> &appPakTableList,int taskId) = 0;
-	virtual void Stop() = 0;
+	virtual void Stop();
 	virtual int GetTaskId();
 protected:	
 	virtual bool ReplaceStrByTable(QString &path);
 	virtual bool ReplaceResByTable(QString &path);
 	virtual bool ReplacePakByTable() = 0;
+	virtual bool ReplaceAppPakByTable() = 0;
 	virtual bool CheckError(QProcess &pprocess);
 	virtual bool ExecuteCmd(QString exe, QStringList argument, QProcess &pprocess, QString workPath = QString(""));
 

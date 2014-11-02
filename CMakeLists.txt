@@ -53,7 +53,11 @@ endif()
 # This disables the building of the test runner app for FlightCrew
 set( NO_TEST_EXE 1 )
 
-# We must use the bundled Tidy because there are Autopacking
-# specific changes to it.
+
+if( FORCE_BUNDLED_COPIES OR NOT PCRE_FOUND OR APPLE )
+    add_subdirectory( Src/pcre )
+    set( PCRE_LIBRARIES pcre )
+    set( PCRE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/Src/pcre ${CMAKE_BINARY_DIR}/Src/pcre )
+endif()
 
 add_subdirectory( src/Autopacking )

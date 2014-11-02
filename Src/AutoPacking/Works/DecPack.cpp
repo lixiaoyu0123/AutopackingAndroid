@@ -94,6 +94,17 @@ void DecPack::run()
 		return;
 	}
 
+	if (!ReplaceAppPakByTable()){
+		emit GenerateError(QStringLiteral("error:替换应用包名出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		pprocess->close();
+		pprocess->deleteLater();
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		}
+		emit FinishSignal(1, mtaskId);
+		return;
+	}
+
 	if (!Dopacket(mtmpUnpacketPath, mtmpSignFile, *pprocess)){
 		pprocess->close();
 		pprocess->deleteLater();
@@ -163,15 +174,6 @@ void DecPack::run()
 	emit FinishSignal(0, mtaskId);
 }
 
-void DecPack::Stop()
-{	
-	if (this->isRunning()){
-		this->terminate();
-		this->wait();
-	}
-	emit FinishSignal(2, mtaskId);
-}
-
 void DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
 {
 	if (outPath.endsWith("/")){
@@ -187,7 +189,7 @@ void DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelNa
 	PathManager::CreatDir(unpackPath);
 	PathManager::CreatDir(signPath);
 	mtmpUnpacketPath = unpackPath;
-	mtmpSignFile = signPath + "/" + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
+	mtmpSignFile = signPath + "/" + channelName + "_" + PathManager::GetVersion() + channelId + "_" + ".apk";
 }
 
 bool DecPack::ReplacePakByTable()
@@ -209,6 +211,34 @@ bool DecPack::ReplacePakByTable()
 			return false;
 		case 4:
 			emit GenerateError(QStringLiteral("error:替换包名出错,替换包名过程出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		}
+	}
+	return true;
+}
+
+bool DecPack::ReplaceAppPakByTable()
+{
+	for (QList<ReplaceAppPakTable>::iterator ite = mappPakTableList.begin(); ite != mappPakTableList.end(); ite++)
+	{
+		switch (PathManager::ReplaceAppPakInDec(mtmpUnpacketPath, ite->GetSrcPakName(), ite->GetDestPakName()))
+		{
+		case 0:
+			break;
+		case 1:
+			emit GenerateError(QStringLiteral("error:替换包名出错,原包名不存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 2:
+			emit GenerateError(QStringLiteral("error:替换包名出错,创建包出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 3:
+			emit GenerateError(QStringLiteral("error:替换包名出错,目的包名已经存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 4:
+			emit GenerateError(QStringLiteral("error:替换包名出错,替换包名过程出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 5:
+			emit GenerateError(QStringLiteral("error:替换App包名出错,替换包名过程出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 			return false;
 		}
 	}

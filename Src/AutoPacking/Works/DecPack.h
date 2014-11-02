@@ -13,8 +13,8 @@ public:
 	virtual ~DecPack();
 	virtual void Init(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
 		QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, QList<ReplaceAppPakTable> &appPakTableList, int taskId);
-	virtual void Stop();
 	virtual bool ReplacePakByTable();
+	virtual bool ReplaceAppPakByTable();
 	bool Unpacket(QString &inPath, QString &outPath,QProcess &pprocess);
 	bool Dopacket(QString &inPath, QString &outPath, QProcess &pprocess);
 	bool SignPacket(QString inPath, QString outPath, QProcess &pprocess);

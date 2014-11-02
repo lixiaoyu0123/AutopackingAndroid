@@ -19,6 +19,14 @@ Pack::~Pack()
 
 }
 
+void Pack::Stop()
+{
+	if (this->isRunning()){
+		this->terminate();
+	}
+	emit FinishSignal(2, mtaskId);
+}
+
 int Pack::GetTaskId()
 {
 	return mtaskId;
@@ -59,7 +67,7 @@ bool Pack::ReplaceResByTable(QString &path)
 {
 	for (QList<ReplaceResTable>::iterator ite = mresTableList.begin(); ite != mresTableList.end(); ite++)
 	{
-		QString dirSrcAbsolutely;
+		QString dirDestAbsolutely;
 		QString dirSrc;
 		QString dirDest;
 		dirSrc = ite->GetFolderSrc();
@@ -69,17 +77,17 @@ bool Pack::ReplaceResByTable(QString &path)
 			return false;
 		}
 		if (dirSrc.replace("\\", "/").startsWith("/")){
-			dirSrcAbsolutely = path + dirSrc;
+			dirDestAbsolutely = path + dirDest;
 		}
 		else{
-			dirSrcAbsolutely = path + "/" + dirSrc;
+			dirDestAbsolutely = path + "/" + dirDest;
 		}
-		QDir tmp(dirDest);
+		QDir tmp(dirSrc);
 		if (!tmp.exists()){
 			emit GenerateError(QStringLiteral("error:资源原路径不存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 			return false;
 		}
-		PathManager::CopyDir(dirDest, dirDest, true);
+		PathManager::CopyDir(dirSrc, dirDestAbsolutely, true);
 	}
 	return true;
 }
