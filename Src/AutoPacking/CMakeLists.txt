@@ -302,7 +302,7 @@ if (MSVC)
 	endif()
 
 	# Copy Qt runtime libs
-    set( QT_LIBS Qt5Core Qt5Gui Qt5Sql Qt5Widgets libEGL libGLESv2 )
+    set( QT_LIBS Qt5Core Qt5Gui Qt5Sql Qt5Widgets Qt5Xml libEGL libGLESv2 )
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
     foreach( lib ${QT_LIBS} )
         set( location location-NOTFOUND )
@@ -366,7 +366,7 @@ if (MSVC)
     endif()
 
 	# Remove the temp directory used for building the installer 
-    add_custom_command( TARGET makeinstaller POST_BUILD 
+   add_custom_command( TARGET makeinstaller POST_BUILD 
                         COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
                         COMMENT "Removing temporary directory..." )
 endif()
