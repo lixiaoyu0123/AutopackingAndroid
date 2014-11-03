@@ -88,7 +88,9 @@ void MainWindow::ChangStat(bool isStar)
 		mstartTime = currentDateTime;
 		mstatusBar.ShowTime(QStringLiteral("打包开始： ") + currentDate + QStringLiteral("  "));
 		mlog.clear();
-		mcentralFram.GetTableView().setDisabled(true);
+		mcentralFram.GetTableView().setEditTriggers(QAbstractItemView::NoEditTriggers);
+		mcentralFram.GetTableView().setStyleSheet("background-color:#F7F7F7");
+		madapter.SetEnableEdit(false);
 		mtoolBar.GetButtonThreadConfig()->setDisabled(true);
 		mtoolBar.GetCombox()->setDisabled(true);
 		mtoolBar.GetButtonScan()->setDisabled(true);
@@ -96,7 +98,9 @@ void MainWindow::ChangStat(bool isStar)
 	}
 	else{
 		mstatusBar.ShowTime(QStringLiteral("打包结束： ") + currentDate + QStringLiteral("  "));
-		mcentralFram.GetTableView().setEnabled(true);
+		mcentralFram.GetTableView().setEditTriggers(QAbstractItemView::DoubleClicked);
+		mcentralFram.GetTableView().setStyleSheet("background-color:#FFFFFF");
+		madapter.SetEnableEdit(true);
 		mtoolBar.GetButtonThreadConfig()->setEnabled(true);
 		mtoolBar.GetCombox()->setEnabled(true);
 		mtoolBar.GetButtonScan()->setEnabled(true);

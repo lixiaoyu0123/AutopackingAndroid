@@ -2,6 +2,11 @@
 #include "Model/DatabaseManager.h"
 #include "Dialogs/EditTable.h"
 
+TableContralAdapter::TableContralAdapter() :misEnableEdit(true)
+{
+
+}
+
 void TableContralAdapter::AddRow()
 {
 	DatabaseManager::GetInstance()->AddRow();
@@ -14,6 +19,9 @@ void TableContralAdapter::DelRow(QModelIndexList &selecteds)
 
 void TableContralAdapter::DoubleClick(const QModelIndex &index)
 {
+	if (!misEnableEdit){
+		return;
+	}
 	if (index.column() == 3){
 		EditTable editTb(NULL, &index);
 		editTb.exec();
@@ -30,4 +38,9 @@ void TableContralAdapter::DoubleClick(const QModelIndex &index)
 		EditTable editTb(NULL, &index);
 		editTb.exec();
 	}
+}
+
+void TableContralAdapter::SetEnableEdit(bool isEnable)
+{
+	misEnableEdit = isEnable;
 }

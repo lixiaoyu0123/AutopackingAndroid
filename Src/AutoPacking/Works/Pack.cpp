@@ -24,6 +24,9 @@ void Pack::Stop()
 	if (this->isRunning()){
 		this->terminate();
 	}
+	if (!PathManager::RemoveDir(mtmpPath)){
+		emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+	}
 	emit FinishSignal(2, mtaskId);
 }
 
