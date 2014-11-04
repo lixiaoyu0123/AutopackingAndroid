@@ -370,7 +370,7 @@ if (MSVC)
     endif()
 
 	# Remove the temp directory used for building the installer 
-#   add_custom_command( TARGET makeinstaller POST_BUILD 
-#                        COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
-#                        COMMENT "Removing temporary directory..." )
+   add_custom_command( TARGET makeinstaller POST_BUILD 
+                        COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
+                        COMMENT "Removing temporary directory..." )
 endif()
