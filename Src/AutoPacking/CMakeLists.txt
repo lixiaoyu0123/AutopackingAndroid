@@ -67,6 +67,7 @@ set( MAINUI_WINDOW
 set( UI_FILES
 	MainUi/mainwindow.ui
 	MainUi/About.ui
+	MainUi/Donate.ui
 	MainUi/ImportData.ui
 	MainUi/ExportData.ui
 	MainUi/SetKey.ui
@@ -97,6 +98,8 @@ set( MODEL_FILES
 set( DIALOG_FILES
 	Dialogs/About.cpp
 	Dialogs/About.h
+	Dialogs/Donate.cpp
+	Dialogs/Donate.h
 	Dialogs/BjMessageBox.cpp
 	Dialogs/BjMessageBox.h
 	Dialogs/ImportData.cpp
@@ -122,6 +125,7 @@ set( DIALOG_FILES
 	)
 set( QRC_FILES  
     Resource/About/About.qrc
+	Resource/Donate/Donate.qrc
 	Resource/Icon/main.qrc
     )
 set( WORKS_FILES  
@@ -366,7 +370,7 @@ if (MSVC)
     endif()
 
 	# Remove the temp directory used for building the installer 
-   add_custom_command( TARGET makeinstaller POST_BUILD 
-                        COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
-                        COMMENT "Removing temporary directory..." )
+#   add_custom_command( TARGET makeinstaller POST_BUILD 
+#                        COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
+#                        COMMENT "Removing temporary directory..." )
 endif()

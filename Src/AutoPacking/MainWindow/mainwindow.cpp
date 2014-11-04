@@ -7,6 +7,7 @@
 #include "Model/DatabaseManager.h"
 #include "Model/PathManager.h"
 #include "Dialogs/About.h"
+#include "Dialogs/Donate.h"
 #include "Dialogs/BjMessageBox.h"
 #include "Dialogs/ImportData.h"
 #include "Dialogs/ExportData.h"
@@ -63,6 +64,7 @@ void MainWindow::InitView()
 void MainWindow::InitSlot()
 {
 	connect(ui->actionVersion, SIGNAL(triggered()), this, SLOT(VersionSlot()));
+	connect(ui->actionDonate, SIGNAL(triggered()), this, SLOT(DonateSlot()));
 	connect(ui->actionImportDb, SIGNAL(triggered()), this, SLOT(ImportDataSlot()));
 	connect(ui->actionExportDb, SIGNAL(triggered()), this, SLOT(ExportDataSlot()));
 	connect(ui->actionSetJdk, SIGNAL(triggered()), this, SLOT(SetJdkPathSlot()));
@@ -99,7 +101,7 @@ void MainWindow::ChangStat(bool isStar)
 	else{
 		mstatusBar.ShowTime(QStringLiteral("´ò°ü½áÊø£º ") + currentDate + QStringLiteral("  "));
 		mcentralFram.GetTableView().setEditTriggers(QAbstractItemView::DoubleClicked);
-		mcentralFram.GetTableView().setStyleSheet("background-color:#FFFFFF");
+		mcentralFram.GetTableView().setStyleSheet(QString(""));
 		madapter.SetEnableEdit(true);
 		mtoolBar.GetButtonThreadConfig()->setEnabled(true);
 		mtoolBar.GetCombox()->setEnabled(true);
@@ -287,6 +289,12 @@ void MainWindow::VersionSlot()
 {
 	About ab(this);
 	ab.exec();
+}
+
+void MainWindow::DonateSlot()
+{
+	Donate dt(this);
+	dt.exec();
 }
 
 void MainWindow::ImportDataSlot()

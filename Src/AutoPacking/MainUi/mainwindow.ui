@@ -52,6 +52,7 @@
     <addaction name="actionHelp"/>
     <addaction name="actionVersion"/>
     <addaction name="actionUpdata"/>
+    <addaction name="actionDonate"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -172,6 +173,17 @@
    </property>
    <property name="statusTip">
     <string>设置打包的版本号</string>
+   </property>
+  </action>
+  <action name="actionDonate">
+   <property name="text">
+    <string>捐赠</string>
+   </property>
+   <property name="statusTip">
+    <string>支持作者</string>
+   </property>
+   <property name="whatsThis">
+    <string>支持作者</string>
    </property>
   </action>
  </widget>

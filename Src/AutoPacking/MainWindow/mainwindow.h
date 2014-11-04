@@ -40,6 +40,7 @@ public slots:
 	void StartSlot();
 	void StopSlot();
 	void VersionSlot();
+	void DonateSlot();
 	void ImportDataSlot();
 	void ExportDataSlot();
 	void SetJdkPathSlot();

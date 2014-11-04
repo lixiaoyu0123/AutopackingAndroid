@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>335</width>
-    <height>270</height>
+    <width>468</width>
+    <height>357</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,7 +32,7 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap>:/about/logo.png</pixmap>
+      <pixmap resource="../Resource/About/About.qrc">:/About/logo.png</pixmap>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -116,7 +116,7 @@
             </font>
            </property>
            <property name="text">
-            <string notr="true">暂无</string>
+            <string notr="true">&lt;a href=&quot;http://git.oschina.net/bingjian/AutopackingAndroid&quot;&gt;http://git.oschina.net/bingjian/AutopackingAndroid&lt;/a&gt;</string>
            </property>
            <property name="textFormat">
             <enum>Qt::AutoText</enum>
