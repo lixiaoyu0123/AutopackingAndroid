@@ -60,4 +60,8 @@ if( FORCE_BUNDLED_COPIES OR NOT PCRE_FOUND OR APPLE )
     set( PCRE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/Src/pcre ${CMAKE_BINARY_DIR}/Src/pcre )
 endif()
 
+    add_subdirectory( Src/xlsx )
+    set( XLSX_LIBRARIES xlsx )
+    set( XLSX_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/Src/xlsx ${CMAKE_BINARY_DIR}/Src/xlsx )
+
 add_subdirectory( src/Autopacking )

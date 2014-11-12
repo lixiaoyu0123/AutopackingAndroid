@@ -714,3 +714,82 @@ void DatabaseManager::Commit()
 	}
 	mdatabase.commit();//提交
 }
+
+void DatabaseManager::ImportFromXlsx(XlsxParser &xlsx, QString &sheet, QString &realChannelId, QString &baseName, QString &originalName)
+{
+	if (!xlsx.SelectSheet(sheet)){
+		BjMessageBox::warning(NULL, QStringLiteral("错误!"), QStringLiteral("sheet不正确或不存在"), QMessageBox::Ok, QMessageBox::NoButton);
+		return;
+	}
+	int rows = xlsx.GetRows();
+	if (xlsx.GetColumns() < 2){
+		BjMessageBox::warning(NULL, QStringLiteral("错误!"), QStringLiteral("所选择的sheet的列数少于2列，请选择正确的Excel和Sheet！"), QMessageBox::Ok, QMessageBox::NoButton);
+		return;
+	}
+	QString id;
+	for (int i = 2; i < rows; i++)
+	{
+		QString bookId = xlsx.GetValue(i, 1).toString().trimmed();
+		QString bookNm = xlsx.GetValue(i, 2).toString().trimmed();
+		int rowNum = mptableModel->rowCount();//获得表的行数
+		QSqlRecord record = mptableModel->record();
+		QSqlField fieldChannelId("ChannelID", QVariant::Char);
+		QSqlField fieldChannelNm("ChannelName", QVariant::Char);
+		QSqlField fieldStr("ReplaceString", QVariant::Char);
+		QSqlField fieldRes("ReplaceRes", QVariant::Char);
+		QSqlField fieldPak("ReplacePak", QVariant::Char);
+		QSqlField fieldAppPak("ReplaceAppPak", QVariant::Char);
+		fieldChannelId.setValue(bookId);
+		fieldChannelNm.setValue(bookNm);
+		fieldStr.setValue(QStringLiteral("双击编辑"));
+		fieldRes.setValue(QStringLiteral("双击编辑"));
+		fieldPak.setValue(QStringLiteral("双击编辑"));
+		fieldAppPak.setValue(QStringLiteral("双击编辑"));
+		record.append(fieldChannelId);
+		record.append(fieldChannelNm);
+		record.append(fieldStr);
+		record.append(fieldRes);
+		record.append(fieldPak);
+		record.append(fieldAppPak);
+
+		if (!mptableModel->insertRecord(rowNum, record)){
+			BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModel->lastError().text()), QMessageBox::Ok, QMessageBox::NoButton);
+			mptableModel->revertAll();//如果不删除，则撤销
+			return;
+		}
+
+		if (!mptableModel->submitAll()){
+			BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModel->lastError().text()));
+			mptableModel->revertAll();//如果不删除，则撤销
+			return;
+		}
+
+		rowNum = mptableModelAppPak->rowCount();//获得表的行数
+		id = mptableModel->query().lastInsertId().toString();
+		record.clear();
+		record = mptableModelAppPak->record();
+		QSqlField fieldChannltbId("ChanneltbID", QVariant::Int);
+		QSqlField fieldSrcPak("SourcePackage", QVariant::Char);
+		QSqlField fieldTarPak("TargetPackage", QVariant::Char);
+		QString valTar = baseName.trimmed() + "_" + realChannelId + "_" + bookId;
+		fieldSrcPak.setValue(originalName);
+		fieldTarPak.setValue(valTar);
+		fieldChannltbId.setValue(id);
+		record.append(fieldChannltbId);
+		record.append(fieldSrcPak);
+		record.append(fieldTarPak);
+
+
+		if (!mptableModelAppPak->insertRecord(rowNum, record)){
+			BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModelAppPak->lastError().text()), QMessageBox::Ok, QMessageBox::NoButton);
+			mptableModelAppPak->revertAll();//如果不删除，则撤销
+			return;
+		}
+
+		if (!mptableModelAppPak->submitAll()){
+			BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModelAppPak->lastError().text()));
+			mptableModelAppPak->revertAll();//如果不删除，则撤销
+			return;
+		}
+	}
+}

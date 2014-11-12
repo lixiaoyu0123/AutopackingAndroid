@@ -72,6 +72,8 @@ public:
 	static QString GetVersion();
 	static void SetPackWay(int way);
 	static int GetPackWay();
+	static void SetCustomWay(int way);
+	static int GetCustomWay();
 	static void SetSigalg(QString &sig);
 	static QString GetSigalg();
 	static void SetDigestalg(QString &dig);
@@ -79,6 +81,16 @@ public:
 	static bool CheckSysEnvironment();
 	static bool CheckParameter();
 	static bool IsFirstRun();
+	static void SetChannelId(QString &id);
+	static QString GetChannelId();
+	static void SetBaseNm(QString &name);
+	static QString GetBaseNm();
+	static void SetOriginalNm(QString &name);
+	static QString GetOriginalNm();
+	static void SetUrl(QString &url);
+	static QString GetUrl();
+	static void SetResPath(QString &path);
+	static QString GetResPath();
 protected:
 private:
 	static QString OUTPATH;
@@ -95,6 +107,12 @@ private:
 	static QString DIGESTALG;
 	static int THREADNUM;
 	static int PACKWAY;
+	static int CUSTOMWAY;
+	static QString CHANNELID;
+	static QString BASENM;
+	static QString ORIGINALNM;
+	static QString DOWNURL;
+	static QString RESPATH;
 	
 };
 #endif

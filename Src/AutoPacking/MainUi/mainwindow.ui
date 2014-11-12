@@ -44,6 +44,7 @@
     </property>
     <addaction name="actionImportDb"/>
     <addaction name="actionExportDb"/>
+    <addaction name="actionImportZySingle"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -63,6 +64,7 @@
     <addaction name="actionSourceSetting"/>
     <addaction name="actionDecPkSetting"/>
     <addaction name="actionSetVersion"/>
+    <addaction name="actionSetZySingle"/>
    </widget>
    <addaction name="menu_1"/>
    <addaction name="menu_2"/>
@@ -184,6 +186,16 @@
    </property>
    <property name="whatsThis">
     <string>支持作者</string>
+   </property>
+  </action>
+  <action name="actionImportZySingle">
+   <property name="text">
+    <string>导入掌阅单本书书单</string>
+   </property>
+  </action>
+  <action name="actionSetZySingle">
+   <property name="text">
+    <string>掌阅单本书设置</string>
    </property>
   </action>
  </widget>

@@ -27,6 +27,13 @@ QString PathManager::SIGALG = "";
 QString PathManager::DIGESTALG = "";
 int PathManager::THREADNUM = 1;
 int PathManager::PACKWAY = 0;
+int PathManager::CUSTOMWAY = 0;
+QString PathManager::CHANNELID = "";
+QString PathManager::BASENM = "";
+QString PathManager::ORIGINALNM = "";
+QString PathManager::DOWNURL = "";
+QString PathManager::RESPATH = "";
+
 
 QString PathManager::GetStartPath()
 {
@@ -50,7 +57,7 @@ QString PathManager::GetDataBasePath()
 {
 	QString path("");
 	if (!GetConfigPath().isEmpty()){
-		path = GetConfigPath() + "/database.db";
+		path = GetConfigPath() + "/ZyDatabase.db";
 	}
 	return path;
 }
@@ -313,6 +320,18 @@ int PathManager::GetPackWay()
 {
 	ReadSetting();
 	return PACKWAY;
+}
+
+void PathManager::SetCustomWay(int way)
+{
+	CUSTOMWAY = way;
+	WriteSetting();
+}
+
+int PathManager::GetCustomWay()
+{
+	ReadSetting();
+	return CUSTOMWAY;
 }
 
 void PathManager::SetSigalg(QString &sig)
@@ -1225,6 +1244,66 @@ bool PathManager::IsFirstRun()
 	return false;
 }
 
+void PathManager::SetChannelId(QString &id)
+{
+	CHANNELID = id;
+	WriteSetting();
+}
+
+QString PathManager::GetChannelId()
+{
+	ReadSetting();
+	return CHANNELID;
+}
+
+void PathManager::SetBaseNm(QString &name)
+{
+	BASENM = name;
+	WriteSetting();
+}
+
+QString PathManager::GetBaseNm()
+{
+	ReadSetting();
+	return BASENM;
+}
+
+void PathManager::SetOriginalNm(QString &name)
+{
+	ORIGINALNM = name;
+	WriteSetting();
+}
+
+QString PathManager::GetOriginalNm()
+{
+	ReadSetting();
+	return ORIGINALNM;
+}
+
+void PathManager::SetUrl(QString &url)
+{
+	DOWNURL = url;
+	WriteSetting();
+}
+
+QString PathManager::GetUrl()
+{
+	ReadSetting();
+	return DOWNURL;
+}
+
+void PathManager::SetResPath(QString &path)
+{
+	RESPATH = path;
+	WriteSetting();
+}
+
+QString PathManager::GetResPath()
+{
+	ReadSetting();
+	return RESPATH;
+}
+
 void PathManager::WriteSetting()
 {
 	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);
@@ -1243,6 +1322,12 @@ void PathManager::WriteSetting()
 	settings.setValue("PackWay", PACKWAY);
 	settings.setValue("Sigalg", SIGALG);
 	settings.setValue("Digestalg", DIGESTALG);
+	settings.setValue("CustomWay", CUSTOMWAY);
+	settings.setValue("ChannelId", CHANNELID);
+	settings.setValue("BaseNm", BASENM);
+	settings.setValue("OriginalNm", ORIGINALNM);
+	settings.setValue("DownUrl", DOWNURL);
+	settings.setValue("ResPath", RESPATH);
 	settings.endGroup();
 }
 
@@ -1264,6 +1349,12 @@ void PathManager::ReadSetting()
 	DIGESTALG = settings.value("Digestalg", "").toString();
 	THREADNUM = settings.value("ThreadNum", "1").toInt();
 	PACKWAY = settings.value("PackWay", "1").toInt();
+	CUSTOMWAY = settings.value("CustomWay", "0").toInt();
+	CHANNELID = settings.value("ChannelId", "").toString();
+	BASENM = settings.value("BaseNm", "").toString();
+	ORIGINALNM = settings.value("OriginalNm", "").toString();
+	DOWNURL = settings.value("DownUrl", "").toString();
+	RESPATH = settings.value("ResPath", "").toString();
 	settings.endGroup();
 }
 

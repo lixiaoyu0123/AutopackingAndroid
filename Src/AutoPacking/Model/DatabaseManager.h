@@ -12,6 +12,7 @@
 #include "Table/ReplaceResTable.h"
 #include "Table/ReplacePakTable.h"
 #include "Table/ReplaceAppPakTable.h"
+#include "Parsers/XlsxParser.h"
 
 class DatabaseManager:public QObject
 {
@@ -51,6 +52,7 @@ public:
 	void ExportData(QString &fileName);
 	void ImportData(QString &fileName);
 	void ReloadData();
+	void ImportFromXlsx(XlsxParser &xlsx, QString &sheet, QString &realChannelId, QString &baseName, QString &originalName);
 
 private:
 	QSqlDatabase mdatabase;

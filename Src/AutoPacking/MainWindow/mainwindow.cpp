@@ -17,6 +17,8 @@
 #include "Dialogs/DecPackSetting.h"
 #include "Dialogs/ThreadConfigDialog.h"
 #include "Dialogs/SetVersionDialog.h"
+#include "Dialogs/ImportZySingle.h"
+#include "Dialogs/ZySingleSetting.h"
 #include "Works/DecPack.h"
 #include "Works/SrcPack.h"
 
@@ -67,6 +69,7 @@ void MainWindow::InitSlot()
 	connect(ui->actionDonate, SIGNAL(triggered()), this, SLOT(DonateSlot()));
 	connect(ui->actionImportDb, SIGNAL(triggered()), this, SLOT(ImportDataSlot()));
 	connect(ui->actionExportDb, SIGNAL(triggered()), this, SLOT(ExportDataSlot()));
+	connect(ui->actionImportZySingle, SIGNAL(triggered()), this, SLOT(ImportZySingleSlot()));
 	connect(ui->actionSetJdk, SIGNAL(triggered()), this, SLOT(SetJdkPathSlot()));
 	connect(ui->actionSetKey, SIGNAL(triggered()), this, SLOT(SetKeySlot()));
 	connect(ui->actionSourceSetting, SIGNAL(triggered()), this, SLOT(SourcePackSettingSlot()));
@@ -78,6 +81,7 @@ void MainWindow::InitSlot()
 	connect(mtoolBar.GetActionStop(), SIGNAL(triggered()), this, SLOT(StopSlot()));
 	connect(mtoolBar.GetButtonLog(), SIGNAL(clicked()), this, SLOT(ShowLogSlot()));
 	connect(mtoolBar.GetButtonThreadConfig(), SIGNAL(clicked()), this, SLOT(ThreadConfigSlot()));
+	connect(ui->actionSetZySingle, SIGNAL(triggered()), this, SLOT(SetZySingleSlot()));
 }
 
 void MainWindow::ChangStat(bool isStar)
@@ -309,6 +313,12 @@ void MainWindow::ExportDataSlot()
 	exData.exec();
 }
 
+void MainWindow::ImportZySingleSlot()
+{
+	ImportZySingle importZy(this);
+	importZy.exec();
+}
+
 void MainWindow::SetJdkPathSlot()
 {
 	SetJdkPath setJdk(this);
@@ -340,6 +350,12 @@ void MainWindow::SetVersionSlot()
 		mversion = PathManager::GetVersion();
 		StatusTextChang();
 	}
+}
+
+void MainWindow::SetZySingleSlot()
+{
+	ZySingleSetting zySingle(this);
+	zySingle.exec();
 }
 
 void MainWindow::ShowLogSlot()

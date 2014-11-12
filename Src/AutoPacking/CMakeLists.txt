@@ -78,6 +78,8 @@ set( UI_FILES
 	MainUi/EditTable.ui
 	MainUi/ThreadConfigDialog.ui
 	MainUi/SetVersionDialog.ui
+	MainUi/ImportZySingle.ui
+	MainUi/ZySingleSetting.ui
 	)
 
 set( MODEL_FILES
@@ -122,6 +124,10 @@ set( DIALOG_FILES
 	Dialogs/ThreadConfigDialog.h
 	Dialogs/SetVersionDialog.cpp
 	Dialogs/SetVersionDialog.h
+	Dialogs/ImportZySingle.h
+	Dialogs/ImportZySingle.cpp
+	Dialogs/ZySingleSetting.cpp
+	Dialogs/ZySingleSetting.h
 	)
 set( QRC_FILES  
     Resource/About/About.qrc
@@ -169,8 +175,18 @@ set( SPCRE_FILES
     PCRE/PCREReplaceTextBuilder.cpp
     PCRE/PCREReplaceTextBuilder.h
     )
+set( PARSERS
+	Parsers/XlsxParser.cpp
+	Parsers/XlsxParser.h
+	)
+set( NETWORK_FILES
+	Network/Download.cpp
+	Network/Download.h)
+set( CUSTOM_FILES
+	Custom/ZySingleBook.cpp
+	Custom/ZySingleBook.h)
 
-set( RAW_SOURCES ${MAIN_FILES} ${MAINUI_WINDOW} ${MODEL_FILES} ${DIALOG_FILES} ${WORKS_FILES} ${INTERFACE_FILES} ${ADAPTER_FILES} ${TABLE_FILES} ${SPCRE_FILES})
+set( RAW_SOURCES ${MAIN_FILES} ${MAINUI_WINDOW} ${MODEL_FILES} ${DIALOG_FILES} ${WORKS_FILES} ${INTERFACE_FILES} ${ADAPTER_FILES} ${TABLE_FILES} ${SPCRE_FILES} ${PARSERS} ${NETWORK_FILES} ${CUSTOM_FILES})
 
 #############################################################################
 
@@ -192,10 +208,13 @@ source_group( "Interface"        FILES ${INTERFACE_FILES} )
 source_group( "Adapter"          FILES ${ADAPTER_FILES} )
 source_group( "Table"			 FILES ${TABLE_FILES} )
 source_group( "SPCRE"            FILES ${SPCRE_FILES} )
+source_group( "PARSERS"          FILES ${PARSERS} )
+source_group( "Network"          FILES ${NETWORK_FILES} )
+source_group( "Custom"           FILES ${CUSTOM_FILES} )
 
 #############################################################################
 
-set( ALL_SOURCES ${RAW_SOURCES} ${UI_FILES_H} ${QRC_FILES_CPP} ${WORKS_FILES})
+set( ALL_SOURCES ${RAW_SOURCES} ${UI_FILES_H} ${QRC_FILES_CPP} )
 
 # Adding resource (RC) files for Windows
 
@@ -220,7 +239,8 @@ endif()
 include_directories( BEFORE
                      ${CMAKE_CURRENT_SOURCE_DIR}
                      ${CMAKE_CURRENT_BINARY_DIR}
-					 ${PCRE_INCLUDE_DIRS})
+					 ${PCRE_INCLUDE_DIRS}
+					 ${XLSX_INCLUDE_DIRS})
 					 
 add_executable( ${PROJECT_NAME} WIN32 ${ALL_SOURCES} )
 
@@ -228,7 +248,7 @@ if (MSVC)
     set(QT_MAIN Qt5::WinMain)
 endif()
 
-target_link_libraries( ${PROJECT_NAME} ${QT_MAIN} ${PCRE_LIBRARIES})
+target_link_libraries( ${PROJECT_NAME} ${QT_MAIN} ${PCRE_LIBRARIES} ${XLSX_LIBRARIES})
 qt5_use_modules(${PROJECT_NAME} Widgets Sql Xml)
 
 #############################################################################
@@ -245,12 +265,11 @@ add_definitions( -DQT_USE_FAST_OPERATOR_PLUS )
 
 # "Link time code generation" flags for MSVC
 if( MSVC )
-    add_definitions( /DUNICODE /D_UNICODE )
+    add_definitions( /DUNICODE /D_UNICODE /DXLSX_NO_LIB)
     # The /Zc:wchar_t- flag can't go into add_definitions
     # because the RC compiler picks it up too and it provokes a name clash
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:wchar_t- /MP")
     set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Oi /GL" ) 
-    set( CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG" )
 
 # "Print all warnings" flag for GCC
 elseif( CMAKE_COMPILER_IS_GNUCXX )

@@ -43,6 +43,7 @@ public slots:
 	void DonateSlot();
 	void ImportDataSlot();
 	void ExportDataSlot();
+	void ImportZySingleSlot();
 	void SetJdkPathSlot();
 	void SetKeySlot();
 	void SourcePackSettingSlot();
@@ -54,6 +55,7 @@ public slots:
 	void ThreadConfigSlot();
 	void UpdataSlot();
 	void SetVersionSlot();
+	void SetZySingleSlot();
 
 private:
     Ui::MainWindow *ui;

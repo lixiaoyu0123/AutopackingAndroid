@@ -7,8 +7,11 @@ BjToolBar::BjToolBar(QWidget *parent)
 :QToolBar(parent),
 mcombox(parent),
 mlablePath(parent),
+mlableWay(parent),
+mlableCustom(parent),
 mlineedit(parent),
-mbuttonScan(parent)
+mbuttonScan(parent),
+mcomboxCustom(parent)
 {
 	InitView();
 	InitSlot();
@@ -23,12 +26,25 @@ void BjToolBar::InitView()
 	mpactionStar->setEnabled(true);
 	mpactionStop->setDisabled(true);
 	/*索引为0 表示源码打包*/
+	mlableWay.setText(QStringLiteral("打包方式:"));
 	mcombox.addItem(QStringLiteral("源码打包"));
 	mcombox.addItem(QStringLiteral("反编译打包"));
 	mcombox.setCurrentIndex(PathManager::GetPackWay());
+
+	
+	mlableCustom.setText(QStringLiteral("定制版本:"));
+	mcomboxCustom.addItem(QStringLiteral("渠道打包"));
+	mcomboxCustom.addItem(QStringLiteral("单本书打包"));
+	mcomboxCustom.setCurrentIndex(PathManager::GetCustomWay());
+
 	this->setFixedHeight(30);
+	this->addWidget(&mlableWay);
 	this->addWidget(&mcombox);
 	this->addSeparator();
+	this->addWidget(&mlableCustom);
+	this->addWidget(&mcomboxCustom);
+	this->addSeparator();
+
 	mlablePath.setText(QStringLiteral("输出路径"));
 	this->addWidget(&mlablePath);
 	mlineedit.setMaximumHeight(23);
@@ -53,6 +69,7 @@ void BjToolBar::InitSlot()
 {
 	connect(&mbuttonScan, SIGNAL(clicked()), this, SLOT(ButtonScanClickSlot()));
 	connect(&mcombox, SIGNAL(currentIndexChanged(int)), this, SLOT(ComIndexChangSlot(int)));
+	connect(&mcomboxCustom, SIGNAL(currentIndexChanged(int)), this, SLOT(CustomComIndexChangSlot(int)));
 }
 
 void BjToolBar::ButtonScanClickSlot()
@@ -102,4 +119,9 @@ QPushButton *BjToolBar::GetButtonScan()
 void BjToolBar::ComIndexChangSlot(int index)
 {
 	PathManager::SetPackWay(index);
+}
+
+void BjToolBar::CustomComIndexChangSlot(int index)
+{
+	PathManager::SetCustomWay(index);
 }
