@@ -139,7 +139,7 @@ void MainWindow::StartSlot()
 			mrecordIndex[i] = i;
 		}
 	}
-
+	mthreadNum = PathManager::GetThreadNum();
 	mcurrentTaskIndex = 0;
 	switch (mtoolBar.GetCombox()->currentIndex())
 	{
@@ -279,6 +279,7 @@ void MainWindow::FinishedSlot(int stat,int taskId)
 void MainWindow::StopSlot()
 {
 	ChangStat(false);
+	mthreadNum = 0;
 	for each (Pack *var in mtaskList)
 	{
 		var->Stop();

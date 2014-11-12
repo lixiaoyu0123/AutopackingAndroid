@@ -39,22 +39,24 @@ void SrcPack::Init(QString &inPath, QString &outPath, QString &channelId, QStrin
 
 void SrcPack::run()
 {
-	QProcess *pprocess = new QProcess(NULL);
+	mpprocess = new QProcess(NULL);
 	CreatPath(moutputPath, mchannelId, mchannelName, mchanneltbId);
 	QDir dir(mtmpSrcPath);
 	if (dir.exists()){
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除上次缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-			pprocess->close();
-			pprocess->deleteLater();
+			mpprocess->close();
+			delete mpprocess;
+			mpprocess = NULL;
 			emit FinishSignal(1, mtaskId);
 			return;
 		}
 	}
 	if (!CopySrc(PathManager::GetSrcPath(), mtmpSrcPath)){
 		emit GenerateError(QStringLiteral("error:拷贝源码文件失败！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
-		pprocess->close();
-		pprocess->deleteLater();
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -65,8 +67,9 @@ void SrcPack::run()
 	QFile buildXml(mtmpSrcPath + QStringLiteral("/build.xml"));
 	if (buildXml.exists() && !buildXml.remove()){
 		emit GenerateError(QStringLiteral("error:删除原buld.xml文件失败！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
-		pprocess->close();
-		pprocess->deleteLater();
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -74,9 +77,10 @@ void SrcPack::run()
 		return;
 	}
 
-	if (!PrePack(*pprocess)){
-		pprocess->close();
-		pprocess->deleteLater();
+	if (!PrePack(*mpprocess)){
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -84,9 +88,10 @@ void SrcPack::run()
 		return;
 	}
 
-	if (!CheckError(*pprocess)){
-		pprocess->close();
-		pprocess->deleteLater();
+	if (!CheckError(*mpprocess)){
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -94,9 +99,10 @@ void SrcPack::run()
 		return;
 	}
 
-	if (!PackFromSrc(*pprocess)){
-		pprocess->close();
-		pprocess->deleteLater();
+	if (!PackFromSrc(*mpprocess)){
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -104,9 +110,10 @@ void SrcPack::run()
 		return;
 	}
 
-	if (!CheckError(*pprocess)){
-		pprocess->close();
-		pprocess->deleteLater();
+	if (!CheckError(*mpprocess)){
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -116,15 +123,17 @@ void SrcPack::run()
 
 	QString apk = PathManager::GetReleaseApk(PathManager::GetBin(mtmpSrcPath));
 	if (apk.isEmpty()){
-		pprocess->close();
-		pprocess->deleteLater();
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		emit GenerateError(QStringLiteral("error:打包后的apk文件未找到！渠道ID: %1, 渠道名: %2\n").arg(mchannelId).arg(mchannelName));
 		emit FinishSignal(1, mtaskId);
 		return;
 	}
 	if (!PathManager::CopyFile(PathManager::GetBin(mtmpSrcPath) + QString("/") + apk, moutFile, true)){
-		pprocess->close();
-		pprocess->deleteLater();
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		emit GenerateError(QStringLiteral("error:拷贝签名文件出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
@@ -136,8 +145,9 @@ void SrcPack::run()
 	if (!PathManager::RemoveDir(mtmpPath)){
 		emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 	}
-	pprocess->close();
-	pprocess->deleteLater();
+	mpprocess->close();
+	delete mpprocess;
+	mpprocess = NULL;
 	emit FinishSignal(0, mtaskId);
 }
 

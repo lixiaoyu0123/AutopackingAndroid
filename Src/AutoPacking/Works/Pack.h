@@ -34,6 +34,7 @@ protected:
 	QString mchannelName;
 	QString moutputPath;
 	QString mchanneltbId;
+	QProcess *mpprocess;
 	int mtaskId;
 	QList<ReplaceStrTable> mstrTableList;
 	QList<ReplaceResTable> mresTableList;
