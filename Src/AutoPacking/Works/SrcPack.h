@@ -16,7 +16,7 @@ public:
 	bool CopySrc(QString &srcPath,QString &destPath);	
 	bool PrePack(QProcess &pprocess);
 	bool PackFromSrc(QProcess &pprocess);
-	void CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId);
+	bool CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId);
 protected:
 	void run();
 private:

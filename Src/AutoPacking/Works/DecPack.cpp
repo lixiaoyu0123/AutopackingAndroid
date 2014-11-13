@@ -44,18 +44,17 @@ void DecPack::Init(QString &inPath, QString &outPath, QString &channelId, QStrin
 void DecPack::run()
 {
 	mpprocess = new QProcess(NULL);
-	CreatPath(moutputPath, mchannelId, mchannelName, mchanneltbId);
-	QDir dir(mtmpUnpacketPath);
-	if (dir.exists()){
+	if (!CreatPath(moutputPath, mchannelId, mchannelName, mchanneltbId)){
 		mpprocess->close();
 		delete mpprocess;
 		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除上次缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-			emit FinishSignal(1, mtaskId);
-			return;
 		}
+		emit FinishSignal(1, mtaskId);
+		return;
 	}
+
 	if (!Unpacket(minputPath, mtmpUnpacketPath, *mpprocess)){
 		mpprocess->close();
 		delete mpprocess;
@@ -186,7 +185,7 @@ void DecPack::run()
 	emit FinishSignal(0, mtaskId);
 }
 
-void DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
+bool DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
 {
 	if (outPath.endsWith("/")){
 		moutFile = outPath + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
@@ -194,14 +193,29 @@ void DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelNa
 	else{
 		moutFile = outPath + "/" + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
 	}
-	
+
 	mtmpPath = PathManager::GetTmpPath() + QStringLiteral("/") + channeltbId;
 	QString unpackPath = mtmpPath + QStringLiteral("/unpack");
 	QString signPath = mtmpPath + QStringLiteral("/sign");
+
+	QDir tmpDir(unpackPath);
+	if (tmpDir.exists(unpackPath)){
+		if (!PathManager::RemoveDir(unpackPath)){
+			return false;
+		}
+	}
+
+	if (tmpDir.exists(signPath)){
+		if (!PathManager::RemoveDir(signPath)){
+			return false;
+		}
+	}
+
 	PathManager::CreatDir(unpackPath);
 	PathManager::CreatDir(signPath);
 	mtmpUnpacketPath = unpackPath;
 	mtmpSignFile = signPath + "/" + channelName + "_" + PathManager::GetVersion() + channelId + "_" + ".apk";
+	return true;
 }
 
 bool DecPack::ReplacePakByTable()
@@ -262,7 +276,7 @@ bool DecPack::Unpacket(QString &inPath, QString &outPath, QProcess &pprocess)
 	QString apkTool = QStringLiteral("apktool.bat");
 	QStringList param;
 	param << QString("d") << QString("-f") << "\"" + inPath + "\"" << "\"" + outPath + "\"";
-	if (!ExecuteCmd(apkTool, param, pprocess,PathManager::GetToolPath())){
+	if (!ExecuteCmd(apkTool, param, pprocess, PathManager::GetToolPath())){
 		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
 	}

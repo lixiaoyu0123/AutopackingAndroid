@@ -40,18 +40,17 @@ void SrcPack::Init(QString &inPath, QString &outPath, QString &channelId, QStrin
 void SrcPack::run()
 {
 	mpprocess = new QProcess(NULL);
-	CreatPath(moutputPath, mchannelId, mchannelName, mchanneltbId);
-	QDir dir(mtmpSrcPath);
-	if (dir.exists()){
+	if (!CreatPath(moutputPath, mchannelId, mchannelName, mchanneltbId)){
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除上次缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-			mpprocess->close();
-			delete mpprocess;
-			mpprocess = NULL;
-			emit FinishSignal(1, mtaskId);
-			return;
 		}
+		emit FinishSignal(1, mtaskId);
+		return;
 	}
+
 	if (!CopySrc(PathManager::GetSrcPath(), mtmpSrcPath)){
 		emit GenerateError(QStringLiteral("error:拷贝源码文件失败！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
 		mpprocess->close();
@@ -151,7 +150,7 @@ void SrcPack::run()
 	emit FinishSignal(0, mtaskId);
 }
 
-void SrcPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
+bool SrcPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
 {
 	if (outPath.endsWith("/")){
 		moutFile = outPath + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
@@ -163,10 +162,25 @@ void SrcPack::CreatPath(QString &outPath, QString &channelId, QString &channelNa
 	mtmpPath = PathManager::GetTmpPath() + QStringLiteral("/") + channeltbId;
 	QString srcPath = mtmpPath + QStringLiteral("/src");
 	QString signPath = mtmpPath + QStringLiteral("/sign");
+
+	QDir tmpDir(srcPath);
+	if (tmpDir.exists(srcPath)){
+		if (!PathManager::RemoveDir(srcPath)){
+			return false;
+		}
+	}
+
+	if (tmpDir.exists(signPath)){
+		if (!PathManager::RemoveDir(signPath)){
+			return false;
+		}
+	}
+
 	PathManager::CreatDir(srcPath);
 	PathManager::CreatDir(signPath);
 	mtmpSrcPath = srcPath;
 	mtmpSignFile = signPath + "/" + channelName + "_" + PathManager::GetVersion() + channelId + "_" + ".apk";
+	return true;
 }
 
 bool SrcPack::CopySrc(QString &srcPath, QString &destPath)
