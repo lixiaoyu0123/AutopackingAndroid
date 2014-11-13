@@ -19,7 +19,7 @@ public:
 	bool Dopacket(QString &inPath, QString &outPath, QProcess &pprocess);
 	bool SignPacket(QString inPath, QString outPath, QProcess &pprocess);
 	bool Zipalign(QProcess &pprocess);
-	void CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId);
+	bool CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId);
 	void run();
 
 private:

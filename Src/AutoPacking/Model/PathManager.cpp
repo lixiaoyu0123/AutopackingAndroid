@@ -1304,6 +1304,17 @@ QString PathManager::GetResPath()
 	return RESPATH;
 }
 
+QString PathManager::GetFramePng()
+{
+	return GetStartPath() + "/Resource/Frame.png";
+}
+
+QString PathManager::GetMaskPng()
+{
+	return GetStartPath() + "/Resource/Mask.png";
+}
+
+
 void PathManager::WriteSetting()
 {
 	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);

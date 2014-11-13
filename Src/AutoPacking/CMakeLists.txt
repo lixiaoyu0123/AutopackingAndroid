@@ -249,7 +249,7 @@ if (MSVC)
 endif()
 
 target_link_libraries( ${PROJECT_NAME} ${QT_MAIN} ${PCRE_LIBRARIES} ${XLSX_LIBRARIES})
-qt5_use_modules(${PROJECT_NAME} Widgets Sql Xml)
+qt5_use_modules(${PROJECT_NAME} Widgets Network Sql Xml)
 
 #############################################################################
 
@@ -325,7 +325,7 @@ if (MSVC)
 	endif()
 
 	# Copy Qt runtime libs
-    set( QT_LIBS Qt5Core Qt5Gui Qt5Sql Qt5Widgets Qt5Xml libEGL libGLESv2 )
+    set( QT_LIBS Qt5Core Qt5Gui Qt5Sql Qt5Widgets Qt5Xml libEGL libGLESv2 Qt5Network)
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
     foreach( lib ${QT_LIBS} )
         set( location location-NOTFOUND )

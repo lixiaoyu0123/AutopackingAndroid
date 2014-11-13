@@ -145,6 +145,7 @@ void MainWindow::StartSlot()
 	}
 
 	mcurrentTaskIndex = 0;
+	mthreadNum = PathManager::GetThreadNum();
 	switch (mtoolBar.GetCombox()->currentIndex())
 	{
 	case 0:
@@ -283,6 +284,7 @@ void MainWindow::FinishedSlot(int stat,int taskId)
 void MainWindow::StopSlot()
 {
 	ChangStat(false);
+	mthreadNum = 0;
 	for each (Pack *var in mtaskList)
 	{
 		var->Stop();

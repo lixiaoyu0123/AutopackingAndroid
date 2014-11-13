@@ -2,6 +2,7 @@
 #include <QTextCodec>
 #include "Pack.h"
 #include "Model/PathManager.h"
+#include "Custom/ZySingleBook.h"
 
 Pack::Pack(QObject *parent):
 QThread(parent),
@@ -9,22 +10,39 @@ moutFile(""),
 mtmpSignFile(""),
 mchannelId(""),
 mchannelName(""),
-mtaskId(0)
+mtaskId(0),
+mpprocess(NULL),
+mtmpCodePath("")
 {
 
 }
 
 Pack::~Pack()
 {
-
+	if (mpprocess != NULL){
+		mpprocess->terminate();
+		mpprocess->deleteLater();
+		mpprocess = NULL;
+	}
+	quit();
+	wait();
 }
 
 void Pack::Stop()
 {
-	if (!this->isRunning()){
-		return;
+	if (mpprocess != NULL){
+		QProcess killer;
+		killer.start("taskkill", QStringList() << "/f" << "/im" << "java.exe");
+		if (!killer.waitForStarted())
+			return;
+		if (!killer.waitForFinished())
+			return;
+		mpprocess->terminate();
+		mpprocess->deleteLater();
+		mpprocess = NULL;
 	}
 	this->terminate();
+	this->wait();
 	if (!PathManager::RemoveDir(mtmpPath)){
 		emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 	}
@@ -136,6 +154,19 @@ bool Pack::CheckError(QProcess &pprocess)
 		QString standardOut = gbk->toUnicode(pprocess.readAllStandardOutput());
 		emit GenerateError(error.append(standardOut));
 		return false;
+	}
+	return true;
+}
+
+bool Pack::ZySingle()
+{
+	bool isMakeIcon;
+	ZySingleBook singleBook(this, mchannelId, mtmpCodePath);
+	if (!singleBook.MakeBook(isMakeIcon)){
+		return false;
+	}
+	if (isMakeIcon){
+		emit GenerateError(QStringLiteral("warn:未找到Icon在资源路径，使用了封面生成Icon！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 	}
 	return true;
 }

@@ -91,6 +91,8 @@ public:
 	static QString GetUrl();
 	static void SetResPath(QString &path);
 	static QString GetResPath();
+	static QString GetFramePng();
+	static QString GetMaskPng();
 protected:
 private:
 	static QString OUTPATH;

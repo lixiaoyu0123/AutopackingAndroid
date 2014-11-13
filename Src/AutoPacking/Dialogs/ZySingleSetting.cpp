@@ -1,3 +1,4 @@
+#include <QFileDialog>
 #include "ZySingleSetting.h"
 #include "Model/PathManager.h"
 
@@ -26,6 +27,7 @@ void ZySingleSetting::InitView()
 void ZySingleSetting::InitSlot()
 {
 	connect(ui->ButtonOk, SIGNAL(clicked()), this, SLOT(ButtonOkSlot()));
+	connect(ui->ButtonScan, SIGNAL(clicked()), this, SLOT(ButtonScanSlot()));
 }
 
 void ZySingleSetting::ButtonOkSlot()
@@ -35,4 +37,17 @@ void ZySingleSetting::ButtonOkSlot()
 	PathManager::SetOriginalNm(ui->LineEditOriginalNm->text().trimmed());
 	PathManager::SetResPath(ui->LineEditResPath->text().trimmed());
 	PathManager::SetUrl(ui->LineEditUrl->text().trimmed());
+	PathManager::WriteLastPath(QStringLiteral("resPath"),ui->LineEditResPath->text().trimmed());
+}
+
+void ZySingleSetting::ButtonScanSlot()
+{
+	QString defaultPath = PathManager::ReadLastPath(QStringLiteral("resPath"));
+	if (defaultPath.isEmpty()){
+		defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+	}
+	QString	dir = QFileDialog::getExistingDirectory(this, QStringLiteral("选择资源路径"), defaultPath, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+	if (!dir.isEmpty()){
+		ui->LineEditResPath->setText(dir);
+	}
 }

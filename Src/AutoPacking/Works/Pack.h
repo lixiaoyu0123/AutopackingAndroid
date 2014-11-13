@@ -24,16 +24,18 @@ protected:
 	virtual bool ReplaceAppPakByTable() = 0;
 	virtual bool CheckError(QProcess &pprocess);
 	virtual bool ExecuteCmd(QString exe, QStringList argument, QProcess &pprocess, QString workPath = QString(""));
-
+	virtual bool ZySingle();
 
 protected:
 	QString moutFile;
 	QString mtmpSignFile;
 	QString mtmpPath;
+	QString mtmpCodePath;
 	QString mchannelId;
 	QString mchannelName;
 	QString moutputPath;
 	QString mchanneltbId;
+	QProcess *mpprocess;
 	int mtaskId;
 	QList<ReplaceStrTable> mstrTableList;
 	QList<ReplaceResTable> mresTableList;

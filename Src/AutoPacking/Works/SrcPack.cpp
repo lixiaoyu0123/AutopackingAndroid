@@ -39,22 +39,23 @@ void SrcPack::Init(QString &inPath, QString &outPath, QString &channelId, QStrin
 
 void SrcPack::run()
 {
-	QProcess *pprocess = new QProcess(NULL);
-	CreatPath(moutputPath, mchannelId, mchannelName, mchanneltbId);
-	QDir dir(mtmpSrcPath);
-	if (dir.exists()){
+	mpprocess = new QProcess(NULL);
+	if (!CreatPath(moutputPath, mchannelId, mchannelName, mchanneltbId)){
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除上次缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-			pprocess->close();
-			pprocess->deleteLater();
-			emit FinishSignal(1, mtaskId);
-			return;
 		}
+		emit FinishSignal(1, mtaskId);
+		return;
 	}
+
 	if (!CopySrc(PathManager::GetSrcPath(), mtmpSrcPath)){
 		emit GenerateError(QStringLiteral("error:拷贝源码文件失败！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
-		pprocess->close();
-		pprocess->deleteLater();
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -65,8 +66,9 @@ void SrcPack::run()
 	QFile buildXml(mtmpSrcPath + QStringLiteral("/build.xml"));
 	if (buildXml.exists() && !buildXml.remove()){
 		emit GenerateError(QStringLiteral("error:删除原buld.xml文件失败！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
-		pprocess->close();
-		pprocess->deleteLater();
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -74,9 +76,10 @@ void SrcPack::run()
 		return;
 	}
 
-	if (!PrePack(*pprocess)){
-		pprocess->close();
-		pprocess->deleteLater();
+	if (!PrePack(*mpprocess)){
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -84,9 +87,10 @@ void SrcPack::run()
 		return;
 	}
 
-	if (!CheckError(*pprocess)){
-		pprocess->close();
-		pprocess->deleteLater();
+	if (!CheckError(*mpprocess)){
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -94,9 +98,10 @@ void SrcPack::run()
 		return;
 	}
 
-	if (!PackFromSrc(*pprocess)){
-		pprocess->close();
-		pprocess->deleteLater();
+	if (!PackFromSrc(*mpprocess)){
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -104,9 +109,10 @@ void SrcPack::run()
 		return;
 	}
 
-	if (!CheckError(*pprocess)){
-		pprocess->close();
-		pprocess->deleteLater();
+	if (!CheckError(*mpprocess)){
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		}
@@ -116,15 +122,17 @@ void SrcPack::run()
 
 	QString apk = PathManager::GetReleaseApk(PathManager::GetBin(mtmpSrcPath));
 	if (apk.isEmpty()){
-		pprocess->close();
-		pprocess->deleteLater();
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		emit GenerateError(QStringLiteral("error:打包后的apk文件未找到！渠道ID: %1, 渠道名: %2\n").arg(mchannelId).arg(mchannelName));
 		emit FinishSignal(1, mtaskId);
 		return;
 	}
 	if (!PathManager::CopyFile(PathManager::GetBin(mtmpSrcPath) + QString("/") + apk, moutFile, true)){
-		pprocess->close();
-		pprocess->deleteLater();
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
 		emit GenerateError(QStringLiteral("error:拷贝签名文件出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
@@ -136,12 +144,13 @@ void SrcPack::run()
 	if (!PathManager::RemoveDir(mtmpPath)){
 		emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 	}
-	pprocess->close();
-	pprocess->deleteLater();
+	mpprocess->close();
+	delete mpprocess;
+	mpprocess = NULL;
 	emit FinishSignal(0, mtaskId);
 }
 
-void SrcPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
+bool SrcPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
 {
 	if (outPath.endsWith("/")){
 		moutFile = outPath + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
@@ -153,10 +162,24 @@ void SrcPack::CreatPath(QString &outPath, QString &channelId, QString &channelNa
 	mtmpPath = PathManager::GetTmpPath() + QStringLiteral("/") + channeltbId;
 	QString srcPath = mtmpPath + QStringLiteral("/src");
 	QString signPath = mtmpPath + QStringLiteral("/sign");
+	QDir tmpDir(srcPath);
+	if (tmpDir.exists(srcPath)){
+		if (!PathManager::RemoveDir(srcPath)){
+			return false;
+		}
+	}
+
+	if (tmpDir.exists(signPath)){
+		if (!PathManager::RemoveDir(signPath)){
+			return false;
+		}
+	}
 	PathManager::CreatDir(srcPath);
 	PathManager::CreatDir(signPath);
+	mtmpCodePath = srcPath;
 	mtmpSrcPath = srcPath;
 	mtmpSignFile = signPath + "/" + channelName + "_" + PathManager::GetVersion() + channelId + "_" + ".apk";
+	return true;
 }
 
 bool SrcPack::CopySrc(QString &srcPath, QString &destPath)
@@ -255,6 +278,14 @@ bool SrcPack::PrePack(QProcess &pprocess)
 
 	if (!ReplaceAppPakByTable()){
 		return false;
+	}
+
+	//掌阅单本书在界面combox中索引为1
+	if (PathManager::GetCustomWay() == 1){
+		if (!ZySingle()){
+			emit GenerateError(QStringLiteral("error:单本书制作出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		}
 	}
 
 	if (!ExecuteCmd(prepackBat, param, pprocess,PathManager::GetToolPath())){

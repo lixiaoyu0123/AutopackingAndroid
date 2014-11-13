@@ -1,17 +1,28 @@
 #ifndef DOWNLOAD_H
 #define DOWNLOAD_H
 #include <QtNetwork/QNetworkAccessManager>
+#include <QFile>
+#include <QEventLoop>
 
 class DownLoad:public QObject
 {
 	Q_OBJECT
 public:
-	explicit DownLoad(QObject *parent = NULL);
+	explicit DownLoad(QObject *parent = NULL,QString &url = QString(""));
 	~DownLoad();
+	bool Get(QByteArray &result);
+	bool DownFile(QString &save);
 protected:
 private:
 	QNetworkAccessManager mcore;
+	QString murl;
+	QString msave;
+	QNetworkReply *mreply;
+	QFile *mpfile;
+	QEventLoop *mloop;
+	
 private slots:
-
+void WriteDataSlot();
+void DownLoadFinishedSlot();
 };
 #endif

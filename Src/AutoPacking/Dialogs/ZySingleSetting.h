@@ -19,7 +19,7 @@ private:
 
 private slots:
 	void ButtonOkSlot();
-	//void ButtonScanSlot();
+	void ButtonScanSlot();
 
 };
 #endif

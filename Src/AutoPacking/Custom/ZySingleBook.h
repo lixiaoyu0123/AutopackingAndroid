@@ -1,18 +1,25 @@
 #ifndef ZYSINGLEBOOK_H
 #define ZYSINGLEBOOK_H
+#include <QObject>
 #include <QString>
 
-class ZySingleBook
+class ZySingleBook:public QObject
 {
+	Q_OBJECT
 public:
-	explicit ZySingleBook(QString &bookId,QString &destination);
+	explicit ZySingleBook(QObject *parent = NULL,QString &bookId = QString(""),QString &save = QString(""));
 	~ZySingleBook();
+	bool MakeBook(bool &isMakeIcon);
 protected:
 private:
-	void GetCover();
+	bool GetCover();
+	bool GetBookInfo();
+	bool GetIcon();
 private:
-	bool misGood;
+
 	QString mbookId;
-	QString mdestination;
+	QString msave;
+	QString mcoverUrl;
+	bool misMakeIcon;
 };
 #endif
