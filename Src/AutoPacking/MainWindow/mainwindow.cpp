@@ -22,14 +22,16 @@
 
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow),
-	mtoolBar(parent),
-	mcentralFram(parent),
-	mstatusBar(parent),
-	mthreadNum(PathManager::GetThreadNum()),
-	mversion(PathManager::GetVersion()),
-	mcurrentTaskIndex(0)
+QMainWindow(parent),
+ui(new Ui::MainWindow),
+mtoolBar(parent),
+mcentralFram(parent),
+mstatusBar(parent),
+mthreadNum(PathManager::GetThreadNum()),
+mversion(PathManager::GetVersion()),
+mcurrentTaskIndex(0),
+mplogDialog(NULL),
+misLogShowing(false)
 {
     ui->setupUi(this);
 	InitView();
@@ -345,9 +347,17 @@ void MainWindow::SetVersionSlot()
 
 void MainWindow::ShowLogSlot()
 {
-	LogDialog logDia(this);
-	logDia.SetText(mlog);
-	logDia.exec();
+	mplogDialog = new LogDialog (this);
+	mplogDialog->setAttribute(Qt::WA_DeleteOnClose);//对话框自动释放所包含资源
+	mplogDialog->SetText(mlog);
+	misLogShowing = true;
+	connect(mplogDialog, SIGNAL(destroyed(QObject *)), this, SLOT(CloseLogSlot()));
+	mplogDialog->show();
+}
+
+void MainWindow::CloseLogSlot()
+{
+	misLogShowing = false;
 }
 
 void MainWindow::HeldSlot()
@@ -373,6 +383,9 @@ void MainWindow::ThreadConfigSlot()
 void MainWindow::CollectLog(QString log)
 {
 	mlog.append(log);
+	if (misLogShowing){
+		mplogDialog->SetText(mlog);
+	}
 }
 
 void MainWindow::StatusTextChang()

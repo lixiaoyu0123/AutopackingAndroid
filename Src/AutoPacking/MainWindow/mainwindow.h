@@ -54,6 +54,7 @@ public slots:
 	void ThreadConfigSlot();
 	void UpdataSlot();
 	void SetVersionSlot();
+	void CloseLogSlot();
 
 private:
     Ui::MainWindow *ui;
@@ -68,6 +69,8 @@ private:
 	QList<Pack *> mtaskList;
 	QString mversion;
 	QVector<int> mrecordIndex;
+	LogDialog *mplogDialog;
+	bool misLogShowing;
 };
 
 #endif // MAINWINDOW_H
