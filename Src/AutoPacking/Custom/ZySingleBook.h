@@ -18,6 +18,7 @@ private:
 private:
 
 	QString mbookId;
+	QString mnewBookId;
 	QString msave;
 	QString mcoverUrl;
 	bool misMakeIcon;

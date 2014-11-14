@@ -8,11 +8,12 @@
 #include "Model/PathManager.h"
 #include "Network/DownLoad.h"
 
-ZySingleBook::ZySingleBook(QObject *parent, QString &bookId, QString &save):QObject(parent),
+ZySingleBook::ZySingleBook(QObject *parent, QString &bookId, QString &save) :QObject(parent),
 mbookId(bookId),
 msave(save),
 mcoverUrl(""),
-misMakeIcon(false)
+misMakeIcon(false),
+mnewBookId("")
 {
 }
 
@@ -24,7 +25,7 @@ ZySingleBook::~ZySingleBook()
 bool ZySingleBook::GetCover()
 {
 	DownLoad down(this, mcoverUrl);
-	QString saveFile = msave + "/assets/covers/" + mbookId + ".jpg";
+	QString saveFile = msave + "/assets/covers/" + mnewBookId + ".jpg";
 	if (!down.DownFile(saveFile)){
 		return false;
 	}
@@ -39,7 +40,42 @@ bool ZySingleBook::GetBookInfo()
 	if (!down.Get(json)){
 		return false;
 	}
-	QFile file(msave + "/assets/preset_books/stuffed_"+ mbookId);
+
+	QJsonParseError jsonError;
+	QJsonDocument parseDoucment = QJsonDocument::fromJson(json, &jsonError);
+	if (jsonError.error != QJsonParseError::NoError)
+	{
+		return false;
+	}
+	if (parseDoucment.isObject())
+	{
+		return false;
+	}
+	QJsonObject obj = parseDoucment.object();
+	if (!obj.contains("cover"))
+	{
+		return false;
+	}
+	QJsonValue nameValue = obj.take("cover");
+	if (!nameValue.isString())
+	{
+		return false;
+	}
+	mcoverUrl = nameValue.toString();
+
+	if (!obj.contains("id"))
+	{
+		return false;
+	}
+	nameValue = obj.take("id");
+	if (!nameValue.isString())
+	{
+		return false;
+	}
+	mnewBookId = nameValue.toString();
+
+
+	QFile file(msave + "/assets/preset_books/stuffed_" + mnewBookId);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
 		return false;
 	}
@@ -47,24 +83,6 @@ bool ZySingleBook::GetBookInfo()
 	txtOutput.setCodec("UTF-8");
 	txtOutput << json;
 	file.close();
-
-	QJsonParseError jsonError;
-	QJsonDocument parseDoucment = QJsonDocument::fromJson(json, &jsonError);
-	if (jsonError.error == QJsonParseError::NoError)
-	{
-		if (parseDoucment.isObject())
-		{
-			QJsonObject obj = parseDoucment.object();
-			if (obj.contains("cover"))
-			{
-				QJsonValue nameValue = obj.take("cover");
-				if (nameValue.isString())
-				{
-					mcoverUrl = nameValue.toString();
-				}
-			}
-		}
-	}
 	return true;
 }
 
@@ -82,9 +100,9 @@ bool ZySingleBook::GetIcon()
 		return true;
 	}
 
-	misMakeIcon = true;	
+	misMakeIcon = true;
 	QImage image;
-	image.load(msave + "/assets/covers/" + mbookId + ".jpg");
+	image.load(msave + "/assets/covers/" + mnewBookId + ".jpg");
 	QPixmap pixmapToShow = QPixmap::fromImage(image.scaled(QSize(72, 72), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
 
