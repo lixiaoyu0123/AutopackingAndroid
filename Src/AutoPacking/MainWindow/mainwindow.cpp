@@ -2,6 +2,7 @@
 #include <QStandardItemModel>
 #include <QMessageBox>
 #include <QProcess>
+#include <QSet>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "Model/DatabaseManager.h"
@@ -129,13 +130,19 @@ void MainWindow::StartSlot()
 	}
 
 	QModelIndexList selectedIndex = mcentralFram.GetTableView().GetSelectIndexs();
+	QSet<int> dedupli;
+
+	for (QModelIndexList::iterator ite = selectedIndex.begin(); ite != selectedIndex.end(); ite++)
+	{
+		dedupli.insert(ite->row());
+	}
 	int rows = DatabaseManager::GetInstance()->GetTableModel()->rowCount();
-	if (!selectedIndex.isEmpty()){
-		mrecordIndex = QVector<int>(selectedIndex.size());
+	if (!dedupli.isEmpty()){
+		mrecordIndex = QVector<int>(dedupli.size());
 		int i = 0;
-		for (QModelIndexList::iterator ite = selectedIndex.begin(); ite != selectedIndex.end(); ite++)
+		for (QSet<int>::iterator ite = dedupli.begin(); ite != dedupli.end(); ite++)
 		{
-			mrecordIndex[i++] = ite->row();
+			mrecordIndex[i++] = *ite;
 		}
 	}
 	else{
@@ -243,7 +250,7 @@ void MainWindow::FinishedSlot(int stat,int taskId)
 			if (var->GetTaskId() == taskId){
 				var->deleteLater();
 				mtaskList.removeOne(var);
-				DatabaseManager::GetInstance()->ChangStatInDatabase(taskId, QStringLiteral("打包完成!"));
+				DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(taskId), QStringLiteral("打包完成!"));
 			}
 		}
 		break;
@@ -253,7 +260,7 @@ void MainWindow::FinishedSlot(int stat,int taskId)
 			if (var->GetTaskId() == taskId){
 				var->deleteLater();
 				mtaskList.removeOne(var);
-				DatabaseManager::GetInstance()->ChangStatInDatabase(taskId, QStringLiteral("打包出错!"));
+				DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(taskId), QStringLiteral("打包出错!"));
 			}
 		}
 		break;
@@ -263,7 +270,7 @@ void MainWindow::FinishedSlot(int stat,int taskId)
 			if (var->GetTaskId() == taskId){
 				var->deleteLater();
 				mtaskList.removeOne(var);
-				DatabaseManager::GetInstance()->ChangStatInDatabase(taskId, QStringLiteral("打包停止!"));
+				DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(taskId), QStringLiteral("打包停止!"));
 			}
 		}
 		return;
