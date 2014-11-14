@@ -333,7 +333,7 @@ bool DecPack::Zipalign(QProcess &pprocess)
 	}
 	QString exe = QStringLiteral("zipalign.exe");
 	QStringList param;
-	param << QStringLiteral("-v") << QStringLiteral("4") << "\"" + mtmpSignFile + "\"" << "\"" + moutFile + "\"";
+	param << QStringLiteral("-f") << QStringLiteral("-v") << QStringLiteral("4") << "\"" + mtmpSignFile + "\"" << "\"" + moutFile + "\"";
 	if (!ExecuteCmd(exe, param, pprocess, PathManager::GetToolPath())){
 		emit GenerateError(QStringLiteral("error:ÃüÁîÖ´ÐÐ´íÎó£¡ÇþµÀID:%1,ÇþµÀÃû:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
