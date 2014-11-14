@@ -47,7 +47,7 @@ bool ZySingleBook::GetBookInfo()
 	{
 		return false;
 	}
-	if (parseDoucment.isObject())
+	if (!parseDoucment.isObject())
 	{
 		return false;
 	}

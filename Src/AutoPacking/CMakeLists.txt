@@ -384,7 +384,7 @@ if (MSVC)
     else()
         message( STATUS "Using the 32 bit CRT in the iEditor Windows installer" )
         message( STATUS "Ensure vcredist_x86.exe has been placed in installer/ if you plan on running makeinstaller" )
-        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
+        add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD
             COMMAND cmake -E copy ${CMAKE_SOURCE_DIR}/installer/vcredist_x86.exe ${TEMP_PACKAGE_DIR}/vendor/vcredist.exe )
     endif()
 
