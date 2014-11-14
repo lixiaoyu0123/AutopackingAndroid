@@ -1227,6 +1227,28 @@ bool PathManager::CheckParameter()
 		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
 		return false;
 	}
+	else if (PathManager::GetCustomWay() == 1){
+		if (PathManager::GetChannelId().isEmpty()){
+			parameter.append(QStringLiteral("渠道id未设置\n"));
+			BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
+			return false;
+		}
+		else if (PathManager::GetBaseNm().isEmpty()){
+			parameter.append(QStringLiteral("包名前缀未设置\n"));
+			BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
+			return false;
+		}
+		else if (PathManager::GetOriginalNm().isEmpty()){
+			parameter.append(QStringLiteral("原始包名未设置\n"));
+			BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
+			return false;
+		}
+		else if (PathManager::GetUrl().isEmpty()){
+			parameter.append(QStringLiteral("资源下载地址未设置\n"));
+			BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), parameter, QMessageBox::Ok, QMessageBox::NoButton);
+			return false;
+		}
+	}
 	return true;
 }
 

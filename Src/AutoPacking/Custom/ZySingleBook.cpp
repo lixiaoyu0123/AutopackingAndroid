@@ -39,7 +39,7 @@ bool ZySingleBook::GetBookInfo()
 	if (!down.Get(json)){
 		return false;
 	}
-	QFile file(msave + "/assets/preset_books/"+ mbookId);
+	QFile file(msave + "/assets/preset_books/stuffed_"+ mbookId);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
 		return false;
 	}
