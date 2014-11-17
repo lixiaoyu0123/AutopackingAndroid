@@ -2,6 +2,7 @@
 #include "ExportData.h"
 #include "Model/PathManager.h"
 #include "Model/DatabaseManager.h"
+#include "Dialogs/BjMessageBox.h"
 
 ExportData::ExportData(QWidget *parent) :
 QDialog(parent),
@@ -23,6 +24,10 @@ void ExportData::InitSlot()
 
 void ExportData::ButtonOkClickSlot()
 {
+	if (mexportDataFile.isEmpty()){
+		BjMessageBox::warning(NULL, QStringLiteral("导出错误"), QStringLiteral("导出文件未设置，请先设置导出文件"), QMessageBox::Ok);
+		return;
+	}
 	DatabaseManager::GetInstance()->ExportData(mexportDataFile);
 }
 
