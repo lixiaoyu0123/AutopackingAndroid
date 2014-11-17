@@ -52,7 +52,7 @@ public:
 	void ExportData(QString &fileName);
 	void ImportData(QString &fileName);
 	void ReloadData();
-	void ImportFromXlsx(XlsxParser &xlsx, QString &sheet, QString &realChannelId, QString &baseName, QString &originalName);
+	void ImportFromXlsx(XlsxParser &xlsx, QString &sheet, QString &realChannelId, QString &baseName, QString &originalName,QString &strFile,QString &originalStr,QString &resultStr);
 
 private:
 	QSqlDatabase mdatabase;

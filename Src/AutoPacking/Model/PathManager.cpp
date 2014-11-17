@@ -33,6 +33,9 @@ QString PathManager::BASENM = "";
 QString PathManager::ORIGINALNM = "";
 QString PathManager::DOWNURL = "";
 QString PathManager::RESPATH = "";
+QString PathManager::APPNMFILE = "";
+QString PathManager::ORIAPPNAME = "";
+QString PathManager::NEWAPPNAME = "";
 
 
 QString PathManager::GetStartPath()
@@ -1336,6 +1339,41 @@ QString PathManager::GetMaskPng()
 	return GetStartPath() + "/Resource/Mask.png";
 }
 
+void PathManager::SetAppNmFile(QString &file)
+{
+	APPNMFILE = file;
+	WriteSetting();
+}
+
+QString PathManager::GetAppNmFile()
+{
+	ReadSetting();
+	return APPNMFILE;
+}
+
+void PathManager::SetOriAppNm(QString &name)
+{
+	ORIAPPNAME = name;
+	WriteSetting();
+}
+
+QString PathManager::GetOriAppNm()
+{
+	ReadSetting();
+	return ORIAPPNAME;
+}
+
+void PathManager::SetNewAppNm(QString &name)
+{
+	NEWAPPNAME = name;
+	WriteSetting();
+}
+
+QString PathManager::GetNewAppNm()
+{
+	ReadSetting();
+	return NEWAPPNAME;
+}
 
 void PathManager::WriteSetting()
 {
@@ -1361,6 +1399,9 @@ void PathManager::WriteSetting()
 	settings.setValue("OriginalNm", ORIGINALNM);
 	settings.setValue("DownUrl", DOWNURL);
 	settings.setValue("ResPath", RESPATH);
+	settings.setValue("AppNmFile", APPNMFILE);
+	settings.setValue("OriAppName", ORIAPPNAME);
+	settings.setValue("NewAppName", NEWAPPNAME);
 	settings.endGroup();
 }
 
@@ -1388,6 +1429,9 @@ void PathManager::ReadSetting()
 	ORIGINALNM = settings.value("OriginalNm", "").toString();
 	DOWNURL = settings.value("DownUrl", "").toString();
 	RESPATH = settings.value("ResPath", "").toString();
+	APPNMFILE = settings.value("AppNmFile", "").toString();
+	ORIAPPNAME = settings.value("OriAppName", "").toString();
+	NEWAPPNAME = settings.value("NewAppName", "").toString();
 	settings.endGroup();
 }
 

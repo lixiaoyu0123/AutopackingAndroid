@@ -78,5 +78,12 @@ void ImportZySingle::ButtonOkSlot()
 		BjMessageBox::information(NULL, QStringLiteral("友情提示!"), QStringLiteral("单本书原始包名未设置，请先设置原始包名"), QMessageBox::Ok, QMessageBox::NoButton);
 		return;
 	}
-	DatabaseManager::GetInstance()->ImportFromXlsx(*mpaser, ui->ComboBoxSheet->currentText(), PathManager::GetChannelId(), PathManager::GetBaseNm(), PathManager::GetOriginalNm());
+	DatabaseManager::GetInstance()->ImportFromXlsx(*mpaser, ui->ComboBoxSheet->currentText(), 
+		PathManager::GetChannelId(),
+		PathManager::GetBaseNm(), 
+		PathManager::GetOriginalNm(),
+		PathManager::GetAppNmFile(),
+		PathManager::GetOriAppNm(),
+		PathManager::GetNewAppNm()
+		);
 }

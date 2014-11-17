@@ -21,6 +21,9 @@ void ZySingleSetting::InitView()
 	ui->LineEditBaseNm->setText(PathManager::GetBaseNm());
 	ui->LineEditOriginalNm->setText(PathManager::GetOriginalNm());
 	ui->LineEditResPath->setText(PathManager::GetResPath());
+	ui->LineEditFile->setText(PathManager::GetAppNmFile());
+	ui->LineEditOriginalAppNm->setText(PathManager::GetOriAppNm());
+	ui->LineEditResultAppNm->setText(PathManager::GetNewAppNm());
 	ui->LineEditUrl->setText(PathManager::GetUrl());
 }
 
@@ -37,6 +40,9 @@ void ZySingleSetting::ButtonOkSlot()
 	PathManager::SetOriginalNm(ui->LineEditOriginalNm->text().trimmed());
 	PathManager::SetResPath(ui->LineEditResPath->text().trimmed());
 	PathManager::SetUrl(ui->LineEditUrl->text().trimmed());
+	PathManager::SetAppNmFile(ui->LineEditFile->text().trimmed());
+	PathManager::SetOriAppNm(ui->LineEditOriginalAppNm->text().trimmed());
+	PathManager::SetNewAppNm(ui->LineEditResultAppNm->text().trimmed());
 	PathManager::WriteLastPath(QStringLiteral("resPath"),ui->LineEditResPath->text().trimmed());
 }
 

@@ -93,6 +93,12 @@ public:
 	static QString GetResPath();
 	static QString GetFramePng();
 	static QString GetMaskPng();
+	static void SetAppNmFile(QString &file);
+	static QString GetAppNmFile();
+	static void SetOriAppNm(QString &name);
+	static QString GetOriAppNm();
+	static void SetNewAppNm(QString &name);
+	static QString GetNewAppNm();
 protected:
 private:
 	static QString OUTPATH;
@@ -115,6 +121,9 @@ private:
 	static QString ORIGINALNM;
 	static QString DOWNURL;
 	static QString RESPATH;
+	static QString APPNMFILE;
+	static QString ORIAPPNAME;
+	static QString NEWAPPNAME;
 	
 };
 #endif

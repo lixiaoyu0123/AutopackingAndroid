@@ -717,7 +717,7 @@ void DatabaseManager::Commit()
 	mdatabase.commit();//提交
 }
 
-void DatabaseManager::ImportFromXlsx(XlsxParser &xlsx, QString &sheet, QString &realChannelId, QString &baseName, QString &originalName)
+void DatabaseManager::ImportFromXlsx(XlsxParser &xlsx, QString &sheet, QString &realChannelId, QString &baseName, QString &originalName, QString &strFile, QString &originalStr, QString &resultStr)
 {
 	if (!xlsx.SelectSheet(sheet)){
 		BjMessageBox::warning(NULL, QStringLiteral("错误!"), QStringLiteral("sheet不正确或不存在"), QMessageBox::Ok, QMessageBox::NoButton);
@@ -791,6 +791,37 @@ void DatabaseManager::ImportFromXlsx(XlsxParser &xlsx, QString &sheet, QString &
 		if (!mptableModelAppPak->submitAll()){
 			BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModelAppPak->lastError().text()));
 			mptableModelAppPak->revertAll();//如果不删除，则撤销
+			return;
+		}
+
+		rowNum = mptableModelStr->rowCount();//获得表的行数
+		record.clear();
+		record = mptableModelStr->record();
+		QSqlField fieldStrChannltbId("ChanneltbID", QVariant::Int);
+		QSqlField fieldPath("Path", QVariant::Char);
+		QSqlField fieldSrcStr("SourceString", QVariant::Char);
+		QSqlField fieldTarStr("TargetString", QVariant::Char);
+		fieldPath.setValue(strFile);
+		fieldSrcStr.setValue(originalStr);
+		QString resultStrTmp = resultStr;
+		resultStrTmp.replace("<%1>", bookNm);
+		fieldTarStr.setValue(resultStrTmp);
+		fieldStrChannltbId.setValue(id);
+		record.append(fieldStrChannltbId);
+		record.append(fieldPath);
+		record.append(fieldSrcStr);
+		record.append(fieldTarStr);
+
+
+		if (!mptableModelStr->insertRecord(rowNum, record)){
+			BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModelStr->lastError().text()), QMessageBox::Ok, QMessageBox::NoButton);
+			mptableModelStr->revertAll();//如果不删除，则撤销
+			return;
+		}
+
+		if (!mptableModelStr->submitAll()){
+			BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("数据库错误: %1").arg(mptableModelStr->lastError().text()));
+			mptableModelStr->revertAll();//如果不删除，则撤销
 			return;
 		}
 	}
