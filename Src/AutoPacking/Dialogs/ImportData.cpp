@@ -2,6 +2,7 @@
 #include "ImportData.h"
 #include "Model/DatabaseManager.h"
 #include "Model/PathManager.h"
+#include "Dialogs/BjMessageBox.h"
 
 ImportData::ImportData(QWidget *parent):
 QDialog(parent),
@@ -40,5 +41,10 @@ void ImportData::ButtonScanClickSlot()
 
 void ImportData::ButtonOkClickSlot()
 {
+	QFile imFile(mimportDataFile);
+	if (mimportDataFile.isEmpty() || !imFile.exists()){
+		BjMessageBox::warning(NULL, QStringLiteral("导入错误"), QStringLiteral("导入的文件不存在，请选择导入文件"), QMessageBox::Ok);
+		return;
+	}
 	DatabaseManager::GetInstance()->ImportData(mimportDataFile);
 }
