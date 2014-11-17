@@ -648,6 +648,7 @@ void DatabaseManager::ExportData(QString &fileName)
 	mdatabase.close();
 	if (!PathManager::CopyFile(PathManager::GetDataBasePath(), fileName, true)){
 		BjMessageBox::warning(NULL, QStringLiteral("导出数据出错！"), QStringLiteral("导出数据错误!"), QMessageBox::Ok, QMessageBox::NoButton);
+		ReloadData();
 		return;
 	}
 	BjMessageBox::information(NULL, QStringLiteral("导出成功！"), QStringLiteral("导出成功！"), QMessageBox::Ok, QMessageBox::NoButton);
@@ -660,6 +661,7 @@ void DatabaseManager::ImportData(QString &fileName)
 	mdatabase.close();
 	if (!PathManager::CopyFile(fileName,PathManager::GetDataBasePath(), true)){
 		BjMessageBox::warning(NULL, QStringLiteral("导入数据出错！"), QStringLiteral("导入数据错误!"), QMessageBox::Ok, QMessageBox::NoButton);
+		ReloadData();
 		return;
 	}
 	BjMessageBox::information(NULL, QStringLiteral("导入成功！"), QStringLiteral("导入成功！"), QMessageBox::Ok, QMessageBox::NoButton);
