@@ -66,6 +66,9 @@ void ImportZySingle::ButtonOkSlot()
 	QString channelId = PathManager::GetChannelId();
 	QString baseNm = PathManager::GetBaseNm();
 	QString originalNm = PathManager::GetOriginalNm();
+	QString appNmFile = PathManager::GetAppNmFile();
+	QString oriAppNm = PathManager::GetOriAppNm();
+	QString newAppNm = PathManager::GetNewAppNm();
 	if (channelId.isEmpty()){
 		BjMessageBox::information(NULL, QStringLiteral("友情提示!"), QStringLiteral("单本书渠道id未设置，请先设置渠道id"), QMessageBox::Ok, QMessageBox::NoButton);
 		return;
@@ -78,12 +81,24 @@ void ImportZySingle::ButtonOkSlot()
 		BjMessageBox::information(NULL, QStringLiteral("友情提示!"), QStringLiteral("单本书原始包名未设置，请先设置原始包名"), QMessageBox::Ok, QMessageBox::NoButton);
 		return;
 	}
+	else if (appNmFile.isEmpty()){
+		BjMessageBox::information(NULL, QStringLiteral("友情提示!"), QStringLiteral("单本书应用名文件未设置，请先设置应用名文件"), QMessageBox::Ok, QMessageBox::NoButton);
+		return;
+	}
+	else if (oriAppNm.isEmpty()){
+		BjMessageBox::information(NULL, QStringLiteral("友情提示!"), QStringLiteral("单本书应用名原字符串未设置，请先设置应用名原字符串"), QMessageBox::Ok, QMessageBox::NoButton);
+		return;
+	}
+	else if (newAppNm.isEmpty()){
+		BjMessageBox::information(NULL, QStringLiteral("友情提示!"), QStringLiteral("单本书应用名新字符串未设置，请先设置应用名新字符串"), QMessageBox::Ok, QMessageBox::NoButton);
+		return;
+	}
 	DatabaseManager::GetInstance()->ImportFromXlsx(*mpaser, ui->ComboBoxSheet->currentText(), 
-		PathManager::GetChannelId(),
-		PathManager::GetBaseNm(), 
-		PathManager::GetOriginalNm(),
-		PathManager::GetAppNmFile(),
-		PathManager::GetOriAppNm(),
-		PathManager::GetNewAppNm()
+	channelId,
+	baseNm,
+	originalNm,
+	appNmFile,
+	oriAppNm,
+	newAppNm
 		);
 }
