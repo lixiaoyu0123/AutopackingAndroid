@@ -75,7 +75,7 @@ QString PathManager::GetDocumentsPath()
 	return GetStartPath() + QStringLiteral("/Documents");
 }
 
-bool PathManager::AppendContentToProperties(QString &content,QString &path)
+bool PathManager::AppendContentToProperties(QString &content, QString &path)
 {
 	QFile file(path + QStringLiteral("/project.properties"));
 	if (!file.open(QIODevice::Append | QIODevice::Text))
@@ -127,13 +127,13 @@ QString PathManager::GetBin(QString &projectPath)
 QString PathManager::GetReleaseApk(QString &path)
 {
 	QDir dir(path);
-	dir.setFilter(QDir::NoDotAndDotDot|QDir::Files);
+	dir.setFilter(QDir::NoDotAndDotDot | QDir::Files);
 	QStringList files = dir.entryList();
 	for (QStringList::iterator ite = files.begin(); ite != files.end(); ite++)
 	{
 		if (ite->toLower().endsWith("release.apk")){
 			return *ite;
-		}		
+		}
 	}
 	return QString("");
 }
@@ -147,7 +147,7 @@ QString PathManager::GetReleaseUnsignApk(QString &path)
 	{
 		if (ite->toLower().endsWith("unaligned.apk")){
 			return *ite;
-		}		
+		}
 	}
 	return QString("");
 }
@@ -417,40 +417,40 @@ bool PathManager::CopyDir(const QString &source, const QString &destination, boo
 	/*  µÝ¹éÊµÏÖ  */
 	/*QDir directory(source);
 	if (!directory.exists()){
-		return false;
+	return false;
 	}
 
 	QString srcPath = QDir::toNativeSeparators(source);
 	if (!srcPath.endsWith(QDir::separator())){
-		srcPath += QDir::separator();
+	srcPath += QDir::separator();
 	}
 	QString dstPath = QDir::toNativeSeparators(destination);
 	if (!dstPath.endsWith(QDir::separator())){
-		dstPath += QDir::separator();
+	dstPath += QDir::separator();
 	}
 
 	QStringList fileNames = directory.entryList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden);
 	for (QStringList::size_type i = 0; i != fileNames.size(); ++i)
 	{
-		QString fileName = fileNames.at(i);
-		QString srcFilePath = srcPath + fileName;
-		QString dstFilePath = dstPath + fileName;
-		QFileInfo fileInfo(srcFilePath);
-		if (fileInfo.isFile() || fileInfo.isSymLink()){
-			if (isCover){
-				QFile::setPermissions(dstFilePath, QFile::WriteOwner);
-			}
-			if (!QFile::copy(srcFilePath, dstFilePath)){
-				return false;
-			}
-		}
-		else if (fileInfo.isDir()){
-			QDir dstDir(dstFilePath);
-			dstDir.mkpath(dstFilePath);
-			if (!CopyDir(srcFilePath, dstFilePath, isCover)){
-				return false;
-			}
-		}
+	QString fileName = fileNames.at(i);
+	QString srcFilePath = srcPath + fileName;
+	QString dstFilePath = dstPath + fileName;
+	QFileInfo fileInfo(srcFilePath);
+	if (fileInfo.isFile() || fileInfo.isSymLink()){
+	if (isCover){
+	QFile::setPermissions(dstFilePath, QFile::WriteOwner);
+	}
+	if (!QFile::copy(srcFilePath, dstFilePath)){
+	return false;
+	}
+	}
+	else if (fileInfo.isDir()){
+	QDir dstDir(dstFilePath);
+	dstDir.mkpath(dstFilePath);
+	if (!CopyDir(srcFilePath, dstFilePath, isCover)){
+	return false;
+	}
+	}
 	}
 
 	return true;*/
@@ -561,7 +561,7 @@ bool PathManager::SearchDirContianSuffix(const QString &dirFrom, QStringList &re
 void PathManager::RemoveEmptyDirFromDeepest(QString &path)
 {
 	QDir dir(path);
-	QStringList allFilesDirs = dir.entryList(QDir::NoDotAndDotDot|QDir::AllDirs|QDir::Files);
+	QStringList allFilesDirs = dir.entryList(QDir::NoDotAndDotDot | QDir::AllDirs | QDir::Files);
 	if (!allFilesDirs.isEmpty()){
 		return;
 	}
@@ -678,7 +678,7 @@ int PathManager::ReplacePakInSrc(QString &path, QString &oldName, QString &newNa
 						}
 					}
 					else if (curFi->absoluteFilePath().toLower().endsWith(".xml")){
-						if (!ReplacePakNameInXml(path,curFi->absoluteFilePath(), oldName, newName)){
+						if (!ReplacePakNameInXml(path, curFi->absoluteFilePath(), oldName, newName)){
 							return 1;
 						}
 					}
@@ -777,11 +777,11 @@ bool PathManager::ReplaceStr(QString &fileName, QString &srcStr, QString &replac
 	return true;
 }
 
-bool PathManager::ReplaceByRegular(QString &regular,QString &text,QString &replaceStr)
+bool PathManager::ReplaceByRegular(QString &regular, QString &text, QString &replaceStr)
 {
 	SPCRE *spcre = PCRECache::instance()->getObject(regular);
 	QList<SPCRE::MatchInfo> match_info = spcre->getEveryMatchInfo(text);
-	for (int i = match_info.count() - 1; i >= 0; i--) 
+	for (int i = match_info.count() - 1; i >= 0; i--)
 	{
 		QString replaced_text;
 		bool replacement_made = spcre->replaceText(text.mid(match_info.at(i).offset.first, match_info.at(i).offset.second - match_info.at(i).offset.first), match_info.at(i).capture_groups_offsets, replaceStr, replaced_text);
@@ -793,7 +793,7 @@ bool PathManager::ReplaceByRegular(QString &regular,QString &text,QString &repla
 	return true;
 }
 
-bool PathManager::ReplacePakNameInXml(QString &srcPath,QString &fileName, QString &oldName, QString &newName)
+bool PathManager::ReplacePakNameInXml(QString &srcPath, QString &fileName, QString &oldName, QString &newName)
 {
 	if (fileName.toLower().endsWith(".xml")){
 
@@ -1010,6 +1010,38 @@ bool PathManager::ReplaceAppPakNameInManifest(QString &path, QString &oldName, Q
 		return false;
 	}
 	root.setAttribute("package", newName);
+	QList<QDomElement> allNode;
+	if (!root.firstChildElement().isNull()){
+		QList<QDomElement> traversal;
+		traversal.push_back(root.firstChildElement());
+		for (int i = 0; i < traversal.size(); i++)
+		{
+			QDomElement indexNode = traversal.at(i);
+			while (!indexNode.isNull())
+			{
+				if (indexNode.hasChildNodes()){
+					traversal.push_back(indexNode.firstChildElement());
+				}
+				allNode.push_back(indexNode);
+				
+				indexNode = indexNode.nextSiblingElement();
+			}
+
+		}
+	}
+
+	for (QList<QDomElement>::Iterator ite = allNode.begin(); ite != allNode.end(); ite++)
+	{
+		QDomElement element = *ite;
+		if (!element.isNull()){
+			QString androidNm = element.attribute("android:name", "");
+			androidNm = androidNm.toLower();
+			if (androidNm.contains(oldName)){
+				androidNm.replace(oldName, newName);
+				element.setAttribute("android:name", androidNm);
+			}
+		}
+	}
 
 	QFile filexml(manifest);
 	if (!filexml.open(QFile::WriteOnly | QFile::Truncate)){
@@ -1048,7 +1080,7 @@ bool PathManager::ReplaceAppPakNameInSmali(QString &fileName, QString &oldName, 
 	return true;
 }
 
-bool PathManager::ReplacePakNameInJava(QString &srcPath,QString &fileName, QString &oldName, QString &newName)
+bool PathManager::ReplacePakNameInJava(QString &srcPath, QString &fileName, QString &oldName, QString &newName)
 {
 	if (fileName.toLower().endsWith(".java")){
 		QString regularEx = QString("(?<=(\\bpackage)|(\\bimport))[\\s\\t\\r\\n]+%1[\\s\\t\\r\\n]*;").arg(oldName);
@@ -1071,7 +1103,7 @@ bool PathManager::ReplacePakNameInJava(QString &srcPath,QString &fileName, QStri
 			QString replaced_text;
 			bool replacement_made = spcre->replaceText(content.mid(match_info.at(i).offset.first, match_info.at(i).offset.second - match_info.at(i).offset.first), match_info.at(i).capture_groups_offsets, newName + ".", replaced_text);
 			if (replacement_made) {
-				int pos = content.indexOf(QRegExp("\\.|\\s"),match_info.at(i).offset.second);
+				int pos = content.indexOf(QRegExp("\\.|\\s"), match_info.at(i).offset.second);
 				// Replace the text.
 				if (pos < 0){
 					continue;
@@ -1084,7 +1116,7 @@ bool PathManager::ReplacePakNameInJava(QString &srcPath,QString &fileName, QStri
 				}
 			}
 		}
-		
+
 		if (!QFile::remove(fileName)){
 			return false;
 		}
@@ -1165,7 +1197,7 @@ bool PathManager::CheckSysEnvironment()
 			{
 				QString path = ite->toLower();
 				if (path.contains("java") && path.contains("bin")){
-					SetJdkPath(ite->replace("\\","/"));
+					SetJdkPath(ite->replace("\\", "/"));
 					break;
 				}
 			}
