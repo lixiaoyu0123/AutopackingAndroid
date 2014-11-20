@@ -989,6 +989,39 @@ bool PathManager::ReplaceAppPakNameInManifest(QString &path, QString &oldName, Q
 	}
 	root.setAttribute("package", newName);
 
+	QList<QDomElement> allNode;
+	if (!root.firstChildElement().isNull()){
+		QList<QDomElement> traversal;
+		traversal.push_back(root.firstChildElement());
+		for (int i = 0; i < traversal.size(); i++)
+		{
+			QDomElement indexNode = traversal.at(i);
+			while (!indexNode.isNull())
+			{
+				if (indexNode.hasChildNodes()){
+					traversal.push_back(indexNode.firstChildElement());
+				}
+				allNode.push_back(indexNode);
+
+				indexNode = indexNode.nextSiblingElement();
+			}
+
+		}
+	}
+
+	for (QList<QDomElement>::Iterator ite = allNode.begin(); ite != allNode.end(); ite++)
+	{
+		QDomElement element = *ite;
+		if (!element.isNull()){
+			QString androidNm = element.attribute("android:name", "");
+			androidNm = androidNm.toLower();
+			if (androidNm.contains(oldName)){
+				androidNm.replace(oldName, newName);
+				element.setAttribute("android:name", androidNm);
+			}
+		}
+	}
+
 	QFile filexml(manifest);
 	if (!filexml.open(QFile::WriteOnly | QFile::Truncate)){
 		qWarning("error::ParserXML->writeOperateXml->file.open\n");
