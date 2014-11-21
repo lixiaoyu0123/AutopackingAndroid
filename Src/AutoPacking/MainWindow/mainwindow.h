@@ -57,6 +57,7 @@ public slots:
 	void SetVersionSlot();
 	void SetZySingleSlot();
 	void CloseLogSlot();
+	void DePackToolSlot();
 
 private:
     Ui::MainWindow *ui;

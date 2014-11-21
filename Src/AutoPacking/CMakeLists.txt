@@ -80,6 +80,7 @@ set( UI_FILES
 	MainUi/SetVersionDialog.ui
 	MainUi/ImportZySingle.ui
 	MainUi/ZySingleSetting.ui
+	MainUi/DePack.ui
 	)
 
 set( MODEL_FILES
@@ -128,6 +129,8 @@ set( DIALOG_FILES
 	Dialogs/ImportZySingle.cpp
 	Dialogs/ZySingleSetting.cpp
 	Dialogs/ZySingleSetting.h
+	Dialogs/DePack.cpp
+	Dialogs/DePack.h
 	)
 set( QRC_FILES  
     Resource/About/About.qrc
