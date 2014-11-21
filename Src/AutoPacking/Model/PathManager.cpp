@@ -1073,8 +1073,8 @@ bool PathManager::ReplaceAppPakNameInSmali(QString &fileName, QString &oldName, 
 	if (fileName.toLower().endsWith(".smali")){
 		QString oldNameTmp = oldName;
 		QString newNameTmp = newName;
-		//oldNameTmp.replace(".", "/");
-		//newNameTmp.replace(".", "/");
+		oldNameTmp.replace(".", "/");
+		newNameTmp.replace(".", "/");
 		return ReplaceStr(fileName, oldNameTmp, newNameTmp);
 	}
 	return true;
