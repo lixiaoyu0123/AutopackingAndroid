@@ -18,6 +18,7 @@
 #include "Dialogs/DecPackSetting.h"
 #include "Dialogs/ThreadConfigDialog.h"
 #include "Dialogs/SetVersionDialog.h"
+#include "Dialogs/DePack.h"
 #include "Works/DecPack.h"
 #include "Works/SrcPack.h"
 
@@ -79,6 +80,7 @@ void MainWindow::InitSlot()
 	connect(ui->actionSetVersion, SIGNAL(triggered()), this, SLOT(SetVersionSlot()));
 	connect(mtoolBar.GetActionStar(), SIGNAL(triggered()), this, SLOT(StartSlot()));
 	connect(mtoolBar.GetActionStop(), SIGNAL(triggered()), this, SLOT(StopSlot()));
+	connect(ui->actionDePack, SIGNAL(triggered()), this, SLOT(DePackToolSlot()));
 	connect(mtoolBar.GetButtonLog(), SIGNAL(clicked()), this, SLOT(ShowLogSlot()));
 	connect(mtoolBar.GetButtonThreadConfig(), SIGNAL(clicked()), this, SLOT(ThreadConfigSlot()));
 }
@@ -385,6 +387,12 @@ void MainWindow::ThreadConfigSlot()
 		mthreadNum = PathManager::GetThreadNum();
 		StatusTextChang();
 	}
+}
+
+void MainWindow::DePackToolSlot()
+{
+	DePack depackTool(this);
+	depackTool.exec();
 }
 
 void MainWindow::CollectLog(QString log)

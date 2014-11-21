@@ -78,6 +78,7 @@ set( UI_FILES
 	MainUi/EditTable.ui
 	MainUi/ThreadConfigDialog.ui
 	MainUi/SetVersionDialog.ui
+	MainUi/DePack.ui
 	)
 
 set( MODEL_FILES
@@ -122,6 +123,8 @@ set( DIALOG_FILES
 	Dialogs/ThreadConfigDialog.h
 	Dialogs/SetVersionDialog.cpp
 	Dialogs/SetVersionDialog.h
+	Dialogs/DePack.cpp
+	Dialogs/DePack.h
 	)
 set( QRC_FILES  
     Resource/About/About.qrc
@@ -369,7 +372,7 @@ if (MSVC)
             COMMAND cmake -E copy ${CMAKE_SOURCE_DIR}/installer/vcredist_x86.exe ${TEMP_PACKAGE_DIR}/vendor/vcredist.exe )
     endif()
 
-	# Remove the temp directory used for building the installer
+	# Remove the temp directory used for building the installer 
    add_custom_command( TARGET makeinstaller POST_BUILD 
                         COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
                         COMMENT "Removing temporary directory..." )

@@ -55,6 +55,7 @@ public slots:
 	void UpdataSlot();
 	void SetVersionSlot();
 	void CloseLogSlot();
+	void DePackToolSlot();
 
 private:
     Ui::MainWindow *ui;
