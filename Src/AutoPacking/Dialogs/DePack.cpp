@@ -30,6 +30,7 @@ DePack::~DePack()
 
 void DePack::InitView()
 {
+	ChangStat(false);
 	ui->ProgressBarDePack->setRange(0, MAXPROCESS);
 	ui->LineEditOri->setText(PathManager::ReadLastPath(QStringLiteral("depackOriPath")));
 	ui->LineEditResult->setText(PathManager::ReadLastPath(QStringLiteral("depackResultPath")));
@@ -144,7 +145,7 @@ void DePack::ChangStat(bool stat)
 		ui->ButtonCancel->setDisabled(true);
 		if (mptimer != NULL){
 			mptimer->stop();
-			ui->ProgressBarDePack->setValue(MAXPROCESS);
+			ui->ProgressBarDePack->setValue(0);
 			delete mptimer;
 			mptimer = NULL;
 		}
