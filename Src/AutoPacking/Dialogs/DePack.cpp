@@ -72,6 +72,15 @@ void DePack::ButtonScanResultSlot()
 
 void DePack::ButtonOkSlot()
 {
+	QFile file(ui->LineEditOri->text());
+	if (ui->LineEditOri->text().isEmpty() || !file.exists()){
+		BjMessageBox::warning(this, QStringLiteral("错误"), QStringLiteral("apk文件不存在或未设置apk文件位置"), QMessageBox::Ok);
+		return;
+	}
+	QDir dir(ui->LineEditResult->text());
+	if (!dir.exists()){
+		dir.mkpath(ui->LineEditResult->text());
+	}
 	ChangStat(true);
 	QString apkTool = PathManager::GetToolPath() + QStringLiteral("/apktool.bat");
 	QStringList param;
