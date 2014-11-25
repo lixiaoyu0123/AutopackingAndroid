@@ -147,7 +147,8 @@ bool Pack::CheckError(QProcess &pprocess)
 	if (error.toLower().contains("error:") 
 		|| error.toLower().contains("exception:")
 		|| error.toLower().contains(" error")
-		|| error.toLower().contains(" exception")){
+		|| error.toLower().contains(" exception")
+		|| error.toLower().contains("build failed")){
 		QString standardOut = gbk->toUnicode(pprocess.readAllStandardOutput());
 		emit GenerateError(error.append(standardOut));
 		return false;
