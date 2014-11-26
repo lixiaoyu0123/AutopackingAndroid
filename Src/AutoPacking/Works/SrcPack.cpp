@@ -255,8 +255,8 @@ bool SrcPack::PrePack(QProcess &pprocess)
 	}
 	QString prepackBat = QStringLiteral("prepack.bat");
 	QStringList param;
-	target = target.remove(" ").remove("target=android-");
-	param << "\"" + PathManager::GetAndroid() + "\"" << "\"" + PathManager::GetSdkToolsPath() + "\"" << QString::number(target.toInt() - 13) << "\"" + mtmpSrcPath + "\"";
+	target = target.remove(" ").remove("target=");
+	param << "\"" + PathManager::GetAndroid() + "\"" << "\"" + PathManager::GetSdkToolsPath() + "\"" << target << "\"" + mtmpSrcPath + "\"";
 	QString content = QStringLiteral("\nkey.store=%1\nkey.alias=%2\nkey.store.password=%3\nkey.alias.password=%4\n")
 		.arg(PathManager::GetKeyPath())
 		.arg(PathManager::GetKeyAliases())
