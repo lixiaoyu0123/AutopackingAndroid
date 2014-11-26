@@ -11,12 +11,13 @@ public:
 	virtual ~SrcPack();
 	virtual void Init(QString &inPath, QString &outPath, QString &channelId, QString &channelName, QString &channeltbID,
 		QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, QList<ReplaceAppPakTable> &appPakTableList, int taskId);
-	virtual bool ReplacePakByTable();
-	virtual bool ReplaceAppPakByTable();
+	virtual bool ReplacePakByTable(QString &path);
+	virtual bool ReplaceAppPakByTable(QString &path);
 	bool CopySrc(QString &srcPath,QString &destPath);	
 	bool PrePack(QProcess &pprocess);
 	bool PackFromSrc(QProcess &pprocess);
 	bool CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId);
+	bool GenerateBuild(QProcess &pprocess ,QString &path);
 protected:
 	void run();
 private:
@@ -24,5 +25,6 @@ private:
 	QString mtmpSrcPath;
 	QString moutputPath;
 	QString mchanneltbId;
+	QString mmainNm;
 };
 #endif

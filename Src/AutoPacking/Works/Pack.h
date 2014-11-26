@@ -20,8 +20,8 @@ public:
 protected:	
 	virtual bool ReplaceStrByTable(QString &path);
 	virtual bool ReplaceResByTable(QString &path);
-	virtual bool ReplacePakByTable() = 0;
-	virtual bool ReplaceAppPakByTable() = 0;
+	virtual bool ReplacePakByTable(QString &path) = 0;
+	virtual bool ReplaceAppPakByTable(QString &path) = 0;
 	virtual bool CheckError(QProcess &pprocess);
 	virtual bool ExecuteCmd(QString exe, QStringList argument, QProcess &pprocess, QString workPath = QString(""));
 

@@ -51,6 +51,8 @@ void SrcPack::run()
 		return;
 	}
 
+	QString mainProPath = mtmpSrcPath + "/" + mmainNm;
+
 	if (!CopySrc(PathManager::GetSrcPath(), mtmpSrcPath)){
 		emit GenerateError(QStringLiteral("error:拷贝源码文件失败！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
 		mpprocess->close();
@@ -63,7 +65,7 @@ void SrcPack::run()
 		return;
 	}
 
-	QFile buildXml(mtmpSrcPath + QStringLiteral("/build.xml"));
+	QFile buildXml(mainProPath + QStringLiteral("/build.xml"));
 	if (buildXml.exists() && !buildXml.remove()){
 		emit GenerateError(QStringLiteral("error:删除原buld.xml文件失败！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
 		mpprocess->close();
@@ -120,7 +122,7 @@ void SrcPack::run()
 		return;
 	}
 
-	QString apk = PathManager::GetReleaseApk(PathManager::GetBin(mtmpSrcPath));
+	QString apk = PathManager::GetReleaseApk(PathManager::GetBin(mainProPath));
 	if (apk.isEmpty()){
 		mpprocess->close();
 		delete mpprocess;
@@ -129,7 +131,7 @@ void SrcPack::run()
 		emit FinishSignal(1, mtaskId);
 		return;
 	}
-	if (!PathManager::CopyFile(PathManager::GetBin(mtmpSrcPath) + QString("/") + apk, moutFile, true)){
+	if (!PathManager::CopyFile(PathManager::GetBin(mainProPath) + QString("/") + apk, moutFile, true)){
 		mpprocess->close();
 		delete mpprocess;
 		mpprocess = NULL;
@@ -180,25 +182,57 @@ bool SrcPack::CreatPath(QString &outPath, QString &channelId, QString &channelNa
 	PathManager::CreatDir(signPath);
 	mtmpSrcPath = srcPath;
 	mtmpSignFile = signPath + "/" + channelName + "_" + PathManager::GetVersion() + channelId + "_" + ".apk";
+	mmainNm = PathManager::GetSrcPath();
+	mmainNm = mmainNm.mid(mmainNm.lastIndexOf("/") + 1);
 	return true;
 }
 
 bool SrcPack::CopySrc(QString &srcPath, QString &destPath)
 {
-	if (!PathManager::CopyDir(srcPath, destPath, true)){
+	QString desDir = destPath + "/" + srcPath.mid(srcPath.lastIndexOf("/") + 1);
+	if (!PathManager::CopyDir(srcPath, desDir, true)){
 		return false;
 	}
-	if (!PathManager::RemoveDir(destPath + "/bin")){
+	if (!PathManager::RemoveDir(desDir + "/bin")){
 		return false;
 	}
+
+	QStringList libRefs = PathManager::GetLibRef(srcPath);
+	if (!libRefs.isEmpty()){
+		QDir dir;
+		QString currentPath;
+		QString srcDir;
+		for (QStringList::iterator ite = libRefs.begin(); ite != libRefs.end(); ite++)
+		{
+			currentPath = ite->mid(ite->indexOf("=") + 1);
+			currentPath.replace("\\\\", "/");
+			int pos = currentPath.indexOf("/");
+			if (pos > 0){
+				pos = currentPath.indexOf("/", pos + 1);
+				if (pos > 0){
+					currentPath = currentPath.left(pos);
+				}
+			}
+			dir.setPath(srcPath);
+			if (!dir.cd(currentPath)){
+				return false;
+			}
+			srcDir = dir.absolutePath();
+			desDir = destPath + "/" + srcDir.mid(srcDir.lastIndexOf("/") + 1);
+			if (!PathManager::CopyDir(dir.absolutePath(), desDir, true)){
+				return false;
+			}
+		}
+	}
+
 	return true;
 }
 
-bool SrcPack::ReplacePakByTable()
+bool SrcPack::ReplacePakByTable(QString &path)
 {
 	for (QList<ReplacePakTable>::iterator ite = mpakTableList.begin(); ite != mpakTableList.end(); ite++)
 	{
-		switch (PathManager::ReplacePakInSrc(mtmpSrcPath, ite->GetSrcPakName(), ite->GetDestPakName()))
+		switch (PathManager::ReplacePakInSrc(path, ite->GetSrcPakName(), ite->GetDestPakName()))
 		{
 		case 0:
 			break;
@@ -219,11 +253,11 @@ bool SrcPack::ReplacePakByTable()
 	return true;
 }
 
-bool SrcPack::ReplaceAppPakByTable()
+bool SrcPack::ReplaceAppPakByTable(QString &path)
 {
 	for (QList<ReplaceAppPakTable>::iterator ite = mappPakTableList.begin(); ite != mappPakTableList.end(); ite++)
 	{
-		switch (PathManager::ReplaceAppPakInSrc(mtmpSrcPath, ite->GetSrcPakName(), ite->GetDestPakName()))
+		switch (PathManager::ReplaceAppPakInSrc(path, ite->GetSrcPakName(), ite->GetDestPakName()))
 		{
 		case 0:
 			break;
@@ -249,39 +283,79 @@ bool SrcPack::ReplaceAppPakByTable()
 
 bool SrcPack::PrePack(QProcess &pprocess)
 {
-	QString target = PathManager::GetTarget(mtmpSrcPath);
+	QString mainProPath = mtmpSrcPath + "/" + mmainNm;
+
+
+	if (!Pack::ReplaceStrByTable(mainProPath)){
+		return false;
+	}
+
+	if (!Pack::ReplaceResByTable(mainProPath)){
+		return false;
+	}
+
+	if (!ReplacePakByTable(mainProPath)){
+		return false;
+	}
+
+	if (!ReplaceAppPakByTable(mainProPath)){
+		return false;
+	}
+	
+	if (!GenerateBuild(pprocess, mainProPath)){
+		return false;
+	}
+
+	QStringList libRefs = PathManager::GetLibRef(mainProPath);
+	if (!libRefs.isEmpty()){
+		QDir dir;
+		QString currentPath;
+		QString srcDir;
+		for (QStringList::iterator ite = libRefs.begin(); ite != libRefs.end(); ite++)
+		{
+			currentPath = ite->mid(ite->indexOf("=") + 1);
+			currentPath.replace("\\\\", "/");
+			dir.setPath(mainProPath);
+			if (!dir.cd(currentPath)){
+				return false;
+			}
+			if (!GenerateBuild(pprocess, dir.absolutePath())){
+				return false;
+			}
+		}
+	}
+
+
+	return true;
+}
+
+bool SrcPack::GenerateBuild(QProcess &pprocess,QString &path)
+{
+	QString buildS = path + "/build.xml";
+	QFile buildF(buildS);
+	if (buildF.exists()){
+		if (!buildF.remove()){
+			emit GenerateError(QStringLiteral("删除原来旧build.xlm文件失败!"));
+			return false;
+		}
+	}
+	QString target = PathManager::GetTarget(path);
 	if (target.isEmpty()){
-		emit GenerateError(QStringLiteral("error:未找到project.properties文件或者未指定target"));
+		emit GenerateError(QStringLiteral("error:未在%1位置找到project.properties文件或者未指定target").arg(path));
 		return false;
 	}
 	QString prepackBat = QStringLiteral("prepack.bat");
 	QStringList param;
-	target = target.remove(" ").remove("target=android-");
-	param << "\"" + PathManager::GetAndroid() + "\"" << "\"" + PathManager::GetSdkToolsPath() + "\"" << QString::number(target.toInt() - 13) << "\"" + mtmpSrcPath + "\"";
+	target = target.remove(" ").remove("target=");
+	param << "\"" + PathManager::GetAndroid() + "\"" << "\"" + PathManager::GetSdkToolsPath() + "\"" << target << "\"" + path + "\"";
 	QString content = QStringLiteral("\nkey.store=%1\nkey.alias=%2\nkey.store.password=%3\nkey.alias.password=%4\n")
 		.arg(PathManager::GetKeyPath())
 		.arg(PathManager::GetKeyAliases())
 		.arg(PathManager::GetPasswd())
 		.arg(PathManager::GetAliasesPasswd());
-	PathManager::AppendContentToProperties(content, mtmpSrcPath);
-
-	if (!Pack::ReplaceStrByTable(mtmpSrcPath)){
-		return false;
-	}
-
-	if (!Pack::ReplaceResByTable(mtmpSrcPath)){
-		return false;
-	}
-
-	if (!ReplacePakByTable()){
-		return false;
-	}
-
-	if (!ReplaceAppPakByTable()){
-		return false;
-	}
-
-	if (!ExecuteCmd(prepackBat, param, pprocess,PathManager::GetToolPath())){
+	PathManager::AppendContentToProperties(content, path);
+	
+	if (!ExecuteCmd(prepackBat, param, pprocess, PathManager::GetToolPath())){
 		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
 	}
@@ -292,7 +366,7 @@ bool SrcPack::PackFromSrc(QProcess &pprocess)
 {
 	QString srcpackBat = QStringLiteral("srcpack.bat");
 	QStringList param;
-	param << "\"" + PathManager::GetAnt() + "\"" << mtmpSrcPath;
+	param << "\"" + PathManager::GetAnt() + "\"" << mtmpSrcPath + "/" + mmainNm;
 	if (!ExecuteCmd(srcpackBat, param, pprocess,PathManager::GetToolPath())){
 		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
