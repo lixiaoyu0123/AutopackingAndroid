@@ -57,6 +57,7 @@ void DecPack::run()
 
 	if (!Unpacket(minputPath, mtmpUnpacketPath, *mpprocess)){
 		mpprocess->close();
+		delete mpprocess;
 		mpprocess = NULL;
 		if (!PathManager::RemoveDir(mtmpPath)){
 			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
@@ -84,7 +85,7 @@ void DecPack::run()
 		emit GenerateError(QStringLiteral("error:替换资源出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 	}
 
-	if (!ReplacePakByTable()){
+	if (!ReplacePakByTable(mtmpUnpacketPath)){
 		emit GenerateError(QStringLiteral("error:替换内部包名出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		mpprocess->close();
 		delete mpprocess;
@@ -96,7 +97,7 @@ void DecPack::run()
 		return;
 	}
 
-	if (!ReplaceAppPakByTable()){
+	if (!ReplaceAppPakByTable(mtmpUnpacketPath)){
 		emit GenerateError(QStringLiteral("error:替换应用包名出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		mpprocess->close();
 		delete mpprocess;
@@ -232,11 +233,11 @@ bool DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelNa
 	return true;
 }
 
-bool DecPack::ReplacePakByTable()
+bool DecPack::ReplacePakByTable(QString &path)
 {
 	for (QList<ReplacePakTable>::iterator ite = mpakTableList.begin(); ite != mpakTableList.end(); ite++)
 	{
-		switch (PathManager::ReplacePakInDec(mtmpUnpacketPath, ite->GetSrcPakName(), ite->GetDestPakName()))
+		switch (PathManager::ReplacePakInDec(path, ite->GetSrcPakName(), ite->GetDestPakName()))
 		{
 		case 0:
 			break;
@@ -257,11 +258,11 @@ bool DecPack::ReplacePakByTable()
 	return true;
 }
 
-bool DecPack::ReplaceAppPakByTable()
+bool DecPack::ReplaceAppPakByTable(QString &path)
 {
 	for (QList<ReplaceAppPakTable>::iterator ite = mappPakTableList.begin(); ite != mappPakTableList.end(); ite++)
 	{
-		switch (PathManager::ReplaceAppPakInDec(mtmpUnpacketPath, ite->GetSrcPakName(), ite->GetDestPakName()))
+		switch (PathManager::ReplaceAppPakInDec(path, ite->GetSrcPakName(), ite->GetDestPakName()))
 		{
 		case 0:
 			break;

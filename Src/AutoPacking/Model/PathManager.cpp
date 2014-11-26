@@ -93,15 +93,35 @@ QString PathManager::GetTarget(QString &path)
 		return QString("");
 
 	QTextStream in(&file);
+	QString line;
 	while (!in.atEnd()) {
-		QString line = in.readLine();
-		if (line.startsWith(QStringLiteral("target"))){
+		line  = in.readLine();
+		if (line.toLower().startsWith(QStringLiteral("target"))){
 			file.close();
 			return line;
 		}
 	}
 	file.close();
 	return QString("");
+}
+
+QStringList PathManager::GetLibRef(QString &path)
+{
+	QStringList retList;
+	QFile file(path + QStringLiteral("/project.properties"));
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+		return retList;
+
+	QTextStream in(&file);
+	QString line;
+	while (!in.atEnd()) {
+		line = in.readLine();
+		if (line.toLower().startsWith(QStringLiteral("android.library.reference"))){
+			retList.append(line);
+		}
+	}
+	file.close();
+	return retList;
 }
 
 QString PathManager::GetAntPath()
