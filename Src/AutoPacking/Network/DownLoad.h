@@ -20,9 +20,11 @@ private:
 	QNetworkReply *mreply;
 	QFile *mpfile;
 	QEventLoop *mloop;
+	bool mhasError;
 	
 private slots:
 void WriteDataSlot();
 void DownLoadFinishedSlot();
+void DownErrorSlot();
 };
 #endif

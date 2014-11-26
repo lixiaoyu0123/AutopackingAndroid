@@ -10,7 +10,8 @@ murl(url),
 msave(""),
 mreply(NULL),
 mpfile(NULL),
-mloop(NULL)
+mloop(NULL),
+mhasError(false)
 {
 
 }
@@ -53,6 +54,7 @@ bool DownLoad::Get(QByteArray &result)
 bool DownLoad::DownFile(QString &save)
 {
 	msave = save;
+	mhasError = false;
 	mpfile = new QFile(msave);
 	if (!mpfile->open(QIODevice::WriteOnly)){
 		return false;
@@ -60,11 +62,13 @@ bool DownLoad::DownFile(QString &save)
 	QUrl url(murl);
 	QNetworkRequest *request = new QNetworkRequest(url);
 	mreply = mcore.get(*request);
+	int t = mreply->size();
 	connect((QObject *)mreply, SIGNAL(readyRead()), this, SLOT(WriteDataSlot()));
 	mloop = new QEventLoop();
+	connect(mreply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(DownErrorSlot()));
 	connect(mreply, SIGNAL(finished()), this, SLOT(DownLoadFinishedSlot()));
 	mloop->exec();
-	if (mreply->error() != QNetworkReply::NoError){
+	if (mhasError){
 		delete mreply;
 		mreply = NULL;
 		delete request;
@@ -75,6 +79,11 @@ bool DownLoad::DownFile(QString &save)
 	mreply = NULL;
 	delete request;
 	return true;
+}
+
+void DownLoad::DownErrorSlot()
+{
+	mhasError = true;
 }
 
 void DownLoad::DownLoadFinishedSlot()

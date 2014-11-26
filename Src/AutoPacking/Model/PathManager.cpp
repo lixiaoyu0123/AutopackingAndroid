@@ -124,6 +124,27 @@ QStringList PathManager::GetLibRef(QString &path)
 	return retList;
 }
 
+QString PathManager::GetApkDir(QString &proFile)
+{
+	QFile file(proFile + QStringLiteral("/project.properties"));
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+		return QString("");
+
+	QTextStream in(&file);
+	QString line;
+	while (!in.atEnd()) {
+		line = in.readLine();
+		if (line.toLower().startsWith(QStringLiteral("out.absolute.dir"))){
+			break;
+		}
+		else{
+			line = "";
+		}
+	}
+	file.close();
+	return line;
+}
+
 QString PathManager::GetAntPath()
 {
 	return GetStartPath() + QStringLiteral("/apache-ant/bin");

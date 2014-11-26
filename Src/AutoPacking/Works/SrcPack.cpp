@@ -122,7 +122,13 @@ void SrcPack::run()
 		return;
 	}
 
-	QString apk = PathManager::GetReleaseApk(PathManager::GetBin(mainProPath));
+	QString apkPath;	
+	apkPath = PathManager::GetApkDir(mainProPath);
+	if (apkPath.isEmpty()){
+		apkPath = PathManager::GetBin(mainProPath);
+	}
+
+	QString apk = PathManager::GetReleaseApk(apkPath);
 	if (apk.isEmpty()){
 		mpprocess->close();
 		delete mpprocess;
@@ -131,7 +137,7 @@ void SrcPack::run()
 		emit FinishSignal(1, mtaskId);
 		return;
 	}
-	if (!PathManager::CopyFile(PathManager::GetBin(mainProPath) + QString("/") + apk, moutFile, true)){
+	if (!PathManager::CopyFile(apkPath + QString("/") + apk, moutFile, true)){
 		mpprocess->close();
 		delete mpprocess;
 		mpprocess = NULL;

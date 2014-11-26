@@ -34,6 +34,7 @@ public:
 	static bool AppendContentToProperties(QString &content,QString &path);
 	static QString GetTarget(QString &path);
 	static QStringList GetLibRef(QString &path);
+	static QString GetApkDir(QString &proFile);
 	static void SetSdkPath(QString &path);
 	static void SetPasswd(QString &password);
 	static void SetAliasesPasswd(QString &password);
