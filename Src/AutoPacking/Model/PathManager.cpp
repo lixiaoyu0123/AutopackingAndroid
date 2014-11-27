@@ -116,24 +116,49 @@ QStringList PathManager::GetLibRef(QString &path)
 
 QString PathManager::GetApkDir(QString &proFile)
 {
-	QFile file(proFile + QStringLiteral("/project.properties"));
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-		return QString("");
-
-	QTextStream in(&file);
 	QString line;
-	while (!in.atEnd()) {
-		line = in.readLine();
-		if (line.toLower().startsWith(QStringLiteral("out.absolute.dir"))){
-			line.remove(" ");
-			line = line.mid(line.indexOf("=") + 1);
-			break;
-		}
-		else{
-			line = "";
+	QFile antF(proFile + QStringLiteral("/ant.properties"));
+	if (antF.exists()){
+		if (antF.open(QIODevice::ReadOnly | QIODevice::Text)){
+
+			QTextStream in(&antF);
+
+			while (!in.atEnd()) {
+				line = in.readLine();
+				if (line.toLower().startsWith(QStringLiteral("out.absolute.dir"))){
+					line.remove(" ");
+					line.replace("\\\\", "/");
+					line = line.mid(line.indexOf("=") + 1);
+					break;
+				}
+				else{
+					line = "";
+				}
+			}
+			antF.close();
 		}
 	}
-	file.close();
+
+	if (line.isEmpty()){
+		QFile proF(proFile + QStringLiteral("/project.properties"));
+		if (proF.open(QIODevice::ReadOnly | QIODevice::Text)){
+
+			QTextStream in(&proF);
+			while (!in.atEnd()) {
+				line = in.readLine();
+				if (line.toLower().startsWith(QStringLiteral("out.absolute.dir"))){
+					line.remove(" ");
+					line.replace("\\\\", "/");
+					line = line.mid(line.indexOf("=") + 1);
+					break;
+				}
+				else{
+					line = "";
+				}
+			}
+			proF.close();
+		}
+	}
 	return line;
 }
 
@@ -160,8 +185,7 @@ QString PathManager::GetBin(QString &projectPath)
 QString PathManager::GetReleaseApk(QString &path)
 {
 	QDir dir(path);
-	dir.setFilter(QDir::NoDotAndDotDot|QDir::Files);
-	QStringList files = dir.entryList();
+	QStringList files = dir.entryList(QDir::NoDotAndDotDot | QDir::Files);
 	for (QStringList::iterator ite = files.begin(); ite != files.end(); ite++)
 	{
 		if (ite->toLower().endsWith("release.apk")){
