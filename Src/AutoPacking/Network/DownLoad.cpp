@@ -62,11 +62,10 @@ bool DownLoad::DownFile(QString &save)
 	QUrl url(murl);
 	QNetworkRequest *request = new QNetworkRequest(url);
 	mreply = mcore.get(*request);
-	int t = mreply->size();
-	connect((QObject *)mreply, SIGNAL(readyRead()), this, SLOT(WriteDataSlot()));
-	mloop = new QEventLoop();
+	connect(mreply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(WriteDataSlot(qint64, qint64)));
 	connect(mreply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(DownErrorSlot()));
 	connect(mreply, SIGNAL(finished()), this, SLOT(DownLoadFinishedSlot()));
+	mloop = new QEventLoop();
 	mloop->exec();
 	if (mhasError){
 		delete mreply;
@@ -97,7 +96,7 @@ void DownLoad::DownLoadFinishedSlot()
 	mloop = NULL;
 }
 
-void DownLoad::WriteDataSlot()
+void DownLoad::WriteDataSlot(qint64 bytesReceived, qint64 bytesTotal)
 {
 	mpfile->write(mreply->readAll());
 }

@@ -23,7 +23,7 @@ private:
 	bool mhasError;
 	
 private slots:
-void WriteDataSlot();
+void WriteDataSlot(qint64 bytesReceived, qint64 bytesTotal);
 void DownLoadFinishedSlot();
 void DownErrorSlot();
 };

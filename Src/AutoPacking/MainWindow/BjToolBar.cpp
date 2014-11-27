@@ -101,6 +101,11 @@ QComboBox *BjToolBar::GetCombox()
 	return &mcombox;
 }
 
+QComboBox *BjToolBar::GetCustomBox()
+{
+	return &mcomboxCustom;
+}
+
 QPushButton *BjToolBar::GetButtonLog()
 {
 	return &mbuttonLog;

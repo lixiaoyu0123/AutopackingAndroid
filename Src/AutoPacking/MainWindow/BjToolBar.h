@@ -33,6 +33,7 @@ public:
 	QPushButton *GetButtonThreadConfig();
 	QPushButton *GetButtonScan();
 	QComboBox *GetCombox();
+	QComboBox *GetCustomBox();
 	private slots :
 	void ButtonScanClickSlot();
 	void ComIndexChangSlot(int index);

@@ -162,7 +162,7 @@ bool Pack::CheckError(QProcess &pprocess)
 bool Pack::ZySingle()
 {
 	bool isMakeIcon;
-	ZySingleBook singleBook(this, mchannelId, mtmpCodePath);
+	ZySingleBook singleBook(NULL, mchannelId, mtmpCodePath);
 	if (!singleBook.MakeBook(isMakeIcon)){
 		return false;
 	}
