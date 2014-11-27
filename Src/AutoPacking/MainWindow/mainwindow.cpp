@@ -172,10 +172,12 @@ void MainWindow::StartDecPack()
 {
 	if (PathManager::GetDecPackPath().isEmpty()){
 		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), QStringLiteral("反编译的模板包未设置!"), QMessageBox::Ok, QMessageBox::NoButton);
+		ChangStat(false);
 		return;
 	}
 	else if (!QFile(PathManager::GetDecPackPath()).exists()){
 		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), QStringLiteral("指定位置的反编译的模板包不存在!"), QMessageBox::Ok, QMessageBox::NoButton);
+		ChangStat(false);
 		return;
 	}
 	for (int i = 0; i < mthreadNum; i++,mcurrentTaskIndex++)
@@ -209,10 +211,12 @@ void MainWindow::StartSrcPack()
 {
 	if (PathManager::GetSdkPath().isEmpty()){
 		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), QStringLiteral("Android Sdk路径未设置!"), QMessageBox::Ok, QMessageBox::NoButton);
+		ChangStat(false);
 		return;
 	}
 	else if (PathManager::GetSrcPath().isEmpty()){
 		BjMessageBox::warning(NULL, QStringLiteral("参数错误！"), QStringLiteral("源码路径未设置!"), QMessageBox::Ok, QMessageBox::NoButton);
+		ChangStat(false);
 		return;
 	}
 	for (int i = mtaskList.size(); i < mthreadNum; i++, mcurrentTaskIndex++)

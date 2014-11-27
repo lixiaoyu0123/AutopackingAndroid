@@ -345,10 +345,19 @@ bool SrcPack::PrePack(QProcess &pprocess)
 bool SrcPack::GenerateBuild(QProcess &pprocess,QString &path)
 {
 	QString buildS = path + "/build.xml";
+	QString antS = path + "/ant.properties";
 	QFile buildF(buildS);
+	QFile antF(antS);
 	if (buildF.exists()){
 		if (!buildF.remove()){
 			emit GenerateError(QStringLiteral("删除原来旧build.xlm文件失败!"));
+			return false;
+		}
+	}
+
+	if (antF.exists()){
+		if (!antF.remove()){
+			emit GenerateError(QStringLiteral("删除原来旧ant.properties文件失败!"));
 			return false;
 		}
 	}
