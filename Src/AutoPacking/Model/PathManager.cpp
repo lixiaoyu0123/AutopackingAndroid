@@ -125,6 +125,8 @@ QString PathManager::GetApkDir(QString &proFile)
 	while (!in.atEnd()) {
 		line = in.readLine();
 		if (line.toLower().startsWith(QStringLiteral("out.absolute.dir"))){
+			line.remove(" ");
+			line = line.mid(line.indexOf("=") + 1);
 			break;
 		}
 		else{
