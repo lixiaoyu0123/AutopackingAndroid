@@ -77,6 +77,18 @@ void DecPack::run()
 		return;
 	}
 
+	if (!PathManager::RewriteApktoolYml(mtmpUnpacketPath)){
+		emit GenerateError(QStringLiteral("error:重写apktool.yml出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		}
+		emit FinishSignal(1, mtaskId);
+		return;
+	}
+
 	if (!ReplaceStrByTable(mtmpUnpacketPath)){
 		emit GenerateError(QStringLiteral("error:替换字符串出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 	}

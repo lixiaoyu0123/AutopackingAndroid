@@ -81,6 +81,7 @@ bool PathManager::AppendContentToProperties(QString &content, QString &path)
 	if (!file.open(QIODevice::Append | QIODevice::Text))
 		return false;
 	QTextStream out(&file);
+	out.setCodec("UTF-8");
 	out << content;
 	file.close();
 	return true;
@@ -93,6 +94,7 @@ QString PathManager::GetTarget(QString &path)
 		return QString("");
 
 	QTextStream in(&file);
+	in.setCodec("UTF-8");
 	QString line;
 	while (!in.atEnd()) {
 		line  = in.readLine();
@@ -113,6 +115,7 @@ QStringList PathManager::GetLibRef(QString &path)
 		return retList;
 
 	QTextStream in(&file);
+	in.setCodec("UTF-8");
 	QString line;
 	while (!in.atEnd()) {
 		line = in.readLine();
@@ -132,7 +135,7 @@ QString PathManager::GetApkDir(QString &proFile)
 		if (antF.open(QIODevice::ReadOnly | QIODevice::Text)){
 
 			QTextStream in(&antF);
-
+			in.setCodec("UTF-8");
 			while (!in.atEnd()) {
 				line = in.readLine();
 				if (line.toLower().startsWith(QStringLiteral("out.absolute.dir"))){
@@ -154,6 +157,7 @@ QString PathManager::GetApkDir(QString &proFile)
 		if (proF.open(QIODevice::ReadOnly | QIODevice::Text)){
 
 			QTextStream in(&proF);
+			in.setCodec("UTF-8");
 			while (!in.atEnd()) {
 				line = in.readLine();
 				if (line.toLower().startsWith(QStringLiteral("out.absolute.dir"))){
@@ -844,7 +848,41 @@ bool PathManager::ReplaceStr(QString &fileName, QString &srcStr, QString &replac
 	return true;
 }
 
-bool PathManager::ReplaceByRegular(QString &regular, QString &text, QString &replaceStr)
+/******************************************************
+*返回值：成功0
+*		未发现原字符串1
+*		原文件开错误2
+*		未知错误3
+******************************************************/
+int PathManager::ReplaceStrStrict(QString &fileName, QString &srcStr, QString &replaceStr)
+{
+	QFile file(fileName);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+		return 2;
+	}
+	QTextStream in(&file);
+	in.setCodec("UTF-8");
+	QString content;
+	content = in.readAll();
+	if (!content.contains(srcStr)){
+		return 1;
+	}
+	content.replace(srcStr, replaceStr);
+
+	file.close();
+	if (!QFile::remove(fileName)){
+		return 3;
+	}
+	QFile newfile(fileName);
+	if (!newfile.open(QIODevice::ReadWrite | QIODevice::Text)){
+		return 3;
+	}
+	newfile.write(content.toUtf8());
+	newfile.close();
+	return 0;
+}
+
+bool PathManager::ReplaceByRegular(QString &regular,QString &text,QString &replaceStr)
 {
 	SPCRE *spcre = PCRECache::instance()->getObject(regular);
 	QList<SPCRE::MatchInfo> match_info = spcre->getEveryMatchInfo(text);
@@ -1228,6 +1266,39 @@ bool PathManager::ReplaceAppPakNameInJava(QString &srcPath, QString &fileName, Q
 		newfile.close();
 		return true;
 	}
+	return true;
+}
+
+bool PathManager::RewriteApktoolYml(QString &fileName)
+{
+	QFile file(fileName + QStringLiteral("/apktool.yml"));
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+		return false;
+
+	QTextStream in(&file);
+	in.setCodec("UTF-8");
+	QString content;
+	QString line;
+	while (!in.atEnd()) {
+		line.clear();
+		line = in.readLine();
+		if (!line.toLower().startsWith(QStringLiteral("apkfilename:"))){
+			content.append(line).append("\n");
+			continue;
+		}
+		//apkFileName: new.apk 中间空格非常重要，非有不可
+		content.append("apkFileName: new.apk").append("\n");
+	}
+	file.close();
+	if (!file.resize(0)){
+		return false;
+	}
+
+	if (!file.open(QIODevice::WriteOnly)){
+		return false;
+	}
+	file.write(content.toUtf8());
+	file.close();
 	return true;
 }
 

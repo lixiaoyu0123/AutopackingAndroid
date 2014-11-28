@@ -77,8 +77,16 @@ bool Pack::ReplaceStrByTable(QString &path)
 			return false;
 		}
 
-		if (!PathManager::ReplaceStr(findFile, ite->GetSrcStr(), ite->GetDestStr())){
-			emit GenerateError(QStringLiteral("error:替换字符串失败！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		switch (PathManager::ReplaceStrStrict(findFile, ite->GetSrcStr(), ite->GetDestStr()))
+		{
+		case 1:
+			emit GenerateError(QStringLiteral("error:替换字符串失败！未发现原字符串在指定的文件中！ 渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 2:
+			emit GenerateError(QStringLiteral("error:替换字符串失败！指定文件开错误！ 渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		case 3:
+			emit GenerateError(QStringLiteral("error:替换字符串失败！其他错误！ 渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 			return false;
 		}
 	}

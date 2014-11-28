@@ -202,6 +202,23 @@ bool SrcPack::CopySrc(QString &srcPath, QString &destPath)
 		return false;
 	}
 
+	QString apkStoreS = PathManager::GetKeyPath();
+	QFile apkStoreF(apkStoreS);
+	if (!apkStoreF.exists()){
+		return false;
+	}
+
+	QFile newF(destPath + "/apk.keystore");
+	if (newF.exists()){
+		if (!newF.remove()){
+			return false;
+		}
+	}
+
+	if (!QFile::copy(apkStoreF.fileName(), newF.fileName())){
+		return false;
+	}
+
 	QStringList libRefs = PathManager::GetLibRef(srcPath);
 	if (!libRefs.isEmpty()){
 		QDir dir;
@@ -371,7 +388,7 @@ bool SrcPack::GenerateBuild(QProcess &pprocess,QString &path)
 	target = target.remove(" ").remove("target=");
 	param << "\"" + PathManager::GetAndroid() + "\"" << "\"" + PathManager::GetSdkToolsPath() + "\"" << target << "\"" + path + "\"";
 	QString content = QStringLiteral("\nkey.store=%1\nkey.alias=%2\nkey.store.password=%3\nkey.alias.password=%4\n")
-		.arg(PathManager::GetKeyPath())
+		.arg("../apk.keystore")
 		.arg(PathManager::GetKeyAliases())
 		.arg(PathManager::GetPasswd())
 		.arg(PathManager::GetAliasesPasswd());
