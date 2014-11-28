@@ -822,6 +822,40 @@ bool PathManager::ReplaceStr(QString &fileName, QString &srcStr, QString &replac
 	return true;
 }
 
+/******************************************************
+*返回值：成功0
+*		未发现原字符串1
+*		原文件开错误2
+*		未知错误3
+******************************************************/
+int PathManager::ReplaceStrStrict(QString &fileName, QString &srcStr, QString &replaceStr)
+{
+	QFile file(fileName);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+		return 2;
+	}
+	QTextStream in(&file);
+	in.setCodec("UTF-8");
+	QString content;
+	content = in.readAll();
+	if (!content.contains(srcStr)){
+		return 1;
+	}
+	content.replace(srcStr, replaceStr);
+
+	file.close();
+	if (!QFile::remove(fileName)){
+		return 3;
+	}
+	QFile newfile(fileName);
+	if (!newfile.open(QIODevice::ReadWrite | QIODevice::Text)){
+		return 3;
+	}
+	newfile.write(content.toUtf8());
+	newfile.close();
+	return 0;
+}
+
 bool PathManager::ReplaceByRegular(QString &regular,QString &text,QString &replaceStr)
 {
 	SPCRE *spcre = PCRECache::instance()->getObject(regular);

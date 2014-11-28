@@ -50,6 +50,7 @@ public:
 	static bool CopyFile(const QString &SrcFile, const QString &DestFile, bool isCover);
 	static bool SearchDirContianSuffix(const QString &dirFrom, QStringList &result, QString &suffix);
 	static bool ReplaceStr(QString &fileName, QString &srcStr, QString &replaceStr);
+	static int ReplaceStrStrict(QString &fileName, QString &srcStr, QString &replaceStr);
 	static bool ReplaceByRegular(QString &regular, QString &text,QString &replaceStr);
 	static bool ReplacePakNameInXml(QString &srcPath,QString &fileName,QString &oldName,QString &newName);
 	static bool ReplaceAppPakNameInXml(QString &srcPath, QString &fileName, QString &oldName, QString &newName);
