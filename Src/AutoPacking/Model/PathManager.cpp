@@ -28,6 +28,8 @@ QString PathManager::DIGESTALG = "";
 int PathManager::THREADNUM = 1;
 int PathManager::PACKWAY = 0;
 
+const QString Config = "IntegratPackingConfig.ini";
+
 QString PathManager::GetStartPath()
 {
 	return QDir::currentPath();
@@ -50,7 +52,7 @@ QString PathManager::GetDataBasePath()
 {
 	QString path("");
 	if (!GetConfigPath().isEmpty()){
-		path = GetConfigPath() + "/database.db";
+		path = GetConfigPath() + "/IntegratPacking.db";
 	}
 	return path;
 }
@@ -1384,7 +1386,7 @@ bool PathManager::CheckParameter()
 
 bool PathManager::IsFirstRun()
 {
-	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);
+	QSettings settings(GetConfigPath() + Config, QSettings::IniFormat);
 	settings.beginGroup("Setting");
 	QString firstRun = settings.value("FirstRun", "").toString();
 	if (firstRun.isEmpty()){
@@ -1398,7 +1400,7 @@ bool PathManager::IsFirstRun()
 
 void PathManager::WriteSetting()
 {
-	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);
+	QSettings settings(GetConfigPath() + Config, QSettings::IniFormat);
 	settings.beginGroup("Setting");
 	settings.setValue("OutPath", OUTPATH);
 	settings.setValue("DecPackPath", DECPACKPATH);
@@ -1419,7 +1421,7 @@ void PathManager::WriteSetting()
 
 void PathManager::ReadSetting()
 {
-	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);
+	QSettings settings(GetConfigPath() + Config, QSettings::IniFormat);
 	settings.beginGroup("Setting");
 	OUTPATH = settings.value("OutPath", "").toString();
 	DECPACKPATH = settings.value("DecPackPath", "").toString();
@@ -1440,7 +1442,7 @@ void PathManager::ReadSetting()
 
 void PathManager::WriteLastPath(QString &key, QString &val)
 {
-	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);
+	QSettings settings(GetConfigPath() + Config, QSettings::IniFormat);
 	settings.beginGroup("LastPathSetting");
 	settings.setValue(key, val);
 	settings.endGroup();
@@ -1449,7 +1451,7 @@ void PathManager::WriteLastPath(QString &key, QString &val)
 QString PathManager::ReadLastPath(QString &key)
 {
 	QString ret;
-	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);
+	QSettings settings(GetConfigPath() + Config, QSettings::IniFormat);
 	settings.beginGroup("LastPathSetting");
 	ret = settings.value(key, "").toString();
 	settings.endGroup();
