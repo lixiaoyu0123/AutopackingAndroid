@@ -559,11 +559,13 @@ bool PathManager::CopyDir(const QString &source, const QString &destination, boo
 		QDir dirSrc(source);
 		QDir dirDest(destination);
 		QString srcPath = *ite;
-		QFile file(srcPath);
+		
+		QString tar = ite->replace(dirSrc.absolutePath(), dirDest.absolutePath());
+		QFile file(tar);
 		if (file.exists() && !isCover){
 			continue;
 		}
-		if (!QFile::copy(srcPath, ite->replace(dirSrc.absolutePath(), dirDest.absolutePath()))){
+		if (!QFile::copy(srcPath, tar)){
 			return false;
 		}
 	}
@@ -1358,21 +1360,27 @@ bool PathManager::InsertCode(QString &activity)
 			isFindRestart = true;
 			funFlag = true;
 		}
-		if (isFindRestart && funFlag){
+		else if (isFindRestart && funFlag){
 			if (line.trimmed().startsWith("return-void")){
 				content.append("    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onPause(Landroid/content/Context;)V\r\n");
 			}
 		}
-		if (line.trimmed().startsWith(QStringLiteral(".method protected onResume()V"))){
+		else if (line.trimmed().startsWith(QStringLiteral(".method protected onResume()V"))){
 			isFindResume = true;
 			funFlag = true;
 		}
-		if (isFindResume && funFlag){
+		else if (isFindResume && funFlag){
 			if (line.trimmed().startsWith("return-void")){
 				content.append("    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onResume(Landroid/content/Context;)V\r\n");
 			}
 		}
-		if (line.trimmed().startsWith(".end method")){
+		else if (line.trimmed().startsWith(".end method")){
+			if (isFindRestart){
+				content.append("    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onPause(Landroid/content/Context;)V\r\n");
+			}
+			else if (isFindResume){
+				content.append("    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onResume(Landroid/content/Context;)V\r\n");
+			}
 			funFlag = false;
 		}
 		content.append(line).append("\r\n");

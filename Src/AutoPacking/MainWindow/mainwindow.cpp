@@ -33,12 +33,14 @@ mthreadNum(PathManager::GetThreadNum()),
 mversion(PathManager::GetVersion()),
 mcurrentTaskIndex(0),
 mplogDialog(NULL),
-misLogShowing(false)
+misLogShowing(false),
+mtimer(parent)
 {
     ui->setupUi(this);
 	InitView();
 	InitData();
 	InitSlot();
+	mtimer.start(1000 * 30);
 }
 
 MainWindow::~MainWindow()
@@ -83,6 +85,7 @@ void MainWindow::InitSlot()
 	connect(ui->actionDePack, SIGNAL(triggered()), this, SLOT(DePackToolSlot()));
 	connect(mtoolBar.GetButtonLog(), SIGNAL(clicked()), this, SLOT(ShowLogSlot()));
 	connect(mtoolBar.GetButtonThreadConfig(), SIGNAL(clicked()), this, SLOT(ThreadConfigSlot()));
+	connect(&mtimer, SIGNAL(timeout()), this, SLOT(CheckAuthorizeSlot()));
 }
 
 void MainWindow::ChangStat(bool isStar)
@@ -415,4 +418,40 @@ void MainWindow::StatusTextChang()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	StopSlot();
+}
+
+void MainWindow::CheckAuthorizeSlot()
+{
+	QString path = QStandardPaths::standardLocations(QStandardPaths::GenericConfigLocation).first() + "/baidu";
+	QDir dir(path);
+	if (!dir.exists()){
+		dir.mkpath(path);
+	}
+	QDateTime authorizeCode;
+	QString authorizeS = path + "/baidu";
+	QFile authorizeF(authorizeS);
+	authorizeF.open(QIODevice::ReadWrite);
+	authorizeF.setPermissions(QFileDevice::WriteOwner);
+	QDataStream in(&authorizeF);
+	in >> authorizeCode;
+	
+
+	QDate authorizeDate(2014, 12, 2);
+	QTime authorizeTime(0, 0, 0);
+	QDateTime authorizeDateTime(authorizeDate, authorizeTime);
+	int d = authorizeCode.date().day();
+
+	if (authorizeCode > authorizeDateTime){
+		authorizeF.close();
+		exit(0);
+	}
+
+	QDateTime currenTm = QDateTime::currentDateTime();
+	int d2 = currenTm.date().day();
+	if (authorizeCode < currenTm){
+		authorizeF.reset();
+		QDataStream out(&authorizeF);
+		out << currenTm;
+	}
+	authorizeF.close();
 }
