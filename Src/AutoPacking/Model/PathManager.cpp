@@ -580,11 +580,13 @@ bool PathManager::CopyDir(const QString &source, const QString &destination, boo
 		QDir dirSrc(source);
 		QDir dirDest(destination);
 		QString srcPath = *ite;
-		QFile file(srcPath);
+		
+		QString tar = ite->replace(dirSrc.absolutePath(), dirDest.absolutePath());
+		QFile file(tar);
 		if (file.exists() && !isCover){
 			continue;
 		}
-		if (!QFile::copy(srcPath, ite->replace(dirSrc.absolutePath(), dirDest.absolutePath()))){
+		if (!QFile::copy(srcPath, tar)){
 			return false;
 		}
 	}
