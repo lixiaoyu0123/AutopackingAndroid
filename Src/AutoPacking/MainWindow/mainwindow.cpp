@@ -99,7 +99,7 @@ void MainWindow::ChangStat(bool isStar)
 		mcentralFram.GetTableView().setStyleSheet("background-color:#F7F7F7");
 		madapter.SetEnableEdit(false);
 		mtoolBar.GetButtonThreadConfig()->setDisabled(true);
-		mtoolBar.GetCombox()->setDisabled(true);
+		//mtoolBar.GetCombox()->setDisabled(true);
 		mtoolBar.GetButtonScan()->setDisabled(true);
 		ui->menuBar->setDisabled(true);
 	}
@@ -109,7 +109,7 @@ void MainWindow::ChangStat(bool isStar)
 		mcentralFram.GetTableView().setStyleSheet(QString(""));
 		madapter.SetEnableEdit(true);
 		mtoolBar.GetButtonThreadConfig()->setEnabled(true);
-		mtoolBar.GetCombox()->setEnabled(true);
+		//mtoolBar.GetCombox()->setEnabled(true);
 		mtoolBar.GetButtonScan()->setEnabled(true);
 		ui->menuBar->setEnabled(true);
 	}

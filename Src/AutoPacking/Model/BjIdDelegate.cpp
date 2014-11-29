@@ -14,8 +14,8 @@ QStyledItemDelegate(parent)
 QWidget *BjIdDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
 	QLineEdit *editor = new QLineEdit(parent);
-	QRegExp regExp("[0-9]{0,50}");
-	editor->setValidator(new QRegExpValidator(regExp, parent));
+	//QRegExp regExp("[0-9]{0,50}");
+	//editor->setValidator(new QRegExpValidator(regExp, parent));
 	return editor;
 }
 
