@@ -38,6 +38,7 @@ QString PathManager::ORIAPPNAME = "";
 QString PathManager::NEWAPPNAME = "";
 
 
+const QString Config = "/ZyConfig.ini";
 QString PathManager::GetStartPath()
 {
 	return QDir::currentPath();
@@ -1427,7 +1428,7 @@ bool PathManager::CheckParameter()
 
 bool PathManager::IsFirstRun()
 {
-	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);
+	QSettings settings(GetConfigPath() + Config, QSettings::IniFormat);
 	settings.beginGroup("Setting");
 	QString firstRun = settings.value("FirstRun", "").toString();
 	if (firstRun.isEmpty()){
@@ -1547,7 +1548,7 @@ QString PathManager::GetNewAppNm()
 
 void PathManager::WriteSetting()
 {
-	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);
+	QSettings settings(GetConfigPath() + Config, QSettings::IniFormat);
 	settings.beginGroup("Setting");
 	settings.setValue("OutPath", OUTPATH);
 	settings.setValue("DecPackPath", DECPACKPATH);
@@ -1577,7 +1578,7 @@ void PathManager::WriteSetting()
 
 void PathManager::ReadSetting()
 {
-	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);
+	QSettings settings(GetConfigPath() + Config, QSettings::IniFormat);
 	settings.beginGroup("Setting");
 	OUTPATH = settings.value("OutPath", "").toString();
 	DECPACKPATH = settings.value("DecPackPath", "").toString();
@@ -1607,7 +1608,7 @@ void PathManager::ReadSetting()
 
 void PathManager::WriteLastPath(QString &key, QString &val)
 {
-	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);
+	QSettings settings(GetConfigPath() + Config, QSettings::IniFormat);
 	settings.beginGroup("LastPathSetting");
 	settings.setValue(key, val);
 	settings.endGroup();
@@ -1616,7 +1617,7 @@ void PathManager::WriteLastPath(QString &key, QString &val)
 QString PathManager::ReadLastPath(QString &key)
 {
 	QString ret;
-	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);
+	QSettings settings(GetConfigPath() + Config, QSettings::IniFormat);
 	settings.beginGroup("LastPathSetting");
 	ret = settings.value(key, "").toString();
 	settings.endGroup();
