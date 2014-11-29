@@ -3,7 +3,7 @@
 ; Inno, the ones with the dollar we define with CMake.
 
 [Setup]
-AppId={{3736C7B6-53BD-491F-AD3B-6C066F62787F}
+AppId={{3736C7B6-53BD-491F-AD3B-6C066F627880}
 AppName=android批量打包工具
 AppVerName=Autopacking ${TOOLS_FULL_VERSION}
 DefaultDirName={pf}\Autopacking

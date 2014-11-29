@@ -15,6 +15,7 @@ public:
 		QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, QList<ReplaceAppPakTable> &appPakTableList, int taskId);
 	virtual bool ReplacePakByTable(QString &path);
 	virtual bool ReplaceAppPakByTable(QString &path);
+	bool IntegratSdk();
 	bool Unpacket(QString &inPath, QString &outPath,QProcess &pprocess);
 	bool Dopacket(QString &inPath, QString &outPath, QProcess &pprocess);
 	bool SignPacket(QString inPath, QString outPath, QProcess &pprocess);

@@ -29,14 +29,14 @@ void DecPackSetting::InitSlot()
 
 void DecPackSetting::ButtonScanClickSlot()
 {
-	QString defaultPath = PathManager::ReadLastPath(QStringLiteral("decpack"));
+	QString defaultPath = PathManager::ReadLastPath(QStringLiteral("setBaiduSdk"));
 	if (defaultPath.isEmpty()){
 		defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
 	}
-	QString fileName = QFileDialog::getOpenFileName(this, QStringLiteral("打开文件"), defaultPath, QStringLiteral("android packet file (*.apk)"));
-	if (!fileName.isEmpty()){
-		mtemplate = fileName;
-		ui->LineEditPath->setText(fileName);
+	QString	dir = QFileDialog::getExistingDirectory(this, QStringLiteral("选择百度Sdk位置"), defaultPath, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+	if (!dir.isEmpty()){
+		mtemplate = dir;
+		ui->LineEditPath->setText(dir);
 	}
 }
 
@@ -46,5 +46,5 @@ void DecPackSetting::ButtonOkClickSlot()
 		return;
 	}
 	PathManager::SetDecPackPath(mtemplate);
-	PathManager::WriteLastPath(QStringLiteral("decpack"), mtemplate.left(mtemplate.replace("\\", "/").lastIndexOf("/")));
+	PathManager::WriteLastPath(QStringLiteral("setBaiduSdk"), mtemplate);
 }

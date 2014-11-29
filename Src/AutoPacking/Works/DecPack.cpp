@@ -36,7 +36,7 @@ void DecPack::Init(QString &inPath, QString &outPath, QString &channelId, QStrin
 	mresTableList = resTableList;
 	mpakTableList = pakTableList;
 	mappPakTableList = appPakTableList;
-	minputPath = inPath;
+	minputPath = channelName.replace("\\","/");
 	moutputPath = outPath;
 	mchanneltbId = channeltbID;
 }
@@ -111,6 +111,18 @@ void DecPack::run()
 
 	if (!ReplaceAppPakByTable(mtmpUnpacketPath)){
 		emit GenerateError(QStringLiteral("error:替换应用包名出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		mpprocess->close();
+		delete mpprocess;
+		mpprocess = NULL;
+		if (!PathManager::RemoveDir(mtmpPath)){
+			emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+		}
+		emit FinishSignal(1, mtaskId);
+		return;
+	}
+
+	if (!IntegratSdk()){
+		emit GenerateError(QStringLiteral("error:集成Sdk错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		mpprocess->close();
 		delete mpprocess;
 		mpprocess = NULL;
@@ -200,10 +212,10 @@ void DecPack::run()
 bool DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
 {
 	if (outPath.endsWith("/")){
-		moutFile = outPath + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
+		moutFile = outPath + channelId + "_" + channeltbId + "_" + PathManager::GetVersion() + ".apk";
 	}
 	else{
-		moutFile = outPath + "/" + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
+		moutFile = outPath + "/" + channelId + "_" + channeltbId + "_" + PathManager::GetVersion() + ".apk";
 	}
 
 	mtmpPath = PathManager::GetTmpPath() + QStringLiteral("/") + channeltbId;
@@ -226,7 +238,7 @@ bool DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelNa
 	PathManager::CreatDir(unpackPath);
 	PathManager::CreatDir(signPath);
 	mtmpUnpacketPath = unpackPath;
-	mtmpSignFile = signPath + "/" + channelName + "_" + PathManager::GetVersion() + channelId + "_" + ".apk";
+	mtmpSignFile = signPath + "/" + channelId + "_" + PathManager::GetVersion() + channeltbId + "_" + ".apk";
 	return true;
 }
 
@@ -279,6 +291,30 @@ bool DecPack::ReplaceAppPakByTable(QString &path)
 			emit GenerateError(QStringLiteral("error:替换App包名出错,替换包名过程出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 			return false;
 		}
+	}
+	return true;
+}
+
+bool DecPack::IntegratSdk()
+{
+	QString srcPath = PathManager::GetDecPackPath();
+	QString destPath = mtmpUnpacketPath + "/smali" + srcPath.mid(srcPath.lastIndexOf("/"));
+	if (!PathManager::CopyDir(PathManager::GetDecPackPath(), destPath, false)){
+		return false;
+	}
+
+	QString startActivity;
+	if (!PathManager::GetStartActivityAndInsertMeta(mtmpUnpacketPath, mchannelId, startActivity)){
+		return false;
+	}
+	if (startActivity.isEmpty()){
+		return false;
+	}
+
+	startActivity.replace(".", "/");
+	QString startActivityPath = mtmpUnpacketPath + "/smali/" + startActivity + ".smali";
+	if (!PathManager::InsertCode(startActivityPath)){
+		return false;
 	}
 	return true;
 }

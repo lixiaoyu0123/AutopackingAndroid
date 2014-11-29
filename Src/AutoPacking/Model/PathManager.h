@@ -68,6 +68,8 @@ public:
 	static int ReplacePakInDec(QString &path, QString &oldName, QString &newName);
 	static int ReplaceAppPakInSrc(QString &path, QString &oldName, QString &newName);
 	static int ReplaceAppPakInDec(QString &path, QString &oldName, QString &newName);
+	static bool GetStartActivityAndInsertMeta(QString &path, QString &sdkKey,QString &outStartActivity);
+	static bool InsertCode(QString &activity);
 	static void SetKeyAliases(QString &aliases);
 	static QString GetKeyAliases();
 	static void SetThreadNum(int num);

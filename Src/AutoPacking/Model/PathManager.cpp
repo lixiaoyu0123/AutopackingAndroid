@@ -26,9 +26,9 @@ QString PathManager::VERSION = "";
 QString PathManager::SIGALG = "";
 QString PathManager::DIGESTALG = "";
 int PathManager::THREADNUM = 1;
-int PathManager::PACKWAY = 0;
+int PathManager::PACKWAY = 1;
 
-const QString Config = "IntegratPackingConfig.ini";
+const QString Config = "/IntegratPackingConfig.ini";
 
 QString PathManager::GetStartPath()
 {
@@ -1247,6 +1247,162 @@ bool PathManager::ReplaceAppPakNameInJava(QString &srcPath, QString &fileName, Q
 		newfile.close();
 		return true;
 	}
+	return true;
+}
+
+bool PathManager::GetStartActivityAndInsertMeta(QString &path, QString &sdkKey, QString &outStartActivity)
+{
+	QString manifest = path + "/" + "AndroidManifest.xml";
+	QFile file(manifest);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+		return false;
+	}
+	QDomDocument doc;
+	if (!doc.setContent(&file)){
+		file.close();
+		return false;
+	}
+	file.close();
+	QDomElement root = doc.documentElement();
+	if (root.tagName() != "manifest"){
+		return false;
+	}
+	QString pack = root.attribute("package");
+	if (pack.isEmpty()){
+		return false;
+	}
+	QDomNodeList applications = root.elementsByTagName("application");
+	QDomNode application;
+	if (applications.isEmpty()){
+		return false;
+	}
+	application = applications.at(0);
+	QDomElement channel = doc.createElement("meta-data");
+	channel.setAttribute("android:name", "BaiduMobAd_CHANNEL");
+	channel.setAttribute("android:value", "douguomarket");
+	application.appendChild(channel);
+
+	QDomElement statId = doc.createElement("meta-data");
+	statId.setAttribute("android:name", "BaiduMobAd_STAT_ID");
+	statId.setAttribute("android:value", sdkKey);
+	application.appendChild(statId);
+
+	QDomElement strategy = doc.createElement("meta-data");
+	strategy.setAttribute("android:name", "BaiduMobAd_SEND_STRATEGY");
+	strategy.setAttribute("android:value", "APP_START");
+	application.appendChild(strategy);
+
+	
+	QDomElement appElem = application.toElement();
+	if (appElem.isNull()){
+		return false;
+	}
+
+	QDomNodeList activitys = appElem.elementsByTagName("activity");
+	for (int i = 0; i < activitys.size(); i++){
+		QDomElement elem = activitys.at(i).toElement();
+		if (!elem.isNull()){
+			QDomNodeList categorys = elem.elementsByTagName("category");
+			for (int j = 0; j < categorys.size(); j++)
+			{
+				QDomElement elemCate = categorys.at(j).toElement();
+				if (!elemCate.isNull()){
+					QString attr = elemCate.attribute("android:name", "");
+					if (!attr.isEmpty() && (attr.trimmed().compare("android.intent.category.LAUNCHER") == 0)){
+						QString activityNm = elem.attribute("android:name", "");
+						if (!activityNm.isEmpty() && activityNm.startsWith(".")){
+							activityNm = pack + activityNm;
+						}
+						outStartActivity = activityNm;
+					}
+				}
+			}
+		}
+	}
+
+	QFile filexml(manifest);
+	if (!filexml.open(QFile::WriteOnly | QFile::Truncate)){
+		qWarning("error::ParserXML->writeOperateXml->file.open\n");
+		return false;
+	}
+	QTextStream ts(&filexml);
+	ts.reset();
+	ts.setCodec("utf-8");
+	doc.save(ts, 4, QDomNode::EncodingFromTextStream);
+	filexml.close();
+	return true;
+
+}
+
+bool PathManager::InsertCode(QString &activity)
+{
+	QFile file(activity);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+		return false;
+
+	QTextStream in(&file);
+	in.setCodec("UTF-8");
+	QString content;
+	QString line;
+	bool isFindRestart = false;
+	bool isFindResume = false;
+	while (!in.atEnd()) {
+		line = in.readLine();
+		if (line.trimmed().startsWith(QStringLiteral(".method protected onRestart()V"))){
+			isFindRestart = true;
+		}
+		if (isFindRestart){
+			if (line.trimmed().startsWith("return-void")){
+				content.append("    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onPause(Landroid/content/Context;)V\r\n");
+			}
+		}
+		if (line.trimmed().startsWith(QStringLiteral(".method protected onResume()V"))){
+			isFindResume = true;
+		}
+		if (isFindResume){
+			if (line.trimmed().startsWith("return-void")){
+				content.append("    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onResume(Landroid/content/Context;)V\r\n");
+			}
+		}
+		content.append(line).append("\r\n");
+	}
+
+	if (!isFindRestart){
+		content.append("\r\n.method protected onRestart()V\r\n"
+			"    .locals 0\r\n"
+			"    .prologue\r\n"
+			"    .line 34\r\n"
+			"    invoke-super{p0}, Landroid/app/Activity;->onRestart()V\r\n"
+			"    .line 35\r\n"
+			"    invoke-static{p0}, Lcom/baidu/mobstat/StatService;->onPause(Landroid/content/Context;)V\r\n"
+			"    .line 36\r\n"
+			"    return-void\r\n"
+			".end method\r\n");
+	}
+
+	if (!isFindResume){
+		content.append("\r\n.method protected onResume()V\r\n"
+			"    .locals 0\r\n"
+			"    .prologue\r\n"
+			"    .line 27\r\n"
+			"    invoke-super {p0}, Landroid/app/Activity;->onResume()V\r\n"
+			"    .line 28\r\n"
+			"    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onResume(Landroid/content/Context;)V\r\n"
+			"    .line 29\r\n"
+			"    return-void\r\n"
+			".end method\r\n");
+	}
+
+	file.close();
+	if (!file.resize(0)){
+		return false;
+	}
+
+	if (!file.open(QIODevice::WriteOnly)){
+		return false;
+	}
+	file.write(content.toUtf8());
+	file.close();
 	return true;
 }
 

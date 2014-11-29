@@ -193,7 +193,7 @@ void MainWindow::StartDecPack()
 		QList<ReplaceAppPakTable> appPakTableList;
 		DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(mcurrentTaskIndex), QStringLiteral("打包开始！"));
 		DatabaseManager::GetInstance()->ReadyData(id, strTableList, resTableList, pakTableList, appPakTableList);
-		ppack->Init(PathManager::GetDecPackPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, appPakTableList,mcurrentTaskIndex);
+		ppack->Init(PathManager::GetDecPackPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, appPakTableList, mrecordIndex.at(mcurrentTaskIndex));
 		ppack->start();
 	}
 
@@ -232,7 +232,7 @@ void MainWindow::StartSrcPack()
 		QList<ReplaceAppPakTable> appPakTableList;
 		DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(mcurrentTaskIndex), QStringLiteral("打包开始！"));
 		DatabaseManager::GetInstance()->ReadyData(id, strTableList, resTableList, pakTableList, appPakTableList);
-		ppack->Init(PathManager::GetSrcPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, appPakTableList,mcurrentTaskIndex);
+		ppack->Init(PathManager::GetSrcPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, appPakTableList, mrecordIndex.at(mcurrentTaskIndex));
 		ppack->start();
 	}
 
@@ -251,7 +251,7 @@ void MainWindow::FinishedSlot(int stat,int taskId)
 			if (var->GetTaskId() == taskId){
 				var->deleteLater();
 				mtaskList.removeOne(var);
-				DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(taskId), QStringLiteral("打包完成!"));
+				DatabaseManager::GetInstance()->ChangStatInDatabase(taskId, QStringLiteral("打包完成!"));
 			}
 		}
 		break;
@@ -261,7 +261,7 @@ void MainWindow::FinishedSlot(int stat,int taskId)
 			if (var->GetTaskId() == taskId){
 				var->deleteLater();
 				mtaskList.removeOne(var);
-				DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(taskId), QStringLiteral("打包出错!"));
+				DatabaseManager::GetInstance()->ChangStatInDatabase(taskId, QStringLiteral("打包出错!"));
 			}
 		}
 		break;
@@ -271,7 +271,7 @@ void MainWindow::FinishedSlot(int stat,int taskId)
 			if (var->GetTaskId() == taskId){
 				var->deleteLater();
 				mtaskList.removeOne(var);
-				DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(taskId), QStringLiteral("打包停止!"));
+				DatabaseManager::GetInstance()->ChangStatInDatabase(taskId, QStringLiteral("打包停止!"));
 			}
 		}
 		return;

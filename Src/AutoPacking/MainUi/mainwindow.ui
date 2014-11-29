@@ -162,16 +162,22 @@
    <property name="whatsThis">
     <string>通过设置源码位置来打包</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionDecPkSetting">
    <property name="text">
-    <string>反编译打包设置</string>
+    <string>百度sdk设置</string>
    </property>
    <property name="statusTip">
-    <string>通过反编译打好的apk来重新批量打包</string>
+    <string>设置百度sdk的smali文件位置</string>
    </property>
    <property name="whatsThis">
-    <string>通过反编译打好的apk来重新批量打包</string>
+    <string>设置百度sdk的smali文件位置</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionSetVersion">

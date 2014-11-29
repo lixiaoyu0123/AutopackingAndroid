@@ -176,8 +176,8 @@ void DatabaseManager::InitDataModel()
 		mptableModel->revertAll();//如果不删除，则撤销
 		return;
 	}
-	mptableModel->setHeaderData(1, Qt::Horizontal, QStringLiteral("渠道ID"));
-	mptableModel->setHeaderData(2, Qt::Horizontal, QStringLiteral("渠道名称"));
+	mptableModel->setHeaderData(1, Qt::Horizontal, QStringLiteral("SdkKey"));
+	mptableModel->setHeaderData(2, Qt::Horizontal, QStringLiteral("Apk"));
 	mptableModel->setHeaderData(3, Qt::Horizontal, QStringLiteral("编辑替换字符串"));
 	mptableModel->setHeaderData(4, Qt::Horizontal, QStringLiteral("编辑替换资源"));
 	mptableModel->setHeaderData(5, Qt::Horizontal, QStringLiteral("编辑替换内部包名"));

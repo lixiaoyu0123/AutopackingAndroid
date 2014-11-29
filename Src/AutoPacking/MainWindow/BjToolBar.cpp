@@ -47,6 +47,7 @@ void BjToolBar::InitView()
 	this->addWidget(&mbuttonLog);
 	this->addSeparator();
 	this->addWidget(&mbuttonThreadConfig);
+	mcombox.setDisabled(true);
 }
 
 void BjToolBar::InitSlot()
