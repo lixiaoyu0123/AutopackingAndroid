@@ -544,7 +544,7 @@ bool PathManager::CopyDir(const QString &source, const QString &destination, boo
 		QDir dirDest(destination);
 		ite->replace(dirSrc.absolutePath(), dirDest.absolutePath());
 		QDir dirTmp(*ite);
-		if (!dirTmp.mkpath(*ite)){
+		if (!dirTmp.exists() && !dirTmp.mkpath(*ite)){
 			return false;
 		}
 	}
@@ -557,6 +557,10 @@ bool PathManager::CopyDir(const QString &source, const QString &destination, boo
 		QDir dirSrc(source);
 		QDir dirDest(destination);
 		QString srcPath = *ite;
+		QFile file(srcPath);
+		if (file.exists() && !isCover){
+			continue;
+		}
 		if (!QFile::copy(srcPath, ite->replace(dirSrc.absolutePath(), dirDest.absolutePath()))){
 			return false;
 		}
