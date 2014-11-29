@@ -1346,23 +1346,30 @@ bool PathManager::InsertCode(QString &activity)
 	QString line;
 	bool isFindRestart = false;
 	bool isFindResume = false;
-	while (!in.atEnd()) {
+	bool funFlag = false;
+	while (!in.atEnd()) 
+	{
 		line = in.readLine();
 		if (line.trimmed().startsWith(QStringLiteral(".method protected onRestart()V"))){
 			isFindRestart = true;
+			funFlag = true;
 		}
-		if (isFindRestart){
+		if (isFindRestart && funFlag){
 			if (line.trimmed().startsWith("return-void")){
 				content.append("    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onPause(Landroid/content/Context;)V\r\n");
 			}
 		}
 		if (line.trimmed().startsWith(QStringLiteral(".method protected onResume()V"))){
 			isFindResume = true;
+			funFlag = true;
 		}
-		if (isFindResume){
+		if (isFindResume && funFlag){
 			if (line.trimmed().startsWith("return-void")){
 				content.append("    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onResume(Landroid/content/Context;)V\r\n");
 			}
+		}
+		if (line.trimmed().startsWith(".end method")){
+			funFlag = false;
 		}
 		content.append(line).append("\r\n");
 	}
