@@ -1350,32 +1350,38 @@ bool PathManager::InsertCode(QString &activity)
 	in.setCodec("UTF-8");
 	QString content;
 	QString line;
-	bool isFindRestart = false;
+	bool isFindPause = false;
 	bool isFindResume = false;
 	bool funFlag = false;
+	bool hasReplacePause = false;
+	bool hasReplaceResume = false;
 	while (!in.atEnd())
 	{
 		line = in.readLine();
-		if (line.trimmed().startsWith(QStringLiteral(".method protected onRestart()V")) ||
-			line.trimmed().startsWith(QStringLiteral(".method public onRestart()V"))){
-			isFindRestart = true;
+		if (line.trimmed().startsWith(QStringLiteral(".method protected onPause()V")) ||
+			line.trimmed().startsWith(QStringLiteral(".method public onPause()V"))){
+			isFindPause = true;
 			funFlag = true;
+			hasReplacePause = true;
 		}
-		if (isFindRestart && funFlag && line.trimmed().startsWith("return-void")){
+		if (hasReplacePause && isFindPause && funFlag && line.trimmed().startsWith("return-void")){
 			content.append("    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onPause(Landroid/content/Context;)V\r\n");
 			funFlag = false;
+			hasReplacePause = false;
 		}
 		if (line.trimmed().startsWith(QStringLiteral(".method protected onResume()V")) ||
 			line.trimmed().startsWith(QStringLiteral(".method public onResume()V"))){
 			isFindResume = true;
 			funFlag = true;
+			hasReplaceResume = true;
 		}
 		if (isFindResume && funFlag && line.trimmed().startsWith("return-void")){
 			content.append("    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onResume(Landroid/content/Context;)V\r\n");
 			funFlag = false;
+			hasReplaceResume = false;
 		}
 		if (line.trimmed().startsWith(".end method") && funFlag){
-			if (isFindRestart){
+			if (isFindPause){
 				content.append("    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onPause(Landroid/content/Context;)V\r\n");
 			}
 			else if (isFindResume){
@@ -1386,15 +1392,12 @@ bool PathManager::InsertCode(QString &activity)
 		content.append(line).append("\r\n");
 	}
 
-	if (!isFindRestart){
-		content.append("\r\n.method protected onRestart()V\r\n"
+	if (!isFindPause){
+		content.append("\r\n.method protected onPause()V\r\n"
 			"    .locals 0\r\n"
 			"    .prologue\r\n"
-			"    .line 34\r\n"
-			"    invoke-super{p0}, Landroid/app/Activity;->onRestart()V\r\n"
-			"    .line 35\r\n"
-			"    invoke-static{p0}, Lcom/baidu/mobstat/StatService;->onPause(Landroid/content/Context;)V\r\n"
-			"    .line 36\r\n"
+			"    invoke-super{p0}, Landroid/app/Activity;->onPause()V\r\n"
+			"    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onPause(Landroid/content/Context;)V\r\n"
 			"    return-void\r\n"
 			".end method\r\n");
 	}
@@ -1403,11 +1406,8 @@ bool PathManager::InsertCode(QString &activity)
 		content.append("\r\n.method protected onResume()V\r\n"
 			"    .locals 0\r\n"
 			"    .prologue\r\n"
-			"    .line 27\r\n"
 			"    invoke-super {p0}, Landroid/app/Activity;->onResume()V\r\n"
-			"    .line 28\r\n"
 			"    invoke-static {p0}, Lcom/baidu/mobstat/StatService;->onResume(Landroid/content/Context;)V\r\n"
-			"    .line 29\r\n"
 			"    return-void\r\n"
 			".end method\r\n");
 	}
