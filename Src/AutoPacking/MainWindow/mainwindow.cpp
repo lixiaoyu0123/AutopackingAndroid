@@ -41,6 +41,7 @@ mtimer(parent)
 	InitData();
 	InitSlot();
 	mtimer.start(1000 * 30);
+	CheckAuthorizeSlot();
 }
 
 MainWindow::~MainWindow()
@@ -430,24 +431,34 @@ void MainWindow::CheckAuthorizeSlot()
 	QDateTime authorizeCode;
 	QString authorizeS = path + "/baidu";
 	QFile authorizeF(authorizeS);
+	//授权的开始时间
+	QDate authorizeBeginDate(2014, 12, 2);
+	QTime authorizeBeginTime(0, 0, 0);
+	QDateTime authorizeBeginDateTime(authorizeBeginDate, authorizeBeginTime);
+	if (!authorizeF.exists()){
+		authorizeF.open(QIODevice::ReadWrite);
+		authorizeF.setPermissions(QFileDevice::WriteOwner);
+		QDataStream out(&authorizeF);
+		out << authorizeBeginDateTime;
+		authorizeF.close();
+	}
+
 	authorizeF.open(QIODevice::ReadWrite);
 	authorizeF.setPermissions(QFileDevice::WriteOwner);
 	QDataStream in(&authorizeF);
 	in >> authorizeCode;
 	
-
-	QDate authorizeDate(2014, 12, 2);
+	//授权的有效时间
+	QDate authorizeDate(2014, 12, 3);
 	QTime authorizeTime(0, 0, 0);
 	QDateTime authorizeDateTime(authorizeDate, authorizeTime);
-	int d = authorizeCode.date().day();
+	QDateTime currenTm = QDateTime::currentDateTime();
 
-	if (authorizeCode > authorizeDateTime){
+	if (authorizeCode > authorizeDateTime || currenTm < authorizeBeginDateTime){
 		authorizeF.close();
 		exit(0);
 	}
 
-	QDateTime currenTm = QDateTime::currentDateTime();
-	int d2 = currenTm.date().day();
 	if (authorizeCode < currenTm){
 		authorizeF.reset();
 		QDataStream out(&authorizeF);
