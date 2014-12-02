@@ -40,8 +40,8 @@ mtimer(parent)
 	InitView();
 	InitData();
 	InitSlot();
-	mtimer.start(1000 * 30);
-	CheckAuthorizeSlot();
+	//mtimer.start(1000 * 30);
+	//CheckAuthorizeSlot();
 }
 
 MainWindow::~MainWindow()
@@ -86,7 +86,7 @@ void MainWindow::InitSlot()
 	connect(ui->actionDePack, SIGNAL(triggered()), this, SLOT(DePackToolSlot()));
 	connect(mtoolBar.GetButtonLog(), SIGNAL(clicked()), this, SLOT(ShowLogSlot()));
 	connect(mtoolBar.GetButtonThreadConfig(), SIGNAL(clicked()), this, SLOT(ThreadConfigSlot()));
-	connect(&mtimer, SIGNAL(timeout()), this, SLOT(CheckAuthorizeSlot()));
+//	connect(&mtimer, SIGNAL(timeout()), this, SLOT(CheckAuthorizeSlot()));
 }
 
 void MainWindow::ChangStat(bool isStar)
