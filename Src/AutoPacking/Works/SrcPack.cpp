@@ -53,7 +53,7 @@ void SrcPack::run()
 
 	QString mainProPath = mtmpSrcPath + "/" + mmainNm;
 
-	if (!CopySrc(PathManager::GetSrcPath(), mtmpSrcPath)){
+	if (!CopySrc(PathManager::GetSrcPath().trimmed(), mtmpSrcPath)){
 		emit GenerateError(QStringLiteral("error:拷贝源码文件失败！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
 		mpprocess->close();
 		delete mpprocess;
@@ -161,10 +161,10 @@ void SrcPack::run()
 bool SrcPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
 {
 	if (outPath.endsWith("/")){
-		moutFile = outPath + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
+		moutFile = outPath + channelName + "_" + channelId + "_" + PathManager::GetVersion().trimmed() + ".apk";
 	}
 	else{
-		moutFile = outPath + "/" + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
+		moutFile = outPath + "/" + channelName + "_" + channelId + "_" + PathManager::GetVersion().trimmed() + ".apk";
 	}
 
 	mtmpPath = PathManager::GetTmpPath() + QStringLiteral("/") + channeltbId;
@@ -255,7 +255,7 @@ bool SrcPack::ReplacePakByTable(QString &path)
 {
 	for (QList<ReplacePakTable>::iterator ite = mpakTableList.begin(); ite != mpakTableList.end(); ite++)
 	{
-		switch (PathManager::ReplacePakInSrc(path, ite->GetSrcPakName(), ite->GetDestPakName()))
+		switch (PathManager::ReplacePakInSrc(path, ite->GetSrcPakName().trimmed(), ite->GetDestPakName().trimmed()))
 		{
 		case 0:
 			break;
@@ -280,7 +280,7 @@ bool SrcPack::ReplaceAppPakByTable(QString &path)
 {
 	for (QList<ReplaceAppPakTable>::iterator ite = mappPakTableList.begin(); ite != mappPakTableList.end(); ite++)
 	{
-		switch (PathManager::ReplaceAppPakInSrc(path, ite->GetSrcPakName(), ite->GetDestPakName()))
+		switch (PathManager::ReplaceAppPakInSrc(path, ite->GetSrcPakName().trimmed(), ite->GetDestPakName().trimmed()))
 		{
 		case 0:
 			break;

@@ -200,13 +200,13 @@ void DecPack::run()
 bool DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
 {
 	if (outPath.endsWith("/")){
-		moutFile = outPath + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
+		moutFile = outPath + channelName + "_" + channelId + "_" + PathManager::GetVersion().trimmed() + ".apk";
 	}
 	else{
-		moutFile = outPath + "/" + channelName + "_" + channelId + "_" + PathManager::GetVersion() + ".apk";
+		moutFile = outPath + "/" + channelName + "_" + channelId + "_" + PathManager::GetVersion().trimmed() + ".apk";
 	}
 
-	mtmpPath = PathManager::GetTmpPath() + QStringLiteral("/") + channeltbId;
+	mtmpPath = PathManager::GetTmpPath().trimmed() + QStringLiteral("/") + channeltbId;
 	QString unpackPath = mtmpPath + QStringLiteral("/unpack");
 	QString signPath = mtmpPath + QStringLiteral("/sign");
 
@@ -226,7 +226,7 @@ bool DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelNa
 	PathManager::CreatDir(unpackPath);
 	PathManager::CreatDir(signPath);
 	mtmpUnpacketPath = unpackPath;
-	mtmpSignFile = signPath + "/" + channelName + "_" + PathManager::GetVersion() + channelId + "_" + ".apk";
+	mtmpSignFile = signPath + "/" + channelName + "_" + PathManager::GetVersion().trimmed() + channelId + "_" + ".apk";
 	return true;
 }
 
@@ -234,7 +234,7 @@ bool DecPack::ReplacePakByTable(QString &path)
 {
 	for (QList<ReplacePakTable>::iterator ite = mpakTableList.begin(); ite != mpakTableList.end(); ite++)
 	{
-		switch (PathManager::ReplacePakInDec(path, ite->GetSrcPakName(), ite->GetDestPakName()))
+		switch (PathManager::ReplacePakInDec(path, ite->GetSrcPakName().trimmed(), ite->GetDestPakName().trimmed()))
 		{
 		case 0:
 			break;
@@ -259,7 +259,7 @@ bool DecPack::ReplaceAppPakByTable(QString &path)
 {
 	for (QList<ReplaceAppPakTable>::iterator ite = mappPakTableList.begin(); ite != mappPakTableList.end(); ite++)
 	{
-		switch (PathManager::ReplaceAppPakInDec(path, ite->GetSrcPakName(), ite->GetDestPakName()))
+		switch (PathManager::ReplaceAppPakInDec(path, ite->GetSrcPakName().trimmed(), ite->GetDestPakName().trimmed()))
 		{
 		case 0:
 			break;
@@ -288,7 +288,7 @@ bool DecPack::Unpacket(QString &inPath, QString &outPath, QProcess &pprocess)
 	QString apkTool = QStringLiteral("apktool.bat");
 	QStringList param;
 	param << QString("d") << QString("-f") << "\"" + inPath + "\"" << "\"" + outPath + "\"";
-	if (!ExecuteCmd(apkTool, param, pprocess, PathManager::GetToolPath())){
+	if (!ExecuteCmd(apkTool, param, pprocess, PathManager::GetToolPath().trimmed())){
 		emit GenerateError(QStringLiteral("error:ÃüÁîÖ´ÐÐ´íÎó£¡ÇþµÀID:%1,ÇþµÀÃû:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
 	}
@@ -300,7 +300,7 @@ bool DecPack::Dopacket(QString &inPath, QString &outPath, QProcess &pprocess)
 	QString apkTool = QStringLiteral("apktool.bat");
 	QStringList param;
 	param << QString("b") << "\"" + inPath + "\"" << "\"" + outPath + "\"";
-	if (!ExecuteCmd(apkTool, param, pprocess, PathManager::GetToolPath())){
+	if (!ExecuteCmd(apkTool, param, pprocess, PathManager::GetToolPath().trimmed())){
 		emit GenerateError(QStringLiteral("error:ÃüÁîÖ´ÐÐ´íÎó£¡ÇþµÀID:%1,ÇþµÀÃû:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
 	}
@@ -311,8 +311,8 @@ bool DecPack::SignPacket(QString inPath, QString outPath, QProcess &pprocess)
 {
 	QString exe = QStringLiteral("jarsigner.exe");
 	QStringList param;
-	param << QStringLiteral("-sigalg") << PathManager::GetSigalg() << QStringLiteral("-verbose") << QStringLiteral("-digestalg")
-		<< PathManager::GetDigestalg() << QStringLiteral("-keystore") << "\"" + PathManager::GetKeyPath() + "\"" << QStringLiteral("-storepass") << PathManager::GetPasswd()
+	param << QStringLiteral("-sigalg") << PathManager::GetSigalg().trimmed() << QStringLiteral("-verbose") << QStringLiteral("-digestalg")
+		<< PathManager::GetDigestalg().trimmed() << QStringLiteral("-keystore") << "\"" + PathManager::GetKeyPath().trimmed() + "\"" << QStringLiteral("-storepass") << PathManager::GetPasswd()
 		<< QStringLiteral("-keypass") << PathManager::GetAliasesPasswd() << "\"" + outPath + "\"" << PathManager::GetKeyAliases().trimmed();
 	if (!ExecuteCmd(exe, param, pprocess, PathManager::GetJdkPath())){
 		emit GenerateError(QStringLiteral("error:ÃüÁîÖ´ÐÐ´íÎó£¡ÇþµÀID:%1,ÇþµÀÃû:%2\n").arg(mchannelId).arg(mchannelName));
@@ -332,7 +332,7 @@ bool DecPack::Zipalign(QProcess &pprocess)
 	QString exe = QStringLiteral("zipalign.exe");
 	QStringList param;
 	param << QStringLiteral("-f") << QStringLiteral("-v")<< QStringLiteral("4") << "\"" + mtmpSignFile + "\"" << "\"" + moutFile + "\"";
-	if (!ExecuteCmd(exe, param, pprocess, PathManager::GetToolPath())){
+	if (!ExecuteCmd(exe, param, pprocess, PathManager::GetToolPath().trimmed())){
 		emit GenerateError(QStringLiteral("error:ÃüÁîÖ´ÐÐ´íÎó£¡ÇþµÀID:%1,ÇþµÀÃû:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
 	}
