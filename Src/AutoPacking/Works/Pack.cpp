@@ -59,7 +59,7 @@ bool Pack::ReplaceStrByTable(QString &path)
 	for (QList<ReplaceStrTable>::iterator ite = mstrTableList.begin(); ite != mstrTableList.end(); ite++)
 	{
 		QString findFile;
-		QString file = ite->GetFolder();
+		QString file = ite->GetFolder().trimmed();
 		if (file.isEmpty() || ite->GetSrcStr().isEmpty() || ite->GetDestStr().isEmpty()){
 			emit GenerateError(QStringLiteral("error:要替换字符串的文件不存在或文件或替换的字符串或目标字符产为空！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 			return false;
@@ -77,7 +77,7 @@ bool Pack::ReplaceStrByTable(QString &path)
 			return false;
 		}
 
-		switch (PathManager::ReplaceStrStrict(findFile, ite->GetSrcStr(), ite->GetDestStr()))
+		switch (PathManager::ReplaceStrStrict(findFile, ite->GetSrcStr().trimmed(), ite->GetDestStr().trimmed()))
 		{
 		case 1:
 			emit GenerateError(QStringLiteral("error:替换字符串失败！未发现原字符串在指定的文件中！ 渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
@@ -100,8 +100,8 @@ bool Pack::ReplaceResByTable(QString &path)
 		QString dirDestAbsolutely;
 		QString dirSrc;
 		QString dirDest;
-		dirSrc = ite->GetFolderSrc();
-		dirDest = ite->GetFolderDest();
+		dirSrc = ite->GetFolderSrc().trimmed();
+		dirDest = ite->GetFolderDest().trimmed();
 		if (dirSrc.isEmpty() || dirDest.isEmpty()){
 			emit GenerateError(QStringLiteral("error:原资源文件夹或目标文件夹未配置！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 			return false;
