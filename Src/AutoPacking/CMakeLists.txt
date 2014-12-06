@@ -391,7 +391,7 @@ if (MSVC)
             COMMAND cmake -E copy ${CMAKE_SOURCE_DIR}/installer/vcredist_x86.exe ${TEMP_PACKAGE_DIR}/vendor/vcredist.exe )
     endif()
 
-	# Remove the temp directory used for building the installer 
+	# Remove the temp directory used for building the installer
    add_custom_command( TARGET makeinstaller POST_BUILD
                         COMMAND cmake -E remove_directory ${TEMP_PACKAGE_DIR}
                         COMMENT "Removing temporary directory..." )
