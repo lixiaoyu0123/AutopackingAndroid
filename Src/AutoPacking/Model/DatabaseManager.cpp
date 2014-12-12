@@ -12,6 +12,7 @@ DatabaseManager* DatabaseManager::mpinstance = NULL;
 
 DatabaseManager::DatabaseManager() :
 QObject(),
+mpdatabase(NULL),
 mptableModel(NULL),
 mptableModelStr(NULL),
 mptableModelRes(NULL),
@@ -27,7 +28,7 @@ mmodelIndexAppPak()
 DatabaseManager::~DatabaseManager()
 {
 	Commit();
-	mdatabase.close();
+	mpdatabase->close();
 	if (mptableModel != NULL){
 		mptableModel->deleteLater();
 		mptableModel = NULL;
@@ -47,6 +48,10 @@ DatabaseManager::~DatabaseManager()
 	if (mptableModelAppPak != NULL){
 		mptableModelAppPak->deleteLater();
 		mptableModelAppPak = NULL;
+	}
+	if (mpdatabase != NULL){
+		delete mpdatabase;
+		mpdatabase = NULL;
 	}
 }
 
@@ -68,10 +73,11 @@ void DatabaseManager::Destroyed()
 
 void DatabaseManager::InitDataModel()
 {
-	mdatabase = QSqlDatabase::addDatabase("QSQLITE");
-	mdatabase.setDatabaseName(PathManager::GetDataBasePath());
+	mpdatabase = new QSqlDatabase();
+	*mpdatabase = QSqlDatabase::addDatabase("QSQLITE");
+	mpdatabase->setDatabaseName(PathManager::GetDataBasePath());
 	if (!QFile::exists(PathManager::GetDataBasePath())){
-		if (!mdatabase.open()){
+		if (!mpdatabase->open()){
 			BjMessageBox msg;
 			msg.setText(QStringLiteral("数据库创建失败！"));
 			msg.exec();
@@ -92,7 +98,7 @@ void DatabaseManager::InitDataModel()
 			BjMessageBox msg;
 			msg.setText(QStringLiteral("创建Channeltb失败！"));
 			msg.exec();
-			mdatabase.close();
+			mpdatabase->close();
 			QFile::remove(PathManager::GetDataBasePath());
 			exit(1);
 		}
@@ -107,7 +113,7 @@ void DatabaseManager::InitDataModel()
 			BjMessageBox msg;
 			msg.setText(QStringLiteral("创建Stringtb失败！"));
 			msg.exec();
-			mdatabase.close();
+			mpdatabase->close();
 			QFile::remove(PathManager::GetDataBasePath());
 			exit(1);
 			return;
@@ -122,7 +128,7 @@ void DatabaseManager::InitDataModel()
 			BjMessageBox msg;
 			msg.setText(QStringLiteral("创建Resourcetb失败！"));
 			msg.exec();
-			mdatabase.close();
+			mpdatabase->close();
 			QFile::remove(PathManager::GetDataBasePath());
 			exit(1);
 			return;
@@ -137,7 +143,7 @@ void DatabaseManager::InitDataModel()
 			BjMessageBox msg;
 			msg.setText(QStringLiteral("创建PackageRenametb失败！"));
 			msg.exec();
-			mdatabase.close();
+			mpdatabase->close();
 			QFile::remove(PathManager::GetDataBasePath());
 			exit(1);
 			return;
@@ -152,14 +158,14 @@ void DatabaseManager::InitDataModel()
 			BjMessageBox msg;
 			msg.setText(QStringLiteral("创建AppPackageRenametb失败！"));
 			msg.exec();
-			mdatabase.close();
+			mpdatabase->close();
 			QFile::remove(PathManager::GetDataBasePath());
 			exit(1);
 			return;
 		}
 	}
 	else{
-		if (!mdatabase.open()){
+		if (!mpdatabase->open()){
 			BjMessageBox msg;
 			msg.setText(QStringLiteral("数据库打开失败！"));
 			msg.exec();
@@ -168,7 +174,7 @@ void DatabaseManager::InitDataModel()
 		}
 	}
 
-	mptableModel = new BjTableModel(NULL, mdatabase);
+	mptableModel = new BjTableModel(NULL, *mpdatabase);
 	mptableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
 	mptableModel->setTable("Channeltb");
 	if (!mptableModel->select()){
@@ -185,7 +191,7 @@ void DatabaseManager::InitDataModel()
 	mptableModel->setHeaderData(7, Qt::Horizontal, QStringLiteral("状态"));
 
 
-	mptableModelStr = new BjTableModel(NULL, mdatabase);
+	mptableModelStr = new BjTableModel(NULL, *mpdatabase);
 	mptableModelStr->setEditStrategy(QSqlTableModel::OnManualSubmit);
 	mptableModelStr->setTable("Stringtb");
 	if (!mptableModelStr->select()){
@@ -197,7 +203,7 @@ void DatabaseManager::InitDataModel()
 	mptableModelStr->setHeaderData(3, Qt::Horizontal, QStringLiteral("原节点"));
 	mptableModelStr->setHeaderData(4, Qt::Horizontal, QStringLiteral("替换后节点"));
 
-	mptableModelRes = new BjTableModel(NULL, mdatabase);
+	mptableModelRes = new BjTableModel(NULL, *mpdatabase);
 	mptableModelRes->setEditStrategy(QSqlTableModel::OnManualSubmit);
 	mptableModelRes->setTable("Resourcetb");
 	if (!mptableModelRes->select()){
@@ -208,7 +214,7 @@ void DatabaseManager::InitDataModel()
 	mptableModelRes->setHeaderData(2, Qt::Horizontal, QStringLiteral("原资源所在目录"));
 	mptableModelRes->setHeaderData(3, Qt::Horizontal, QStringLiteral("替换资源所在目录"));
 
-	mptableModelPak = new BjTableModel(NULL, mdatabase);
+	mptableModelPak = new BjTableModel(NULL, *mpdatabase);
 	mptableModelPak->setEditStrategy(QSqlTableModel::OnManualSubmit);
 	mptableModelPak->setTable("PackageRenametb");
 	if (!mptableModelPak->select()){
@@ -219,7 +225,7 @@ void DatabaseManager::InitDataModel()
 	mptableModelPak->setHeaderData(2, Qt::Horizontal, QStringLiteral("原包名"));
 	mptableModelPak->setHeaderData(3, Qt::Horizontal, QStringLiteral("替换后的包名"));
 
-	mptableModelAppPak = new BjTableModel(NULL, mdatabase);
+	mptableModelAppPak = new BjTableModel(NULL, *mpdatabase);
 	mptableModelAppPak->setEditStrategy(QSqlTableModel::OnManualSubmit);
 	mptableModelAppPak->setTable("AppPackageRenametb");
 	if (!mptableModelAppPak->select()){
@@ -499,7 +505,7 @@ BjTableModel *DatabaseManager::GetTableModel()
 
 QSqlDatabase *DatabaseManager::GetDatabase()
 {
-	return &mdatabase;
+	return mpdatabase;
 }
 
 BjTableModel *DatabaseManager::GetTableModelStr(const QModelIndex &modelIndexStr)
@@ -645,7 +651,14 @@ void DatabaseManager::ReadyData(QString &id, QList<ReplaceStrTable> &strTable, Q
 void DatabaseManager::ExportData(QString &fileName)
 {
 	Commit();
-	mdatabase.close();
+	mpdatabase->close();
+	//释放DataBase必须与ReloadData配对使用，释放之后由ReloadData重建
+	if (mpdatabase != NULL){
+		delete mpdatabase;
+		mpdatabase = NULL;
+	}
+	QSqlDatabase::removeDatabase("QSQLITE");
+
 	if (!PathManager::CopyFile(PathManager::GetDataBasePath(), fileName, true)){
 		BjMessageBox::warning(NULL, QStringLiteral("导出数据出错！"), QStringLiteral("导出数据错误!"), QMessageBox::Ok, QMessageBox::NoButton);
 		ReloadData();
@@ -658,7 +671,14 @@ void DatabaseManager::ExportData(QString &fileName)
 void DatabaseManager::ImportData(QString &fileName)
 {
 	Commit();
-	mdatabase.close();
+	mpdatabase->close();
+	//释放DataBase必须与ReloadData配对使用，释放之后由ReloadData重建
+	if (mpdatabase != NULL){
+		delete mpdatabase;
+		mpdatabase = NULL;
+	}	
+	QSqlDatabase::removeDatabase("QSQLITE");
+
 	if (!PathManager::CopyFile(fileName,PathManager::GetDataBasePath(), true)){
 		BjMessageBox::warning(NULL, QStringLiteral("导入数据出错！"), QStringLiteral("导入数据错误!"), QMessageBox::Ok, QMessageBox::NoButton);
 		ReloadData();
@@ -670,7 +690,6 @@ void DatabaseManager::ImportData(QString &fileName)
 
 void DatabaseManager::ReloadData()
 {
-	mdatabase.close();
 	if (mptableModel != NULL){
 		mptableModel->deleteLater();
 		mptableModel = NULL;
@@ -691,16 +710,14 @@ void DatabaseManager::ReloadData()
 		mptableModelAppPak->deleteLater();
 		mptableModelAppPak = NULL;
 	}
-	if (!mdatabase.open()){
-		BjMessageBox::warning(NULL, QStringLiteral("数据库打开出错！"), QStringLiteral("数据库打开失败!"), QMessageBox::Ok, QMessageBox::NoButton);
-	}
+
 	InitDataModel();
 	emit ReloadDataSignal();
 }
 
 void DatabaseManager::Commit()
 {
-	if (!mdatabase.transaction()){
+	if (!mpdatabase->transaction()){
 		BjMessageBox::warning(NULL, QStringLiteral("数据库错误"), QStringLiteral("开始事务处理出错!"), QMessageBox::Ok, QMessageBox::NoButton);
 		return;
 	}
@@ -711,10 +728,10 @@ void DatabaseManager::Commit()
 			.arg(mptableModelRes->lastError().text())
 			.arg(mptableModelPak->lastError().text())
 			.arg(mptableModelAppPak->lastError().text()));
-		mdatabase.rollback();//回滚
+		mpdatabase->rollback();//回滚
 		return;
 	}
-	mdatabase.commit();//提交
+	mpdatabase->commit();//提交
 }
 
 void DatabaseManager::ImportFromXlsx(XlsxParser &xlsx, QString &sheet, QString &realChannelId, QString &baseName, QString &originalName, QString &strFile, QString &originalStr, QString &resultStr)

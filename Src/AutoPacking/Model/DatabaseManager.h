@@ -55,7 +55,7 @@ public:
 	void ImportFromXlsx(XlsxParser &xlsx, QString &sheet, QString &realChannelId, QString &baseName, QString &originalName,QString &strFile,QString &originalStr,QString &resultStr);
 
 private:
-	QSqlDatabase mdatabase;
+	QSqlDatabase *mpdatabase;
 	BjTableModel *mptableModel;
 	BjTableModel *mptableModelStr;
 	BjTableModel *mptableModelRes;
