@@ -53,7 +53,7 @@ public:
 	void ReloadData();
 
 private:
-	QSqlDatabase mdatabase;
+	QSqlDatabase *mpdatabase;
 	BjTableModel *mptableModel;
 	BjTableModel *mptableModelStr;
 	BjTableModel *mptableModelRes;
