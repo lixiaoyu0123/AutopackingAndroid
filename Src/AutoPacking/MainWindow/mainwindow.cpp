@@ -121,6 +121,8 @@ void MainWindow::StartSlot()
 		return;
 	}
 	ChangStat(true);
+	DatabaseManager::GetInstance()->ClearStatInDataBase();
+
 	if (DatabaseManager::GetInstance()->isDatabaseEmpty()){
 		BjMessageBox::warning(NULL, QStringLiteral("数据为空"), QStringLiteral("没有配置数据，请先配置数据表！"), QMessageBox::Ok, QMessageBox::NoButton);
 		ChangStat(false);

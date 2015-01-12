@@ -47,6 +47,7 @@ public:
 	void DeleteAll(QSqlTableModel &model);
 	bool isDatabaseEmpty();
 	void ChangStatInDatabase(int row, QString &status);
+	void ClearStatInDataBase();
 	void ReadyData(QString &id, QList<ReplaceStrTable> &strTable, QList<ReplaceResTable>  &resTable, QList<ReplacePakTable>  &pakTable,QList<ReplaceAppPakTable> &appPakTable);
 	void ExportData(QString &fileName);
 	void ImportData(QString &fileName);

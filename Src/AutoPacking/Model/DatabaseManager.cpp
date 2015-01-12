@@ -595,6 +595,15 @@ void DatabaseManager::ChangStatInDatabase(int row, QString &status)
 	}
 }
 
+void DatabaseManager::ClearStatInDataBase()
+{
+	int rows = mptableModel->rowCount();
+	for (int i = 0; i < rows; i++)
+	{
+		ChangStatInDatabase(i, QString(""));
+	}
+}
+
 void DatabaseManager::ReadyData(QString &id, QList<ReplaceStrTable> &strTable, QList<ReplaceResTable>  &resTable, QList<ReplacePakTable>  &pakTable, QList<ReplaceAppPakTable> &appPakTable)
 {
 	mptableModelStr->setFilter(QString("ChanneltbID=\'%1\'").arg(id));
