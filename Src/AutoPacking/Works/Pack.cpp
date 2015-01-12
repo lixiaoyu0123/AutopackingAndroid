@@ -46,6 +46,24 @@ void Pack::Stop()
 	emit FinishSignal(2, mtaskId);
 }
 
+void Pack::KillTask()
+{
+	if (mpprocess != NULL){
+		QProcess killer;
+		killer.start("taskkill", QStringList() << "/f" << "/im" << "java.exe");
+		if (!killer.waitForStarted())
+			return;
+		if (!killer.waitForFinished())
+			return;
+		mpprocess->terminate();
+		mpprocess->deleteLater();
+		mpprocess = NULL;
+	}
+	if (!PathManager::RemoveDir(mtmpPath)){
+		emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+	}
+}
+
 int Pack::GetTaskId()
 {
 	return mtaskId;

@@ -17,6 +17,7 @@ public:
 		QList<ReplaceStrTable> &strTableList, QList<ReplaceResTable> &resTableList, QList<ReplacePakTable> &pakTableList, QList<ReplaceAppPakTable> &appPakTableList,int taskId) = 0;
 	virtual void Stop();
 	virtual int GetTaskId();
+	virtual void KillTask();
 protected:	
 	virtual bool ReplaceStrByTable(QString &path);
 	virtual bool ReplaceResByTable(QString &path);
