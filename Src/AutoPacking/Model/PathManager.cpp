@@ -1049,6 +1049,8 @@ int PathManager::ReplaceAppPakInSrc(QString &path, QString &oldName, QString &ne
 	else{
 		return 0;
 	}
+
+	bool isTopDir = true;
 	//遍历各级文件夹，并将这些文件夹中的文件删除  
 	for (int i = 0; i<dirNames.size(); ++i)
 	{
@@ -1057,6 +1059,16 @@ int PathManager::ReplaceAppPakInSrc(QString &path, QString &oldName, QString &ne
 			| QDir::Readable | QDir::Writable
 			| QDir::Hidden | QDir::NoDotAndDotDot
 			, QDir::Name);
+		if (isTopDir){
+			isTopDir = false;
+			for (int i = 0; i < filst.size(); i++)
+			{
+				if (filst[i].fileName() == "assets" || filst[i].fileName() == "bin" || filst[i].fileName() == "libs"){
+					filst.removeAt(i);
+					i--;
+				}
+			}
+		}
 		if (filst.size()>0){
 			curFi = filst.begin();
 			while (curFi != filst.end())
@@ -1066,7 +1078,6 @@ int PathManager::ReplaceAppPakInSrc(QString &path, QString &oldName, QString &ne
 					dirNames.push_back(curFi->filePath());
 				}
 				else if (curFi->isFile()){
-					//遇到文件,则删除之  
 					if (curFi->absoluteFilePath().toLower().endsWith(".java")){
 						if (!ReplaceAppPakNameInJava(path, curFi->absoluteFilePath(), oldName, newName)){
 							return 1;

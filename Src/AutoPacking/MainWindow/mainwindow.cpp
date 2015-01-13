@@ -121,6 +121,8 @@ void MainWindow::StartSlot()
 		return;
 	}
 	ChangStat(true);
+
+	QModelIndexList selectedIndex = mcentralFram.GetTableView().GetSelectIndexs();
 	DatabaseManager::GetInstance()->ClearStatInDataBase();
 
 	if (DatabaseManager::GetInstance()->isDatabaseEmpty()){
@@ -129,7 +131,7 @@ void MainWindow::StartSlot()
 		return;
 	}
 
-	QModelIndexList selectedIndex = mcentralFram.GetTableView().GetSelectIndexs();
+	
 	QSet<int> dedupli;
 
 	for (QModelIndexList::iterator ite = selectedIndex.begin(); ite != selectedIndex.end(); ite++)
