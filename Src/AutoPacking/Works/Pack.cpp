@@ -49,14 +49,8 @@ void Pack::Stop()
 void Pack::KillTask()
 {
 	if (mpprocess != NULL){
-		QProcess killer;
-		killer.start("taskkill", QStringList() << "/f" << "/im" << "java.exe");
-		if (!killer.waitForStarted())
-			return;
-		if (!killer.waitForFinished())
-			return;
-		mpprocess->terminate();
-		mpprocess->deleteLater();
+		mpprocess->close();
+		delete mpprocess;
 		mpprocess = NULL;
 	}
 	if (!PathManager::RemoveDir(mtmpPath)){
