@@ -50,7 +50,7 @@ void Pack::KillTask()
 {
 	if (mpprocess != NULL){
 		mpprocess->close();
-		delete mpprocess;
+		mpprocess->deleteLater();
 		mpprocess = NULL;
 	}
 	if (!PathManager::RemoveDir(mtmpPath)){
