@@ -122,16 +122,13 @@ void MainWindow::StartSlot()
 	}
 	ChangStat(true);
 
-	QModelIndexList selectedIndex = mcentralFram.GetTableView().GetSelectIndexs();
-	DatabaseManager::GetInstance()->ClearStatInDataBase();
-
 	if (DatabaseManager::GetInstance()->isDatabaseEmpty()){
 		BjMessageBox::warning(NULL, QStringLiteral("数据为空"), QStringLiteral("没有配置数据，请先配置数据表！"), QMessageBox::Ok, QMessageBox::NoButton);
 		ChangStat(false);
 		return;
 	}
 
-	
+	QModelIndexList selectedIndex = mcentralFram.GetTableView().GetSelectIndexs();
 	QSet<int> dedupli;
 
 	for (QModelIndexList::iterator ite = selectedIndex.begin(); ite != selectedIndex.end(); ite++)
@@ -154,6 +151,12 @@ void MainWindow::StartSlot()
 			mrecordIndex[i] = i;
 		}
 	}
+
+	for (QVector<int>::iterator ite = mrecordIndex.begin(); ite != mrecordIndex.end(); ite++)
+	{
+		DatabaseManager::GetInstance()->ChangStatInDatabase(*ite, QString(""));
+	}
+
 	mthreadNum = PathManager::GetThreadNum();
 	mcurrentTaskIndex = 0;
 	switch (mtoolBar.GetCombox()->currentIndex())
