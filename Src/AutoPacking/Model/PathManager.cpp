@@ -710,11 +710,13 @@ void PathManager::RemoveEmptyDirFromDeepest(QString &path)
 ***********/
 int PathManager::RenamePak(QString &path, QString &oldPakName, QString &newPakName)
 {
+	QString oldName = oldPakName;
+	QString newName = newPakName;
+	oldName.replace(".", "/");
+	newName.replace(".", "/");
 
-	QString srcDir = path + "/" + oldPakName;
-	QString destDir = path + "/" + newPakName;
-	srcDir.replace(".", "/");
-	destDir.replace(".", "/");
+	QString srcDir = path + "/" + oldName;
+	QString destDir = path + "/" + newName;
 	QDir dirSrc(srcDir);
 	QDir dirDest(destDir);
 	if (!dirSrc.exists()){
