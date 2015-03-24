@@ -1215,7 +1215,11 @@ bool PathManager::ReplaceAppPakNameInManifest(QString &path, QString &oldName, Q
 		if (!element.isNull()){
 			QString androidNm = element.attribute("android:name", "");
 			androidNm = androidNm.toLower();
-			if (androidNm.contains(oldName)){
+			QString fileStr = androidNm;
+			fileStr.replace(".", "/");
+			fileStr = path + "/src/" + fileStr + ".java";
+			QFile fileClass(fileStr);
+			if (androidNm.contains(oldName) && !fileClass.exists()){
 				androidNm.replace(oldName, newName);
 				element.setAttribute("android:name", androidNm);
 			}
