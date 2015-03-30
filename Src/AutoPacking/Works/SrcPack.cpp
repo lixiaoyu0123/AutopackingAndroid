@@ -1,6 +1,7 @@
 #include <QDir>
 #include "SrcPack.h"
 #include "Model/PathManager.h"
+#include "Model/Tools.h"
 
 SrcPack::SrcPack(QObject *parent):
 Pack(parent)
@@ -321,7 +322,7 @@ bool SrcPack::GenerateBuild(QProcess &pprocess,QString &path)
 		.arg(PathManager::GetAliasesPasswd());
 	PathManager::AppendContentToProperties(content, path);
 	
-	if (!ExecuteCmd(prepackBat, param, pprocess, PathManager::GetToolPath())){
+	if (!Tools::ExecuteCmd(prepackBat, param, pprocess, PathManager::GetToolPath())){
 		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
 	}
@@ -333,7 +334,7 @@ bool SrcPack::PackFromSrc(QProcess &pprocess)
 	QString srcpackBat = QStringLiteral("srcpack.bat");
 	QStringList param;
 	param << "\"" + PathManager::GetAnt() + "\"" << mtmpSrcPath + "/" + mmainNm;
-	if (!ExecuteCmd(srcpackBat, param, pprocess,PathManager::GetToolPath())){
+	if (!Tools::ExecuteCmd(srcpackBat, param, pprocess, PathManager::GetToolPath())){
 		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
 	}

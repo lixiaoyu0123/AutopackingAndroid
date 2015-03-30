@@ -24,7 +24,6 @@ protected:
 	virtual bool ReplacePakByTable(QString &path) = 0;
 	virtual bool ReplaceAppPakByTable(QString &path) = 0;
 	virtual bool CheckError(QProcess &pprocess);
-	virtual bool ExecuteCmd(QString exe, QStringList argument, QProcess &pprocess, QString workPath = QString(""));
 
 
 protected:

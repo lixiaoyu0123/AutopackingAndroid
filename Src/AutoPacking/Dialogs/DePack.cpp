@@ -1,5 +1,6 @@
 #include <QFileDialog>
 #include <QTimer>
+#include <QTextCodec>
 #include "DePack.h"
 #include "Model/PathManager.h"
 #include "Dialogs/BjMessageBox.h"
@@ -83,12 +84,27 @@ void DePack::ButtonOkSlot()
 		dir.mkpath(ui->LineEditResult->text());
 	}
 	ChangStat(true);
+
 	QString apkTool = PathManager::GetToolPath() + QStringLiteral("/apktool.bat");
-	QStringList param;
-	param << QString("d") << QString("-f") << ui->LineEditOri->text() << ui->LineEditResult->text();
+	QStringList params;
+	params << QString("d") << QString("-f") << QString("-o") << "\"" + ui->LineEditResult->text().trimmed() + "\"" <<"\"" +  ui->LineEditOri->text().trimmed() + "\"";
 	mpprocess = new QProcess(this);
 	connect(mpprocess, SIGNAL(finished(int)), this, SLOT(FinishedSlot()));
-	mpprocess->start(apkTool, param);
+
+	QString param = apkTool;
+	for (QStringList::iterator ite = params.begin(); ite != params.end(); ite++)
+	{
+		param.append(" ");
+		param.append(*ite);
+	}
+	param.append("\n");
+
+	QTextCodec *gbk = QTextCodec::codecForName("GBK");
+	QByteArray byteParam = gbk->fromUnicode(param.constData(), param.length());
+	mpprocess->start("cmd");
+	mpprocess->waitForStarted();
+	mpprocess->write(byteParam);
+	mpprocess->closeWriteChannel();
 }
 
 void DePack::ButtonCancelSlot()

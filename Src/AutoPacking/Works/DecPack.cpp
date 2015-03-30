@@ -4,6 +4,7 @@
 #include <QTextStream>
 #include "DecPack.h"
 #include "Model/PathManager.h"
+#include "Model/Tools.h"
 
 DecPack::DecPack(QObject *parent) :Pack(parent),
 mtmpUnpacketPath("")
@@ -221,8 +222,8 @@ bool DecPack::Unpacket(QString &inPath, QString &outPath, QProcess &pprocess)
 {
 	QString apkTool = QStringLiteral("apktool.bat");
 	QStringList param;
-	param << QString("d") << QString("-f") << "\"" + inPath + "\"" << "\"" + outPath + "\"";
-	if (!ExecuteCmd(apkTool, param, pprocess, PathManager::GetToolPath().trimmed())){
+	param << QString("d") << QString("-f") << QString("-o") << "\"" + outPath + "\"" << "\"" + inPath + "\"";
+	if (!Tools::ExecuteCmd(apkTool, param, pprocess, PathManager::GetToolPath().trimmed())){
 		emit GenerateError(QStringLiteral("error:ÃüÁîÖ´ÐÐ´íÎó£¡ÇþµÀID:%1,ÇþµÀÃû:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
 	}
@@ -233,8 +234,8 @@ bool DecPack::Dopacket(QString &inPath, QString &outPath, QProcess &pprocess)
 {
 	QString apkTool = QStringLiteral("apktool.bat");
 	QStringList param;
-	param << QString("b") << "\"" + inPath + "\"" << "\"" + outPath + "\"";
-	if (!ExecuteCmd(apkTool, param, pprocess, PathManager::GetToolPath().trimmed())){
+	param << QString("b") << "\"" + inPath + "\"" << "-o" << "\"" + outPath + "\"";
+	if (!Tools::ExecuteCmd(apkTool, param, pprocess, PathManager::GetToolPath().trimmed())){
 		emit GenerateError(QStringLiteral("error:ÃüÁîÖ´ÐÐ´íÎó£¡ÇþµÀID:%1,ÇþµÀÃû:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
 	}
@@ -248,7 +249,7 @@ bool DecPack::SignPacket(QString inPath, QString outPath, QProcess &pprocess)
 	param << QStringLiteral("-sigalg") << PathManager::GetSigalg().trimmed() << QStringLiteral("-verbose") << QStringLiteral("-digestalg")
 		<< PathManager::GetDigestalg().trimmed() << QStringLiteral("-keystore") << "\"" + PathManager::GetKeyPath().trimmed() + "\"" << QStringLiteral("-storepass") << PathManager::GetPasswd()
 		<< QStringLiteral("-keypass") << PathManager::GetAliasesPasswd() << "\"" + outPath + "\"" << PathManager::GetKeyAliases().trimmed();
-	if (!ExecuteCmd(exe, param, pprocess, PathManager::GetJdkPath())){
+	if (!Tools::ExecuteCmd(exe, param, pprocess, PathManager::GetJdkPath())){
 		emit GenerateError(QStringLiteral("error:ÃüÁîÖ´ÐÐ´íÎó£¡ÇþµÀID:%1,ÇþµÀÃû:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
 	}
@@ -266,7 +267,7 @@ bool DecPack::Zipalign(QProcess &pprocess)
 	QString exe = QStringLiteral("zipalign.exe");
 	QStringList param;
 	param << QStringLiteral("-f") << QStringLiteral("-v")<< QStringLiteral("4") << "\"" + mtmpSignFile + "\"" << "\"" + moutFile + "\"";
-	if (!ExecuteCmd(exe, param, pprocess, PathManager::GetToolPath().trimmed())){
+	if (!Tools::ExecuteCmd(exe, param, pprocess, PathManager::GetToolPath().trimmed())){
 		emit GenerateError(QStringLiteral("error:ÃüÁîÖ´ÐÐ´íÎó£¡ÇþµÀID:%1,ÇþµÀÃû:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
 	}

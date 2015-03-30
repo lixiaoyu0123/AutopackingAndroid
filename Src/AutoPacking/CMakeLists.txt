@@ -94,6 +94,8 @@ set( MODEL_FILES
 	Model/BjEditDelegate.h
 	Model/BjTableModel.cpp
 	Model/BjTableModel.h
+	Model/Tools.cpp
+	Model/Tools.h
 	)
 	
 set( DIALOG_FILES
