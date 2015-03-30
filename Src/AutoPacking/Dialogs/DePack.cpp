@@ -91,7 +91,7 @@ void DePack::ButtonOkSlot()
 	mpprocess = new QProcess(this);
 	connect(mpprocess, SIGNAL(finished(int)), this, SLOT(FinishedSlot()));
 
-	QString param = apkTool;
+	QString param = "\"" + apkTool + "\"";
 	for (QStringList::iterator ite = params.begin(); ite != params.end(); ite++)
 	{
 		param.append(" ");
