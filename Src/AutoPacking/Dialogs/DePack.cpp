@@ -86,8 +86,9 @@ void DePack::ButtonOkSlot()
 	ChangStat(true);
 
 	QString apkTool = PathManager::GetToolPath() + QStringLiteral("/apktool.bat");
+	PathManager::RemoveDir(PathManager::GetDecTmpPath());
 	QStringList params;
-	params << QString("d") << QString("-f") << QString("-o") << "\"" + ui->LineEditResult->text().trimmed() + "\"" <<"\"" +  ui->LineEditOri->text().trimmed() + "\"";
+	params << QString("d") << QString("-f") << QString("-o") << "\"" + PathManager::GetDecTmpPath() + "\"" <<"\"" +  ui->LineEditOri->text().trimmed() + "\"";
 	mpprocess = new QProcess(this);
 	connect(mpprocess, SIGNAL(finished(int)), this, SLOT(FinishedSlot()));
 
@@ -138,6 +139,8 @@ void DePack::UpdateProcessSlot()
 
 void DePack::FinishedSlot()
 {
+	PathManager::CopyDir(PathManager::GetDecTmpPath(),ui->LineEditResult->text().trimmed(),true);
+	PathManager::RemoveDir(PathManager::GetDecTmpPath());
 	ChangStat(false);
 	if (mpprocess != NULL){
 		mpprocess->terminate();

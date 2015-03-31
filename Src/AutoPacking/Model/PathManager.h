@@ -43,6 +43,7 @@ public:
 	static QString GetAliasesPasswd();
 	static QString GetPasswd();
 	static QString GetTmpPath();
+	static QString GetDecTmpPath();
 	static bool RemoveDir(const QString &dirName);
 	static void WriteSetting();
 	static void ReadSetting();

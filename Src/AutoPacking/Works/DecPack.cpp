@@ -220,7 +220,7 @@ bool DecPack::ReplaceAppPakByTable(QString &path)
 
 bool DecPack::Unpacket(QString &inPath, QString &outPath, QProcess &pprocess)
 {
-	QString apkTool = QStringLiteral("apktool.bat");
+	QString apkTool = QStringLiteral("\"apktool.bat\"");
 	QStringList param;
 	param << QString("d") << QString("-f") << QString("-o") << "\"" + outPath + "\"" << "\"" + inPath + "\"";
 	if (!Tools::ExecuteCmd(apkTool, param, pprocess, PathManager::GetToolPath().trimmed())){
@@ -232,7 +232,7 @@ bool DecPack::Unpacket(QString &inPath, QString &outPath, QProcess &pprocess)
 
 bool DecPack::Dopacket(QString &inPath, QString &outPath, QProcess &pprocess)
 {
-	QString apkTool = QStringLiteral("apktool.bat");
+	QString apkTool = QStringLiteral("\"apktool.bat\"");
 	QStringList param;
 	param << QString("b") << "\"" + inPath + "\"" << "-o" << "\"" + outPath + "\"";
 	if (!Tools::ExecuteCmd(apkTool, param, pprocess, PathManager::GetToolPath().trimmed())){
@@ -244,7 +244,7 @@ bool DecPack::Dopacket(QString &inPath, QString &outPath, QProcess &pprocess)
 
 bool DecPack::SignPacket(QString inPath, QString outPath, QProcess &pprocess)
 {
-	QString exe = QStringLiteral("jarsigner.exe");
+	QString exe = QStringLiteral("\"jarsigner.exe\"");
 	QStringList param;
 	param << QStringLiteral("-sigalg") << PathManager::GetSigalg().trimmed() << QStringLiteral("-verbose") << QStringLiteral("-digestalg")
 		<< PathManager::GetDigestalg().trimmed() << QStringLiteral("-keystore") << "\"" + PathManager::GetKeyPath().trimmed() + "\"" << QStringLiteral("-storepass") << PathManager::GetPasswd()
@@ -264,7 +264,7 @@ bool DecPack::Zipalign(QProcess &pprocess)
 			return false;
 		}
 	}
-	QString exe = QStringLiteral("zipalign.exe");
+	QString exe = QStringLiteral("\"zipalign.exe\"");
 	QStringList param;
 	param << QStringLiteral("-f") << QStringLiteral("-v")<< QStringLiteral("4") << "\"" + mtmpSignFile + "\"" << "\"" + moutFile + "\"";
 	if (!Tools::ExecuteCmd(exe, param, pprocess, PathManager::GetToolPath().trimmed())){

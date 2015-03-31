@@ -296,6 +296,16 @@ QString PathManager::GetTmpPath()
 	return path;
 }
 
+QString PathManager::GetDecTmpPath()
+{
+	QString path = GetTmpPath() + "/DecTmp";
+	QDir dir(path);
+	if (!dir.exists()){
+		dir.mkpath(path);
+	}
+	return path;
+}
+
 void PathManager::CreatDir(QString &dir)
 {
 	QDir dirTmp;
