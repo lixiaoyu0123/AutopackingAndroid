@@ -3,7 +3,7 @@
 
 bool Tools::ExecuteCmd(QString exe, QStringList argument, QProcess &pprocess, QString workPath)
 {
-	QString enterPath = QStringLiteral("cd ") + "\"" + workPath + "\"" + QStringLiteral("\n");
+	QString enterPath = QStringLiteral("cd /d ") + "\"" + workPath + "\"" + QStringLiteral("\n");
 	QString arg;
 	arg.append(exe);
 	for (QStringList::Iterator ite = argument.begin(); ite != argument.end(); ite++)

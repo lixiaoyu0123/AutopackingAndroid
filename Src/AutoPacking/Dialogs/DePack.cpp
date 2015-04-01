@@ -92,6 +92,8 @@ void DePack::ButtonOkSlot()
 	mpprocess = new QProcess(this);
 	connect(mpprocess, SIGNAL(finished(int)), this, SLOT(FinishedSlot()));
 
+	QString enterPath = QStringLiteral("cd /d ") + "\"" + PathManager::GetToolPath() + "\"" + QStringLiteral("\n");
+	
 	QString param = "\"" + apkTool + "\"";
 	for (QStringList::iterator ite = params.begin(); ite != params.end(); ite++)
 	{
@@ -102,8 +104,10 @@ void DePack::ButtonOkSlot()
 
 	QTextCodec *gbk = QTextCodec::codecForName("GBK");
 	QByteArray byteParam = gbk->fromUnicode(param.constData(), param.length());
+	QByteArray byteEnterPath = gbk->fromUnicode(enterPath.constData(), enterPath.length());
 	mpprocess->start("cmd");
 	mpprocess->waitForStarted();
+	mpprocess->write(byteEnterPath);
 	mpprocess->write(byteParam);
 	mpprocess->closeWriteChannel();
 }
