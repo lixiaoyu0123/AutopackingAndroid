@@ -135,10 +135,20 @@ void DecPack::run()
 bool DecPack::CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId)
 {
 	if (outPath.endsWith("/")){
-		moutFile = outPath + channelName + "_" + PathManager::GetVersion().trimmed() + "_" + channelId + ".apk";
+		if (PathManager::GetVersion().trimmed().isEmpty()){
+			moutFile = outPath + channelName + "_" + channelId + ".apk";
+		}
+		else{
+			moutFile = outPath + channelName + "_" + PathManager::GetVersion().trimmed() + "_" + channelId + ".apk";
+		}
 	}
 	else{
-		moutFile = outPath + "/" + channelName + "_" + PathManager::GetVersion().trimmed() + "_" + channelId + ".apk";
+		if (PathManager::GetVersion().trimmed().isEmpty()){
+			moutFile = outPath + "/" + channelName + "_" + channelId + ".apk";
+		}
+		else{
+			moutFile = outPath + "/" + channelName + "_" + PathManager::GetVersion().trimmed() + "_" + channelId + ".apk";
+		}		
 	}
 
 	mtmpPath = PathManager::GetTmpPath().trimmed() + QStringLiteral("/") + channeltbId;

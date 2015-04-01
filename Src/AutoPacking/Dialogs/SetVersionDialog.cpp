@@ -22,7 +22,7 @@ void SetVersionDialog::InitSlot()
 
 void SetVersionDialog::ButtonOkClickSlot()
 {
-	if (!ui->LineEditVersion->text().isEmpty()){
+	//if (!ui->LineEditVersion->text().isEmpty()){
 		PathManager::SetVersion(ui->LineEditVersion->text());
-	}
+	//}
 }
