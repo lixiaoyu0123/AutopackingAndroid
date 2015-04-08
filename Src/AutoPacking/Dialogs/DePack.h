@@ -3,6 +3,7 @@
 #include <QDialog>
 #include <QProcess>
 #include "ui_DePack.h"
+#include "Works/UnPackApk.h"
 
 class DePack:public QDialog
 {
@@ -14,7 +15,6 @@ protected:
 private:
 	Ui::DePack *ui;
 	QTimer *mptimer;
-	QProcess *mpprocess;
 private:
 	void InitView();
 	void InitSlot();

@@ -140,6 +140,8 @@ set( WORKS_FILES
 	Works/DecPack.h
 	Works/SrcPack.cpp
 	Works/SrcPack.h
+	Works/UnPackApk.cpp
+	Works/UnPackApk.h
     )
 set( INTERFACE_FILES  
     Interface/ITableContral.h

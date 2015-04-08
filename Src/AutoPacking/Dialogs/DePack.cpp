@@ -9,8 +9,7 @@ const int MAXPROCESS = 2;
 
 DePack::DePack(QWidget *parent) :QDialog(parent),
 ui(new Ui::DePack),
-mptimer(NULL),
-mpprocess(NULL)
+mptimer(NULL)
 {
 	ui->setupUi(this);
 	InitView();
@@ -22,10 +21,7 @@ DePack::~DePack()
 	delete ui;
 	if (mptimer != NULL){
 		delete mptimer;
-	}
-
-	if (mpprocess != NULL){
-		delete mpprocess;
+		mptimer = NULL;
 	}
 }
 
@@ -85,49 +81,13 @@ void DePack::ButtonOkSlot()
 	}
 	ChangStat(true);
 
-	QString apkTool = PathManager::GetToolPath() + QStringLiteral("/apktool.bat");
-	PathManager::RemoveDir(PathManager::GetDecTmpPath());
-	QStringList params;
-	params << QString("d") << QString("-f") << QString("-o") << "\"" + PathManager::GetDecTmpPath() + "\"" <<"\"" +  ui->LineEditOri->text().trimmed() + "\"";
-	mpprocess = new QProcess(this);
-	connect(mpprocess, SIGNAL(finished(int)), this, SLOT(FinishedSlot()));
-
-	QString enterPath = QStringLiteral("cd /d ") + "\"" + PathManager::GetToolPath() + "\"" + QStringLiteral("\n");
-	
-	QString param = "\"" + apkTool + "\"";
-	for (QStringList::iterator ite = params.begin(); ite != params.end(); ite++)
-	{
-		param.append(" ");
-		param.append(*ite);
-	}
-	param.append("\n");
-
-	QTextCodec *gbk = QTextCodec::codecForName("GBK");
-	QByteArray byteParam = gbk->fromUnicode(param.constData(), param.length());
-	QByteArray byteEnterPath = gbk->fromUnicode(enterPath.constData(), enterPath.length());
-	mpprocess->start("cmd");
-	mpprocess->waitForStarted();
-	mpprocess->write(byteEnterPath);
-	mpprocess->write(byteParam);
-	mpprocess->closeWriteChannel();
+	UnPackApk::GetInstance()->StartWork(ui->LineEditOri->text().trimmed(), ui->LineEditResult->text().trimmed());
+	connect(UnPackApk::GetInstance(), SIGNAL(FinishSignal()), this, SLOT(FinishedSlot()));
 }
 
 void DePack::ButtonCancelSlot()
 {
-	ChangStat(false);
-	QProcess killer;
-	killer.start("taskkill", QStringList() << "/f" << "/im" << "java.exe");
-	if (!killer.waitForStarted()){
-		return;
-	}
-	if (!killer.waitForFinished()){
-		return;
-	}
-	if (mpprocess != NULL){
-		mpprocess->terminate();
-		mpprocess->deleteLater();
-		mpprocess = NULL;
-	}
+	UnPackApk::GetInstance()->Stop();
 }
 
 void DePack::UpdateProcessSlot()
@@ -146,11 +106,7 @@ void DePack::FinishedSlot()
 	PathManager::CopyDir(PathManager::GetDecTmpPath(),ui->LineEditResult->text().trimmed(),true);
 	PathManager::RemoveDir(PathManager::GetDecTmpPath());
 	ChangStat(false);
-	if (mpprocess != NULL){
-		mpprocess->terminate();
-		mpprocess->deleteLater();
-		mpprocess = NULL;
-	}
+	disconnect(UnPackApk::GetInstance(), SIGNAL(FinishSignal()), this, SLOT(FinishedSlot()));
 	BjMessageBox::information(this, QStringLiteral("解包成功！"), QStringLiteral("恭喜，解包成功"), QMessageBox::Ok);
 }
 
