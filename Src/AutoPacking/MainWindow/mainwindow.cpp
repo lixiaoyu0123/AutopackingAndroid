@@ -35,7 +35,7 @@ mcurrentTaskIndex(0),
 mplogDialog(NULL),
 misLogShowing(false)
 {
-    ui->setupUi(this);
+	ui->setupUi(this);
 	InitView();
 	InitData();
 	InitSlot();
@@ -43,7 +43,7 @@ misLogShowing(false)
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+	delete ui;
 	DatabaseManager::GetInstance()->Destroyed();
 }
 
@@ -91,7 +91,7 @@ void MainWindow::ChangStat(bool isStar)
 	mtoolBar.GetActionStop()->setEnabled(isStar);
 	QDateTime currentDateTime = QDateTime::currentDateTime();
 	QString currentDate = currentDateTime.toString("yyyy-MM-dd hh:mm:ss ddd");
-	if (isStar){ 
+	if (isStar){
 		mstartTime = currentDateTime;
 		mstatusBar.ShowTime(QStringLiteral("打包开始： ") + currentDate + QStringLiteral("  "));
 		mlog.clear();
@@ -119,6 +119,15 @@ void MainWindow::StartSlot()
 {
 	if (!PathManager::CheckSysEnvironment() || !PathManager::CheckParameter()){
 		return;
+	}
+
+	QString buildXmlPath = PathManager::GetBuildXml();
+	QFile buildF(buildXmlPath);
+	if (buildF.exists()){
+		int ret = BjMessageBox::warning(NULL, QStringLiteral("友情提示"), QStringLiteral("发现ant脚本文件build.xml，是否使用存在的脚本打包？"), QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::NoButton);
+		if (ret != QMessageBox::Ok){
+			buildF.remove();
+		}
 	}
 	ChangStat(true);
 
@@ -182,14 +191,14 @@ void MainWindow::StartDecPack()
 		ChangStat(false);
 		return;
 	}
-	for (int i = 0; i < mthreadNum; i++,mcurrentTaskIndex++)
+	for (int i = 0; i < mthreadNum; i++, mcurrentTaskIndex++)
 	{
 		if (mcurrentTaskIndex >= mrecordIndex.size()){
 			break;;
 		}
 		Pack *ppack = new DecPack(this);
 		mtaskList.push_back(ppack);
-		connect(ppack, SIGNAL(FinishSignal(int,int)), this, SLOT(FinishedSlot(int,int)), Qt::QueuedConnection);
+		connect(ppack, SIGNAL(FinishSignal(int, int)), this, SLOT(FinishedSlot(int, int)), Qt::QueuedConnection);
 		connect(ppack, SIGNAL(GenerateError(QString)), SLOT(CollectLog(QString)), Qt::QueuedConnection);
 		QString id = DatabaseManager::GetInstance()->GetTableModel()->record(mrecordIndex.at(mcurrentTaskIndex)).value("ID").toString();
 		QString channelId = DatabaseManager::GetInstance()->GetTableModel()->record(mrecordIndex.at(mcurrentTaskIndex)).value("ChannelID").toString();
@@ -200,7 +209,7 @@ void MainWindow::StartDecPack()
 		QList<ReplaceAppPakTable> appPakTableList;
 		DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(mcurrentTaskIndex), QStringLiteral("打包开始！"));
 		DatabaseManager::GetInstance()->ReadyData(id, strTableList, resTableList, pakTableList, appPakTableList);
-		ppack->Init(PathManager::GetDecPackPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, appPakTableList,mcurrentTaskIndex);
+		ppack->Init(PathManager::GetDecPackPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, appPakTableList, mcurrentTaskIndex);
 		ppack->start();
 	}
 
@@ -239,7 +248,7 @@ void MainWindow::StartSrcPack()
 		QList<ReplaceAppPakTable> appPakTableList;
 		DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(mcurrentTaskIndex), QStringLiteral("打包开始！"));
 		DatabaseManager::GetInstance()->ReadyData(id, strTableList, resTableList, pakTableList, appPakTableList);
-		ppack->Init(PathManager::GetSrcPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, appPakTableList,mcurrentTaskIndex);
+		ppack->Init(PathManager::GetSrcPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, appPakTableList, mcurrentTaskIndex);
 		ppack->start();
 	}
 
@@ -248,7 +257,7 @@ void MainWindow::StartSrcPack()
 	}
 }
 
-void MainWindow::FinishedSlot(int stat,int taskId)
+void MainWindow::FinishedSlot(int stat, int taskId)
 {
 	switch (stat)
 	{
@@ -294,7 +303,7 @@ void MainWindow::FinishedSlot(int stat,int taskId)
 			StartDecPack();
 			break;
 		}
-		
+
 	}
 }
 
@@ -367,7 +376,7 @@ void MainWindow::SetVersionSlot()
 
 void MainWindow::ShowLogSlot()
 {
-	mplogDialog = new LogDialog (this);
+	mplogDialog = new LogDialog(this);
 	mplogDialog->setAttribute(Qt::WA_DeleteOnClose);//对话框自动释放所包含资源
 	mplogDialog->SetText(mlog);
 	misLogShowing = true;
@@ -383,7 +392,7 @@ void MainWindow::CloseLogSlot()
 void MainWindow::HeldSlot()
 {
 	QString arg = PathManager::GetDocumentsPath() + "/UserManual.chm";
-	QProcess::startDetached("hh.exe",QStringList()<<arg);
+	QProcess::startDetached("hh.exe", QStringList() << arg);
 }
 
 void MainWindow::UpdataSlot()
@@ -394,7 +403,7 @@ void MainWindow::UpdataSlot()
 void MainWindow::ThreadConfigSlot()
 {
 	ThreadConfigDialog threadConfig(this);
-	if (threadConfig.exec() == QDialog::Accepted){		
+	if (threadConfig.exec() == QDialog::Accepted){
 		mthreadNum = PathManager::GetThreadNum();
 		StatusTextChang();
 	}

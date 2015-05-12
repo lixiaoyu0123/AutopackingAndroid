@@ -85,6 +85,7 @@ public:
 	static QString GetDigestalg();
 	static bool CheckSysEnvironment();
 	static bool CheckParameter();
+	static QString GetBuildXml();
 	static bool IsFirstRun();
 protected:
 private:

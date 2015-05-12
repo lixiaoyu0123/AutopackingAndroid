@@ -40,6 +40,10 @@ void SrcPack::Init(QString &inPath, QString &outPath, QString &channelId, QStrin
 
 void SrcPack::run()
 {
+	if (!PathManager::RemoveDir(mtmpPath)){
+		emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+	}
+
 	mpprocess = new QProcess(NULL);
 	if (!CreatPath(moutputPath, mchannelId, mchannelName, mchanneltbId)){
 		KillTask();
@@ -57,8 +61,8 @@ void SrcPack::run()
 	}
 
 	QFile buildXml(mainProPath + QStringLiteral("/build.xml"));
-	if (buildXml.exists() && !buildXml.remove()){
-		emit GenerateError(QStringLiteral("error:删除原buld.xml文件失败！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
+	if (buildXml.exists()){
+		emit GenerateError(QStringLiteral("error:buld.xml文件未删除成功！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
 		KillTask();
 		emit FinishSignal(1, mtaskId);
 		return;

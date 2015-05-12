@@ -45,7 +45,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Icons]
 Name: "{group}\AutopackingAndroid"; Filename: "{app}\Autopacking.exe"
-Name: "{group}\用户手册"; Filename: "{app}\Documents\UserManual.pdf"
+Name: "{group}\用户手册"; Filename: "{app}\Documents\UserManual.chm"
 Name: "{group}\卸载AutopackingAndroid"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\AutopackingAndroid"; Filename: "{app}\Autopacking.exe"; Tasks: desktopicon
 Name: "{userdesktop}\AutopackingAndroid"; Filename:"{app}\Autopacking.exe"

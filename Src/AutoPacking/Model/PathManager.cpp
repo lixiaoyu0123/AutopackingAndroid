@@ -1491,6 +1491,12 @@ bool PathManager::CheckParameter()
 	return true;
 }
 
+QString PathManager::GetBuildXml()
+{
+	QString buildPath = GetSrcPath() + "/build.xml";
+	return buildPath;
+}
+
 bool PathManager::IsFirstRun()
 {
 	QSettings settings(GetConfigPath() + QStringLiteral("/Config.ini"), QSettings::IniFormat);

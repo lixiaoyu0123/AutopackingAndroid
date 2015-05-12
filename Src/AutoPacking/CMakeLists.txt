@@ -311,8 +311,8 @@ if (MSVC)
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
                         COMMAND cmake -E copy ${ISS_CONFIGURED_LOCATION} ${ISS_TEMP_LOCATION} ) 
 	endif()
-
-	# Copy Qt runtime libs
+	
+		# Copy Qt runtime libs
     set( QT_LIBS Qt5Core Qt5Gui Qt5Sql Qt5Widgets Qt5Xml libEGL libGLESv2 )
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
     foreach( lib ${QT_LIBS} )
@@ -322,13 +322,14 @@ if (MSVC)
     endforeach( lib )
 
 	# Copy bin libs
-    set( QT_BIN_LIBS icudt52 icuin52 icuuc52 )
+    set( QT_BIN_LIBS icudt53 icuin53 icuuc53 )
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
     foreach( lib ${QT_BIN_LIBS} )
         set( location location-NOTFOUND )
         find_file( location ${lib}.dll PATHS ${QT_INSTALL_BINS} )
         add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/ )
     endforeach( lib )
+
 
     # Copy platform plugins
     set( QT_PLATFORMS qwindows)
@@ -347,7 +348,6 @@ if (MSVC)
         find_file( location ${lib}.dll PATHS ${QT_PLUGINS_DIR}/sqldrivers/ )
         add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/sqldrivers/ )
     endforeach( lib )
-
    # Set the path of the application executable
     if( MSVC_IDE )
         set( EXE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/${PROJECT_NAME}${CMAKE_EXECUTABLE_SUFFIX} )

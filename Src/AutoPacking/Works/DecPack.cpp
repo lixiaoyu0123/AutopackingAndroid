@@ -44,6 +44,10 @@ void DecPack::Init(QString &inPath, QString &outPath, QString &channelId, QStrin
 
 void DecPack::run()
 {
+	if (!PathManager::RemoveDir(mtmpPath)){
+		emit GenerateError(QStringLiteral("error:清除缓存出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+	}
+
 	mpprocess = new QProcess(NULL);
 	if (!CreatPath(moutputPath, mchannelId, mchannelName, mchanneltbId)){
 		KillTask();
