@@ -42,6 +42,8 @@ mnetworkManager(new QNetworkAccessManager(parent))
 	InitView();
 	InitData();
 	InitSlot();
+	QUrl url(WEB_SITE);
+	mnetworkManager->get(QNetworkRequest(url));
 }
 
 MainWindow::~MainWindow()
@@ -86,9 +88,8 @@ void MainWindow::InitSlot()
 	connect(ui->actionDePack, SIGNAL(triggered()), this, SLOT(DePackToolSlot()));
 	connect(mtoolBar.GetButtonLog(), SIGNAL(clicked()), this, SLOT(ShowLogSlot()));
 	connect(mtoolBar.GetButtonThreadConfig(), SIGNAL(clicked()), this, SLOT(ThreadConfigSlot()));
-	QObject::connect(mnetworkManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(Httpresponse(QNetworkReply*)));
-	QUrl url(WEB_SITE);
-	mnetworkManager->get(QNetworkRequest(url));
+	connect(mnetworkManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(Httpresponse(QNetworkReply*)));
+
 }
 
 void MainWindow::ChangStat(bool isStar)
@@ -426,8 +427,7 @@ void MainWindow::Httpresponse(QNetworkReply* reply)
 	if (reply->error() == QNetworkReply::NoError)
 	{
 		// Check for redirect
-		QVariant possibleRedirectUrl =
-			reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+		QVariant possibleRedirectUrl =	reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
 
 		if (!possibleRedirectUrl.toUrl().isEmpty())
 		{
