@@ -106,27 +106,40 @@ bool Pack::ReplaceResByTable(QString &path)
 {
 	for (QList<ReplaceResTable>::iterator ite = mresTableList.begin(); ite != mresTableList.end(); ite++)
 	{
-		QString dirDestAbsolutely;
-		QString dirSrc;
-		QString dirDest;
-		dirSrc = ite->GetFolderSrc().trimmed();
-		dirDest = ite->GetFolderDest().trimmed();
-		if (dirSrc.isEmpty() || dirDest.isEmpty()){
+		QString destAbsolutelyStr;
+		QString srcStr;
+		QString destStr;
+		srcStr = ite->GetFolderSrc().trimmed();
+		destStr = ite->GetFolderDest().trimmed();
+		destStr.replace("\\", "/");
+		if (srcStr.isEmpty() || destStr.isEmpty()){
 			emit GenerateError(QStringLiteral("error:原资源文件夹或目标文件夹未配置！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 			return false;
 		}
-		if (dirSrc.replace("\\", "/").startsWith("/")){
-			dirDestAbsolutely = path + dirDest;
+		if (srcStr.replace("\\", "/").startsWith("/")){
+			destAbsolutelyStr = path + destStr;
 		}
 		else{
-			dirDestAbsolutely = path + "/" + dirDest;
+			destAbsolutelyStr = path + "/" + destStr;
 		}
-		QDir tmp(dirSrc);
-		if (!tmp.exists()){
-			emit GenerateError(QStringLiteral("error:资源原路径不存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-			return false;
+
+		QFile fileSrc(srcStr);
+		if (fileSrc.exists()){
+			int pos = srcStr.lastIndexOf("/");
+			QString fileName = srcStr.mid(pos);
+			if (!PathManager::CopyFile(srcStr, destAbsolutelyStr + fileName, true)){
+				emit GenerateError(QStringLiteral("error:资源原文件不存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+				return false;
+			}
 		}
-		PathManager::CopyDir(dirSrc, dirDestAbsolutely, true);
+		else{
+			QDir tmp(srcStr);
+			if (!tmp.exists()){
+				emit GenerateError(QStringLiteral("error:资源原路径不存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+				return false;
+			}
+		}
+		PathManager::CopyDir(srcStr, destAbsolutelyStr, true);
 	}
 	return true;
 }

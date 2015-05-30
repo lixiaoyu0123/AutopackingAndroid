@@ -6,6 +6,7 @@
 #include <QTableView>
 #include <QDateTime>
 #include <QVector>
+#include <QtNetwork/QNetworkAccessManager>
 #include "BjToolBar.h"
 #include "BjStatusBar.h"
 #include "BjCentralFram.h"
@@ -56,6 +57,7 @@ public slots:
 	void SetVersionSlot();
 	void CloseLogSlot();
 	void DePackToolSlot();
+	void Httpresponse(QNetworkReply* reply);
 
 private:
     Ui::MainWindow *ui;
@@ -72,6 +74,7 @@ private:
 	QVector<int> mrecordIndex;
 	LogDialog *mplogDialog;
 	bool misLogShowing;
+	QNetworkAccessManager *mnetworkManager;
 };
 
 #endif // MAINWINDOW_H

@@ -45,6 +45,7 @@ find_package(Qt5PrintSupport)
 find_package(Qt5LinguistTools)
 find_package(Qt5Sensors)
 find_package(Qt5Sql)
+find_package(Qt5Network)
 set(CMAKE_AUTOMOC ON)
 
 set( MAIN_FILES
@@ -184,7 +185,7 @@ set( RAW_SOURCES ${MAIN_FILES} ${MAINUI_WINDOW} ${MODEL_FILES} ${DIALOG_FILES} $
 # Runs UIC on specified files
 qt5_wrap_ui( UI_FILES_H ${UI_FILES} )
 qt5_add_resources( QRC_FILES_CPP ${QRC_FILES} )
-set_source_files_properties( Dialogs/About.cpp PROPERTIES COMPILE_DEFINITIONS TOOLS_FULL_VERSION="${TOOLS_FULL_VERSION}" )
+set_source_files_properties( Dialogs/About.cpp PROPERTIES COMPILE_DEFINITIONS TOOLS_FULL_VERSION="${TOOLS_FULL_VERSION}"  )
 
 #############################################################################
 
@@ -236,7 +237,7 @@ if (MSVC)
 endif()
 
 target_link_libraries( ${PROJECT_NAME} ${QT_MAIN} ${PCRE_LIBRARIES})
-qt5_use_modules(${PROJECT_NAME} Widgets Sql Xml)
+qt5_use_modules(${PROJECT_NAME} Widgets Sql Xml Network)
 
 #############################################################################
 
@@ -311,8 +312,8 @@ if (MSVC)
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD 
                         COMMAND cmake -E copy ${ISS_CONFIGURED_LOCATION} ${ISS_TEMP_LOCATION} ) 
 	endif()
-	
-		# Copy Qt runtime libs
+
+	# Copy Qt runtime libs
     set( QT_LIBS Qt5Core Qt5Gui Qt5Sql Qt5Widgets Qt5Xml libEGL libGLESv2 )
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
     foreach( lib ${QT_LIBS} )
@@ -322,14 +323,13 @@ if (MSVC)
     endforeach( lib )
 
 	# Copy bin libs
-    set( QT_BIN_LIBS icudt53 icuin53 icuuc53 )
+    set( QT_BIN_LIBS icudt52 icuin52 icuuc52 )
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
     foreach( lib ${QT_BIN_LIBS} )
         set( location location-NOTFOUND )
         find_file( location ${lib}.dll PATHS ${QT_INSTALL_BINS} )
         add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/ )
     endforeach( lib )
-
 
     # Copy platform plugins
     set( QT_PLATFORMS qwindows)
@@ -348,6 +348,7 @@ if (MSVC)
         find_file( location ${lib}.dll PATHS ${QT_PLUGINS_DIR}/sqldrivers/ )
         add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/sqldrivers/ )
     endforeach( lib )
+
    # Set the path of the application executable
     if( MSVC_IDE )
         set( EXE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/${PROJECT_NAME}${CMAKE_EXECUTABLE_SUFFIX} )

@@ -3,6 +3,8 @@
 #include <QMessageBox>
 #include <QProcess>
 #include <QSet>
+#include<QtNetwork/QNetworkRequest>
+#include<QtNetwork/QNetworkReply>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "Model/DatabaseManager.h"
@@ -33,9 +35,10 @@ mthreadNum(PathManager::GetThreadNum()),
 mversion(PathManager::GetVersion()),
 mcurrentTaskIndex(0),
 mplogDialog(NULL),
-misLogShowing(false)
+misLogShowing(false),
+mnetworkManager(new QNetworkAccessManager(parent))
 {
-	ui->setupUi(this);
+    ui->setupUi(this);
 	InitView();
 	InitData();
 	InitSlot();
@@ -43,7 +46,7 @@ misLogShowing(false)
 
 MainWindow::~MainWindow()
 {
-	delete ui;
+    delete ui;
 	DatabaseManager::GetInstance()->Destroyed();
 }
 
@@ -83,6 +86,9 @@ void MainWindow::InitSlot()
 	connect(ui->actionDePack, SIGNAL(triggered()), this, SLOT(DePackToolSlot()));
 	connect(mtoolBar.GetButtonLog(), SIGNAL(clicked()), this, SLOT(ShowLogSlot()));
 	connect(mtoolBar.GetButtonThreadConfig(), SIGNAL(clicked()), this, SLOT(ThreadConfigSlot()));
+	QObject::connect(mnetworkManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(Httpresponse(QNetworkReply*)));
+	QUrl url(WEB_SITE);
+	mnetworkManager->get(QNetworkRequest(url));
 }
 
 void MainWindow::ChangStat(bool isStar)
@@ -91,7 +97,7 @@ void MainWindow::ChangStat(bool isStar)
 	mtoolBar.GetActionStop()->setEnabled(isStar);
 	QDateTime currentDateTime = QDateTime::currentDateTime();
 	QString currentDate = currentDateTime.toString("yyyy-MM-dd hh:mm:ss ddd");
-	if (isStar){
+	if (isStar){ 
 		mstartTime = currentDateTime;
 		mstatusBar.ShowTime(QStringLiteral("打包开始： ") + currentDate + QStringLiteral("  "));
 		mlog.clear();
@@ -119,15 +125,6 @@ void MainWindow::StartSlot()
 {
 	if (!PathManager::CheckSysEnvironment() || !PathManager::CheckParameter()){
 		return;
-	}
-
-	QString buildXmlPath = PathManager::GetBuildXml();
-	QFile buildF(buildXmlPath);
-	if (buildF.exists()){
-		int ret = BjMessageBox::warning(NULL, QStringLiteral("友情提示"), QStringLiteral("发现ant脚本文件build.xml，是否使用存在的脚本打包？"), QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::NoButton);
-		if (ret != QMessageBox::Ok){
-			buildF.remove();
-		}
 	}
 	ChangStat(true);
 
@@ -191,14 +188,14 @@ void MainWindow::StartDecPack()
 		ChangStat(false);
 		return;
 	}
-	for (int i = 0; i < mthreadNum; i++, mcurrentTaskIndex++)
+	for (int i = 0; i < mthreadNum; i++,mcurrentTaskIndex++)
 	{
 		if (mcurrentTaskIndex >= mrecordIndex.size()){
 			break;;
 		}
 		Pack *ppack = new DecPack(this);
 		mtaskList.push_back(ppack);
-		connect(ppack, SIGNAL(FinishSignal(int, int)), this, SLOT(FinishedSlot(int, int)), Qt::QueuedConnection);
+		connect(ppack, SIGNAL(FinishSignal(int,int)), this, SLOT(FinishedSlot(int,int)), Qt::QueuedConnection);
 		connect(ppack, SIGNAL(GenerateError(QString)), SLOT(CollectLog(QString)), Qt::QueuedConnection);
 		QString id = DatabaseManager::GetInstance()->GetTableModel()->record(mrecordIndex.at(mcurrentTaskIndex)).value("ID").toString();
 		QString channelId = DatabaseManager::GetInstance()->GetTableModel()->record(mrecordIndex.at(mcurrentTaskIndex)).value("ChannelID").toString();
@@ -209,7 +206,7 @@ void MainWindow::StartDecPack()
 		QList<ReplaceAppPakTable> appPakTableList;
 		DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(mcurrentTaskIndex), QStringLiteral("打包开始！"));
 		DatabaseManager::GetInstance()->ReadyData(id, strTableList, resTableList, pakTableList, appPakTableList);
-		ppack->Init(PathManager::GetDecPackPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, appPakTableList, mcurrentTaskIndex);
+		ppack->Init(PathManager::GetDecPackPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, appPakTableList,mcurrentTaskIndex);
 		ppack->start();
 	}
 
@@ -248,7 +245,7 @@ void MainWindow::StartSrcPack()
 		QList<ReplaceAppPakTable> appPakTableList;
 		DatabaseManager::GetInstance()->ChangStatInDatabase(mrecordIndex.at(mcurrentTaskIndex), QStringLiteral("打包开始！"));
 		DatabaseManager::GetInstance()->ReadyData(id, strTableList, resTableList, pakTableList, appPakTableList);
-		ppack->Init(PathManager::GetSrcPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, appPakTableList, mcurrentTaskIndex);
+		ppack->Init(PathManager::GetSrcPath(), PathManager::GetOutPath(), channelId, channelName, id, strTableList, resTableList, pakTableList, appPakTableList,mcurrentTaskIndex);
 		ppack->start();
 	}
 
@@ -257,7 +254,7 @@ void MainWindow::StartSrcPack()
 	}
 }
 
-void MainWindow::FinishedSlot(int stat, int taskId)
+void MainWindow::FinishedSlot(int stat,int taskId)
 {
 	switch (stat)
 	{
@@ -303,7 +300,7 @@ void MainWindow::FinishedSlot(int stat, int taskId)
 			StartDecPack();
 			break;
 		}
-
+		
 	}
 }
 
@@ -376,7 +373,7 @@ void MainWindow::SetVersionSlot()
 
 void MainWindow::ShowLogSlot()
 {
-	mplogDialog = new LogDialog(this);
+	mplogDialog = new LogDialog (this);
 	mplogDialog->setAttribute(Qt::WA_DeleteOnClose);//对话框自动释放所包含资源
 	mplogDialog->SetText(mlog);
 	misLogShowing = true;
@@ -392,7 +389,7 @@ void MainWindow::CloseLogSlot()
 void MainWindow::HeldSlot()
 {
 	QString arg = PathManager::GetDocumentsPath() + "/UserManual.chm";
-	QProcess::startDetached("hh.exe", QStringList() << arg);
+	QProcess::startDetached("hh.exe",QStringList()<<arg);
 }
 
 void MainWindow::UpdataSlot()
@@ -403,7 +400,7 @@ void MainWindow::UpdataSlot()
 void MainWindow::ThreadConfigSlot()
 {
 	ThreadConfigDialog threadConfig(this);
-	if (threadConfig.exec() == QDialog::Accepted){
+	if (threadConfig.exec() == QDialog::Accepted){		
 		mthreadNum = PathManager::GetThreadNum();
 		StatusTextChang();
 	}
@@ -420,6 +417,89 @@ void MainWindow::CollectLog(QString log)
 	mlog.append(log);
 	if (misLogShowing){
 		mplogDialog->SetText(mlog);
+	}
+}
+
+void MainWindow::Httpresponse(QNetworkReply* reply)
+{
+	int t= (int)(reply->error());
+	if (reply->error() == QNetworkReply::NoError)
+	{
+		// Check for redirect
+		QVariant possibleRedirectUrl =
+			reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+
+		if (!possibleRedirectUrl.toUrl().isEmpty())
+		{
+			if (reply->url() == possibleRedirectUrl.toUrl())
+				return; // escape possible redirect loop
+			mnetworkManager->get(QNetworkRequest(possibleRedirectUrl.toUrl()));
+			return;
+		}
+
+		// first line of the currentrelease file contains a major.minor.patch version string
+		QString sversion(reply->readLine());
+
+		QStringList versiontokens = sversion.split(".");
+		if (versiontokens.size() < 3)
+			return;
+
+		int major = versiontokens[0].toInt();
+		int minor = versiontokens[1].toInt();
+		int patch = versiontokens[2].toInt();
+
+		bool newversion = false;
+		QRegularExpression versionNumber(VERSION_NUMBERS);
+		QRegularExpressionMatch mo = versionNumber.match(TOOL_VERSION);
+		int majorVersion = mo.captured(1).toInt();
+		int minorVersion = mo.captured(2).toInt();
+		int patchVersion = mo.captured(3).toInt();
+		if (major > majorVersion)
+			newversion = true;
+		else if (major == majorVersion)
+		{
+			if (minor > minorVersion)
+				newversion = true;
+			else if (minor == minorVersion)
+			{
+				if (patch > patchVersion)
+					newversion = true;
+			}
+		}
+
+		if (newversion)
+		{
+			QSettings settings(QApplication::organizationName(), QApplication::organizationName());
+			bool disablecheck = settings.value("checkversion/disable", false).toBool();
+			int ignmajor = settings.value("checkversion/major", 999).toInt();
+			int ignminor = settings.value("checkversion/minor", 0).toInt();
+			int ignpatch = settings.value("checkversion/patch", 0).toInt();
+
+			// check if the user doesn't care about the current update
+			if (!(ignmajor == major && ignminor == minor && ignpatch == patch && disablecheck))
+			{
+				QMessageBox msgBox;
+				QPushButton *idontcarebutton = msgBox.addButton(tr("Don't show again"), QMessageBox::ActionRole);
+				msgBox.addButton(QMessageBox::Ok);
+				msgBox.setTextFormat(Qt::RichText);
+				msgBox.setWindowTitle(tr("New version available."));
+				msgBox.setText(tr("A new DB Browser for SQLite version is available (%1.%2.%3).<br/><br/>"
+					"Please download at <a href='%4'>%4</a>.").arg(major).arg(minor).arg(patch).
+					arg(QString(reply->readLine()).trimmed()));
+				msgBox.exec();
+
+				if (msgBox.clickedButton() == idontcarebutton)
+				{
+					// save that the user don't want to get bothered about this update
+					settings.beginGroup("checkversion");
+					settings.setValue("major", major);
+					settings.setValue("minor", minor);
+					settings.setValue("patch", minor);
+					settings.setValue("disable", true);
+					settings.endGroup();
+				}
+			}
+		}
 	}
 }
 

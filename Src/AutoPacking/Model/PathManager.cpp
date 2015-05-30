@@ -492,6 +492,9 @@ QString PathManager::GetDigestalg()
 
 bool PathManager::RemoveDir(const QString &dirName)
 {
+	if (dirName.isEmpty()){
+		return true;
+	}
 	QVector<QString> dirNames;
 	QDir dir(dirName);
 	QFileInfoList filst;
@@ -1489,12 +1492,6 @@ bool PathManager::CheckParameter()
 		return false;
 	}
 	return true;
-}
-
-QString PathManager::GetBuildXml()
-{
-	QString buildPath = GetSrcPath() + "/build.xml";
-	return buildPath;
 }
 
 bool PathManager::IsFirstRun()

@@ -43,6 +43,10 @@ private:
     Ui::About *ui;
 };
 
+extern const QString VERSION_NUMBERS ;
+extern const QString TOOL_VERSION;
+extern const QString WEB_SITE;
+
 #endif // ABOUT_H
 
 
