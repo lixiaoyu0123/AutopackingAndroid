@@ -86,6 +86,10 @@ public:
 	static bool CheckSysEnvironment();
 	static bool CheckParameter();
 	static bool IsFirstRun();
+	static QString GetBuildXml();
+	static void SetBuildXmlWay(bool isUseDef);
+	static bool GetBuilXmlWay();
+	static void CheckBuildXml();
 protected:
 private:
 	static QString OUTPATH;
@@ -102,6 +106,7 @@ private:
 	static QString DIGESTALG;
 	static int THREADNUM;
 	static int PACKWAY;
+	static bool BUILD_XML_WAY;
 	
 };
 #endif

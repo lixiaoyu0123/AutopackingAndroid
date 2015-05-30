@@ -27,6 +27,7 @@ QString PathManager::SIGALG = "";
 QString PathManager::DIGESTALG = "";
 int PathManager::THREADNUM = 1;
 int PathManager::PACKWAY = 0;
+bool PathManager::BUILD_XML_WAY = false;
 
 QString PathManager::GetStartPath()
 {
@@ -452,6 +453,33 @@ QString PathManager::GetVersion()
 {
 	ReadSetting();
 	return VERSION;
+}
+
+QString PathManager::GetBuildXml()
+{
+	QString buildPath = GetSrcPath() + "/build.xml";
+	return buildPath;
+}
+
+void PathManager::CheckBuildXml()
+{
+	QString buildXmlPath = PathManager::GetBuildXml();
+	QFile buildF(buildXmlPath);
+	if (buildF.exists()){
+		BjMessageBox messageBox(NULL);
+		messageBox.setWindowTitle(QStringLiteral("友情提示"));
+		messageBox.setText(QStringLiteral("发现ant脚本文件build.xml，是否使用存在的脚本去打包？"));
+		QPushButton *yes = messageBox.addButton((QStringLiteral("是")), QMessageBox::ActionRole);
+		QPushButton *no = messageBox.addButton((QStringLiteral("否")), QMessageBox::RejectRole);
+		// int ret = BjMessageBox::question(NULL, QStringLiteral("友情提示"), QStringLiteral("发现ant脚本文件build.xml，是否使用存在的脚本去打包？"), QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
+		messageBox.exec();
+		if (messageBox.clickedButton() == (QAbstractButton *)yes){
+			PathManager::SetBuildXmlWay(true);
+		}
+		else{
+			PathManager::SetBuildXmlWay(false);
+		}
+	}
 }
 
 void PathManager::SetPackWay(int way)
@@ -1506,6 +1534,16 @@ bool PathManager::IsFirstRun()
 	}
 	settings.endGroup();
 	return false;
+}
+
+void PathManager::SetBuildXmlWay(bool isUseDef)
+{
+	BUILD_XML_WAY = isUseDef;
+}
+
+bool PathManager::GetBuilXmlWay()
+{
+	return BUILD_XML_WAY;
 }
 
 void PathManager::WriteSetting()

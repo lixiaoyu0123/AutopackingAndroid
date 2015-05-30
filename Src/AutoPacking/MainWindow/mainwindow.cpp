@@ -42,8 +42,8 @@ mnetworkManager(new QNetworkAccessManager(parent))
 	InitView();
 	InitData();
 	InitSlot();
-	QUrl url(WEB_SITE);
-	mnetworkManager->get(QNetworkRequest(url));
+	//QUrl url(WEB_SITE);
+	//mnetworkManager->get(QNetworkRequest(url));
 }
 
 MainWindow::~MainWindow()
@@ -169,6 +169,7 @@ void MainWindow::StartSlot()
 	switch (mtoolBar.GetCombox()->currentIndex())
 	{
 	case 0:
+		PathManager::CheckBuildXml();
 		StartSrcPack();
 		break;
 	case 1:
@@ -228,6 +229,7 @@ void MainWindow::StartSrcPack()
 		ChangStat(false);
 		return;
 	}
+
 	for (int i = mtaskList.size(); i < mthreadNum; i++, mcurrentTaskIndex++)
 	{
 		if (mcurrentTaskIndex >= mrecordIndex.size()){
@@ -423,19 +425,18 @@ void MainWindow::CollectLog(QString log)
 
 void MainWindow::Httpresponse(QNetworkReply* reply)
 {
-	int t= (int)(reply->error());
 	if (reply->error() == QNetworkReply::NoError)
 	{
 		// Check for redirect
-		QVariant possibleRedirectUrl =	reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+		//QVariant possibleRedirectUrl =	reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
 
-		if (!possibleRedirectUrl.toUrl().isEmpty())
-		{
-			if (reply->url() == possibleRedirectUrl.toUrl())
-				return; // escape possible redirect loop
-			mnetworkManager->get(QNetworkRequest(possibleRedirectUrl.toUrl()));
-			return;
-		}
+		//if (!possibleRedirectUrl.toUrl().isEmpty())
+		//{
+		//	if (reply->url() == possibleRedirectUrl.toUrl())
+		//		return; // escape possible redirect loop
+		//	mnetworkManager->get(QNetworkRequest(possibleRedirectUrl.toUrl()));
+		//	return;
+		//}
 
 		// first line of the currentrelease file contains a major.minor.patch version string
 		QString sversion(reply->readLine());

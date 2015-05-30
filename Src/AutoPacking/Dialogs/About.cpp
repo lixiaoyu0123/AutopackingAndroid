@@ -4,7 +4,7 @@
 
 const QString VERSION_NUMBERS = "(\\d+)\\.(\\d+)\\.(\\d+)";
 const QString TOOL_VERSION = QString(TOOLS_FULL_VERSION);
-const QString WEB_SITE = "https://raw.github.com/sqlitebrowser/sqlitebrowser/master/currentrelease";
+const QString WEB_SITE = "http://github.com/lixiaoyu0123/AutopackingAndroid/blob/master/CurrentVersion";
 
 About::About(QWidget *parent)
 : QDialog(parent),

@@ -3,7 +3,7 @@
 #include "Model/PathManager.h"
 #include "Model/Tools.h"
 
-SrcPack::SrcPack(QObject *parent):
+SrcPack::SrcPack(QObject *parent) :
 Pack(parent)
 {
 }
@@ -57,11 +57,15 @@ void SrcPack::run()
 	}
 
 	QFile buildXml(mainProPath + QStringLiteral("/build.xml"));
-	if (buildXml.exists() && !buildXml.remove()){
-		emit GenerateError(QStringLiteral("error:删除原buld.xml文件失败！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
-		KillTask();
-		emit FinishSignal(1, mtaskId);
-		return;
+	if (buildXml.exists()){
+		if (!PathManager::GetBuilXmlWay()){
+			if (!buildXml.remove()){
+				emit GenerateError(QStringLiteral("error:删除原buld.xml文件失败！渠道ID: %1, 渠道名 : %2\n").arg(mchannelId).arg(mchannelName));
+				KillTask();
+				emit FinishSignal(1, mtaskId);
+				return;
+			}
+		}
 	}
 
 	if (!PrePack(*mpprocess)){
@@ -88,7 +92,7 @@ void SrcPack::run()
 		return;
 	}
 
-	QString apkPath;	
+	QString apkPath;
 	apkPath = PathManager::GetApkDir(mainProPath);
 	if (apkPath.isEmpty()){
 		apkPath = PathManager::GetBin(mainProPath);
@@ -297,16 +301,18 @@ bool SrcPack::PrePack(QProcess &pprocess)
 	return true;
 }
 
-bool SrcPack::GenerateBuild(QProcess &pprocess,QString &path)
+bool SrcPack::GenerateBuild(QProcess &pprocess, QString &path)
 {
 	QString buildS = path + "/build.xml";
 	QString antS = path + "/ant.properties";
 	QFile buildF(buildS);
 	QFile antF(antS);
 	if (buildF.exists()){
-		if (!buildF.remove()){
-			emit GenerateError(QStringLiteral("删除原来旧build.xlm文件失败!"));
-			return false;
+		if (!PathManager::GetBuilXmlWay()){
+			if (!buildF.remove()){
+				emit GenerateError(QStringLiteral("删除原来旧build.xlm文件失败!"));
+				return false;
+			}
 		}
 	}
 
@@ -331,7 +337,7 @@ bool SrcPack::GenerateBuild(QProcess &pprocess,QString &path)
 		.arg(PathManager::GetPasswd())
 		.arg(PathManager::GetAliasesPasswd());
 	PathManager::AppendContentToProperties(content, path);
-	
+
 	if (!Tools::ExecuteCmd(prepackBat, param, pprocess, PathManager::GetToolPath())){
 		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
