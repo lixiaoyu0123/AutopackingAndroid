@@ -1541,6 +1541,7 @@ void PathManager::SetBuildXmlWay(bool isUseDef)
 	BUILD_XML_WAY = isUseDef;
 }
 
+//true为使用原来的buildxml文件 false为不使用原来的buildxml文件
 bool PathManager::GetBuilXmlWay()
 {
 	return BUILD_XML_WAY;

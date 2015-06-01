@@ -313,15 +313,16 @@ bool SrcPack::GenerateBuild(QProcess &pprocess, QString &path)
 				emit GenerateError(QStringLiteral("删除原来旧build.xlm文件失败!"));
 				return false;
 			}
+
+			if (antF.exists()){
+				if (!antF.remove()){
+					emit GenerateError(QStringLiteral("删除原来旧ant.properties文件失败!"));
+					return false;
+				}
+			}
 		}
 	}
 
-	if (antF.exists()){
-		if (!antF.remove()){
-			emit GenerateError(QStringLiteral("删除原来旧ant.properties文件失败!"));
-			return false;
-		}
-	}
 	QString target = PathManager::GetTarget(path);
 	if (target.isEmpty()){
 		emit GenerateError(QStringLiteral("error:未在%1位置找到project.properties文件或者未指定target").arg(path));
