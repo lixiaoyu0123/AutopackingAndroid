@@ -6,7 +6,7 @@ windows平台编译指南
 3.设置qt运行目录、Inno Setup运行目录、cmake运行目录到path环境变量
 4.执行cmd，cd进入计划将vs工程放入的目录
 5.执行“cmake -G "Visual Studio 10" 源码目录”， 若要生成vs更高版本解决方案，则字符串“Visual Studio 10”替换成相应版本
-6.vs打开生成AutopackingAndroid.sh 解决方案完成相应编译
+6.vs打开生成ApkFactory.sh 解决方案完成相应编译
 
 
 注：若安装了Inno Setup并设置了环境变量，则在vs中编译release版本后，生成makeinstaller，则自动完成打包，发布包生成在解决方案目录的installer目录中

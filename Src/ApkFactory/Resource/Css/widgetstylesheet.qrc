@@ -1,0 +1,5 @@
+﻿<RCC>
+    <qresource prefix="/css">
+        <file>widgetstylesheet.css</file>
+    </qresource>
+</RCC>

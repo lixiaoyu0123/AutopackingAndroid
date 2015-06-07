@@ -8,7 +8,7 @@
 #########################################################
 
 cmake_minimum_required( VERSION 2.8 ) 
-project( AutopackingAndroid ) 
+project( ApkFactory ) 
 
 set( CMAKE_DEBUG_POSTFIX "d" )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin )
@@ -16,9 +16,9 @@ set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib )
 set( PACKAGE_DIRECTORY ${PROJECT_BINARY_DIR}/package )
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CmakeExtras" )
 
-set( TOOLS_MAJOR_VERSION 2 )
-set( TOOLS_MINOR_VERSION 9 )
-set( TOOLS_REVISION_VERSION 2 )
+set( TOOLS_MAJOR_VERSION 3 )
+set( TOOLS_MINOR_VERSION 0 )
+set( TOOLS_REVISION_VERSION 0 )
 set( TOOLS_FULL_VERSION ${TOOLS_MAJOR_VERSION}.${TOOLS_MINOR_VERSION}.${TOOLS_REVISION_VERSION} )
 
 # Apple users building with XCode notes:
@@ -60,4 +60,4 @@ if( FORCE_BUNDLED_COPIES OR NOT PCRE_FOUND OR APPLE )
     set( PCRE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/Src/pcre ${CMAKE_BINARY_DIR}/Src/pcre )
 endif()
 
-add_subdirectory( src/Autopacking )
+add_subdirectory( src/ApkFactory )
