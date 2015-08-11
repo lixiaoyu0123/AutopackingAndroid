@@ -1159,11 +1159,6 @@ int PathManager::ReplaceAppPakInSrc(QString &path, QString &oldName, QString &ne
 							return 1;
 						}
 					}
-					else if (curFi->absoluteFilePath().toLower().endsWith(".xml")){
-						if (!ReplaceAppPakNameInXml(path, curFi->absoluteFilePath(), oldName, newName)){
-							return 1;
-						}
-					}
 				}
 				curFi++;
 			}//end of while  
@@ -1394,8 +1389,6 @@ bool PathManager::ReplacePakNameInJava(QString &srcPath, QString &fileName, QStr
 bool PathManager::ReplaceAppPakNameInJava(QString &srcPath, QString &fileName, QString &oldName, QString &newName,QString &encode)
 {
 	if (fileName.toLower().endsWith(".java")){
-		QString regularEx = QString("(?<=(\\bpackage)|(\\bimport))[\\s\\t\\r\\n]+%1[\\s\\t\\r\\n]*;").arg(oldName);
-		QString replaceName = QString(" ") + newName + ";";
 		QFile file(fileName);
 		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
 			return false;
@@ -1405,7 +1398,6 @@ bool PathManager::ReplaceAppPakNameInJava(QString &srcPath, QString &fileName, Q
 		QString content;
 		content = in.readAll();
 		file.close();
-		ReplaceByRegular(regularEx, content, replaceName);
 		QString regularExR = QString("(?<=(\\bpackage)|(\\bimport))[\\s\\t\\r\\n]+%1%2[\\s\\t\\r\\n]*;").arg(oldName).arg(".R");
 		QString replaceNameR = QString(" ") + newName + ".R;";
 		ReplaceByRegular(regularExR, content, replaceNameR);
