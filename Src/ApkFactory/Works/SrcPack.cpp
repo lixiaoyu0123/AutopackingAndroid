@@ -352,7 +352,7 @@ bool SrcPack::PackFromSrc(QProcess &pprocess)
 {
 	QString srcpackBat = QStringLiteral("srcpack.bat");
 	QStringList param;
-	param << "\"" + PathManager::GetAnt() + "\"" << mtmpSrcPath + "/" + mmainNm <<  "-D java.encoding=" + PathManager::GetEncodeToStr();
+	param << "\"" + PathManager::GetAnt() + "\"" << mtmpSrcPath + "/" + mmainNm << "-D java.encoding=" + PathManager::GetEncodeToStr();
 	if (!Tools::ExecuteCmd(srcpackBat, param, pprocess, PathManager::GetToolPath())){
 		emit GenerateError(QStringLiteral("error:ÃüÁîÖ´ÐÐ´íÎó£¡ÇþµÀID:%1,ÇþµÀÃû:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;

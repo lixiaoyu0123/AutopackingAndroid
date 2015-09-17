@@ -1455,7 +1455,7 @@ bool PathManager::RewriteApktoolYml(QString &fileName)
 bool PathManager::CopyFile(const QString &SrcFile, const QString &DestFile, bool isCover)
 {
 	if (!QFile::exists(SrcFile)){
-		return true;
+		return false;
 	}
 
 	if (QFile::exists(DestFile)){

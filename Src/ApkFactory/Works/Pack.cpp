@@ -117,7 +117,7 @@ bool Pack::ReplaceResByTable(QString &path)
 			emit GenerateError(QStringLiteral("error:原资源文件夹或目标文件夹未配置！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 			return false;
 		}
-		if (srcStr.replace("\\", "/").startsWith("/")){
+		if (destStr.replace("\\", "/").startsWith("/")){
 			destAbsolutelyStr = path + destStr;
 		}
 		else{
@@ -127,41 +127,59 @@ bool Pack::ReplaceResByTable(QString &path)
 		QFileInfo finfoSrc(srcStr);
 		QFileInfo finfoDest(destAbsolutelyStr);
 
+		if (!finfoSrc.exists()){
+			emit GenerateError(QStringLiteral("error:资源源文件不存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+			return false;
+		}
+
 		if (finfoSrc.isFile()){
-			if (!finfoSrc.exists()){
-				emit GenerateError(QStringLiteral("error:资源源文件不存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-				return false;
-			}
-			if (finfoDest.isFile()){
-				if (!PathManager::CopyFile(srcStr, destAbsolutelyStr, true)){
-					emit GenerateError(QStringLiteral("error:资源文件拷贝出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-					return false;
+			if (finfoDest.exists()){
+				if (finfoDest.isFile()){
+					if (!PathManager::CopyFile(srcStr, destAbsolutelyStr, true)){
+						emit GenerateError(QStringLiteral("error:资源文件拷贝出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+						return false;
+					}
 				}
-			}
-			else if (finfoDest.isDir()){
-				int pos = srcStr.lastIndexOf("/");
-				QString fileName = srcStr.mid(pos);
-				if (!PathManager::CopyFile(srcStr, destAbsolutelyStr + fileName, true)){
-					emit GenerateError(QStringLiteral("error:资源文件拷贝出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+				else if (finfoDest.isDir()){
+					QFileInfo srcFinfo(srcStr);
+					QString destPath = destAbsolutelyStr + QString("/") + srcFinfo.fileName();
+					if (!PathManager::CopyFile(srcStr, destPath, true)){
+						emit GenerateError(QStringLiteral("error:资源文件拷贝出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+						return false;
+					}
+				}
+				else{
+					emit GenerateError(QStringLiteral("error:资源目标配置错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 					return false;
 				}
 			}
 			else{
-				emit GenerateError(QStringLiteral("error:资源目标配置错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-				return false;
-			}
+				QFileInfo srcFinfo(srcStr);
+				QString destPath = destAbsolutelyStr + QString("/") + srcFinfo.fileName();
+				QDir destDir = finfoDest.absoluteDir();
+				if (!destDir.mkpath(finfoDest.absolutePath())){
+					emit GenerateError(QStringLiteral("error:资源目录创建失败！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+					return false;
+				}
 
+				if (!PathManager::CopyFile(srcStr, destPath, true)){
+					emit GenerateError(QStringLiteral("error:资源文件拷贝出错！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+					return false;
+				}
+			}
 		}
 		else if (finfoSrc.isDir()){
-			if (!finfoSrc.isDir()){
-				emit GenerateError(QStringLiteral("error:资源源目录不存在！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
-				return false;
-			}
-			if (finfoDest.isFile()){
+			if (finfoDest.exists() && finfoDest.isFile()){
 				emit GenerateError(QStringLiteral("error:资源源为目录，目标配置不应该为文件！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 				return false;
 			}
-			else if (finfoDest.isDir()){
+			else if (finfoDest.exists() && finfoDest.isDir()){
+				QDir destDir = finfoDest.absoluteDir();
+				if (!destDir.mkpath(finfoDest.absolutePath())){
+					emit GenerateError(QStringLiteral("error:资源目录创建失败！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
+					return false;
+				}
+
 				if (!PathManager::CopyDir(srcStr, destAbsolutelyStr, true)){
 					emit GenerateError(QStringLiteral("error:资源目录拷贝失败！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 					return false;

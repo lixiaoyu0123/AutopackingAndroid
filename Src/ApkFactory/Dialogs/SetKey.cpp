@@ -22,8 +22,7 @@ void SetKey::InitView()
 	QValidator *validator = new QRegExpValidator(rx, this);
 	ui->LineEditKey->setValidator(validator);
 	ui->LineEditAliasesPasswd->setValidator(validator);
-	mkeyPath = PathManager::GetKeyPath();
-	ui->LineEditPath->setText(mkeyPath);
+	ui->LineEditPath->setText(PathManager::GetKeyPath());
 	ui->LineEditKey->setText(PathManager::GetPasswd());
 	ui->LineEditAliases->setText(PathManager::GetKeyAliases());
 	ui->LineEditAliasesPasswd->setText(PathManager::GetAliasesPasswd());
@@ -68,16 +67,15 @@ void SetKey::ButtonScanClickSlot()
 	if (defaultPath.isEmpty()){
 		defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
 	}
-	QString fileName = QFileDialog::getOpenFileName(this, QStringLiteral("打开文件"), defaultPath, QStringLiteral("key file (*.keystore)"));
+	QString fileName = QFileDialog::getOpenFileName(this, QStringLiteral("打开文件"), defaultPath, NULL);
 	if (!fileName.isEmpty()){
-		mkeyPath = fileName;
 		ui->LineEditPath->setText(fileName);
 	}
 }
 
 void SetKey::ButtonOkClickSlot()
 {
-	PathManager::SetKeyPath(mkeyPath);
+	PathManager::SetKeyPath(ui->LineEditPath->text());
 	PathManager::WriteLastPath(QStringLiteral("setkey"), mkeyPath.left(mkeyPath.replace("\\","/").lastIndexOf("/")));
 	QString passwrd = ui->LineEditKey->text();
 	PathManager::SetPasswd(passwrd);
