@@ -702,7 +702,7 @@ bool PathManager::CopyDir(const QString &source, const QString &destination, boo
 			}
 			else{
 				continue;
-			}			
+			}
 		}
 
 
@@ -840,7 +840,7 @@ int PathManager::RenamePakInDec(QString &path, QString &oldName, QString &newNam
 *3目的包名已经存在
 *4替换包名过程出错
 ***********/
-int PathManager::ReplacePakInSrc(QString &path, QString &oldName, QString &newName,QString &encode)
+int PathManager::ReplacePakInSrc(QString &path, QString &oldName, QString &newName, QString &encode)
 {
 	QVector<QString> dirNames;
 	QDir dir(path);
@@ -873,7 +873,7 @@ int PathManager::ReplacePakInSrc(QString &path, QString &oldName, QString &newNa
 				else if (curFi->isFile()){
 					//遇到文件,则删除之  
 					if (curFi->absoluteFilePath().toLower().endsWith(".java")){
-						if (!ReplacePakNameInJava(path, curFi->absoluteFilePath(), oldName, newName,encode)){
+						if (!ReplacePakNameInJava(path, curFi->absoluteFilePath(), oldName, newName, encode)){
 							return 1;
 						}
 					}
@@ -1111,7 +1111,7 @@ bool PathManager::ReplaceAppPakNameInXml(QString &srcPath, QString &fileName, QS
 *4替换包名过程出错
 *5替换app包名出错
 ***********/
-int PathManager::ReplaceAppPakInSrc(QString &path, QString &oldName, QString &newName,QString &encode)
+int PathManager::ReplaceAppPakInSrc(QString &path, QString &oldName, QString &newName, QString &encode)
 {
 	QVector<QString> dirNames;
 	QDir dir(path);
@@ -1128,7 +1128,7 @@ int PathManager::ReplaceAppPakInSrc(QString &path, QString &oldName, QString &ne
 
 	bool isTopDir = true;
 	//遍历各级文件夹，并将这些文件夹中的文件删除  
-	for (int i = 0; i<dirNames.size(); ++i)
+	for (int i = 0; i < dirNames.size(); ++i)
 	{
 		dir.setPath(dirNames[i]);
 		filst = dir.entryInfoList(QDir::Dirs | QDir::Files
@@ -1155,7 +1155,7 @@ int PathManager::ReplaceAppPakInSrc(QString &path, QString &oldName, QString &ne
 				}
 				else if (curFi->isFile()){
 					if (curFi->absoluteFilePath().toLower().endsWith(".java")){
-						if (!ReplaceAppPakNameInJava(path, curFi->absoluteFilePath(), oldName, newName,encode)){
+						if (!ReplaceAppPakNameInJava(path, curFi->absoluteFilePath(), oldName, newName, encode)){
 							return 1;
 						}
 					}
@@ -1315,7 +1315,7 @@ bool PathManager::ReplacePakNameInSmali(QString &fileName, QString &oldName, QSt
 		QString newNameTmp = newName;
 		oldNameTmp.replace(".", "/");
 		newNameTmp.replace(".", "/");
-		return ReplaceStr(fileName, oldNameTmp, newNameTmp,QString("UTF-8"));
+		return ReplaceStr(fileName, oldNameTmp, newNameTmp, QString("UTF-8"));
 	}
 	return true;
 }
@@ -1327,12 +1327,12 @@ bool PathManager::ReplaceAppPakNameInSmali(QString &fileName, QString &oldName, 
 		QString newNameTmp = newName;
 		oldNameTmp.replace(".", "/");
 		newNameTmp.replace(".", "/");
-		return ReplaceStr(fileName, oldNameTmp, newNameTmp,QString("UTF-8"));
+		return ReplaceStr(fileName, oldNameTmp, newNameTmp, QString("UTF-8"));
 	}
 	return true;
 }
 
-bool PathManager::ReplacePakNameInJava(QString &srcPath, QString &fileName, QString &oldName, QString &newName,QString &encode)
+bool PathManager::ReplacePakNameInJava(QString &srcPath, QString &fileName, QString &oldName, QString &newName, QString &encode)
 {
 	if (fileName.toLower().endsWith(".java")){
 		QString regularEx = QString("(?<=(\\bpackage)|(\\bimport))[\\s\\t\\r\\n]+%1[\\s\\t\\r\\n]*;").arg(oldName);
@@ -1386,7 +1386,7 @@ bool PathManager::ReplacePakNameInJava(QString &srcPath, QString &fileName, QStr
 	return true;
 }
 
-bool PathManager::ReplaceAppPakNameInJava(QString &srcPath, QString &fileName, QString &oldName, QString &newName,QString &encode)
+bool PathManager::ReplaceAppPakNameInJava(QString &srcPath, QString &fileName, QString &oldName, QString &newName, QString &encode)
 {
 	if (fileName.toLower().endsWith(".java")){
 		QFile file(fileName);
@@ -1475,24 +1475,22 @@ bool PathManager::CopyFile(const QString &SrcFile, const QString &DestFile, bool
 bool PathManager::CheckSysEnvironment()
 {
 	QString javaHome = QString("");
-	QStringList environment = QProcess::systemEnvironment();
-
-	for (QStringList::iterator ite = environment.begin(); ite != environment.end(); ite++)
+	QProcessEnvironment processEnvironment = QProcessEnvironment::systemEnvironment();
+	QStringList pathValueList = processEnvironment.value("Path").split(";");
+	for (QStringList::iterator ite = pathValueList.begin(); ite != pathValueList.end(); ite++)
 	{
-		if (ite->toLower().startsWith("path=")){
-			QStringList pathValueList = ite->mid(QString("path=").length()).split(";");
-			for (QStringList::iterator ite = pathValueList.begin(); ite != pathValueList.end(); ite++)
-			{
-				QString path = ite->toLower();
-				if (path.contains("java") && path.contains("bin")){
-					SetJdkPath(ite->replace("\\", "/"));
-					break;
-				}
-			}
-			continue;
+		QString path = ite->toLower();
+		if (path.contains("java") && path.contains("bin")){
+			SetJdkPath(ite->replace("\\", "/"));
+			break;
 		}
-		else if (ite->toLower().startsWith("java_home")){
-			javaHome = *ite;
+		else if (path.contains("%JAVA_HOME%")){
+			if (!processEnvironment.value("JAVA_HOME").isEmpty()){
+				QString javaHome = processEnvironment.value("JAVA_HOME");
+				javaHome += "/bin";
+				SetJdkPath(javaHome.replace("\\", "/"));
+				break;
+			}
 		}
 	}
 
@@ -1500,7 +1498,8 @@ bool PathManager::CheckSysEnvironment()
 		BjMessageBox::warning(NULL, QStringLiteral("jdk环境变量错误"), QStringLiteral("在系统环境变量中未发现jdk路径，请先设置jdk环境变量，如果已经设置jdk环境变量，请在设置中指定其位置！"), QMessageBox::Ok, QMessageBox::NoButton);
 		return false;
 	}
-	else if (javaHome.isEmpty()){
+
+	if (!processEnvironment.contains("JAVA_HOME") || processEnvironment.value("JAVA_HOME").isEmpty()){
 		BjMessageBox::warning(NULL, QStringLiteral("java_home环境变量错误"), QStringLiteral("在系统环境变量中未发现java_home环境变量，请先设置java_home环境变量！"), QMessageBox::Ok, QMessageBox::NoButton);
 		return false;
 	}

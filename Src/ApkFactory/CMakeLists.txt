@@ -279,6 +279,10 @@ if (MSVC)
     query_qmake(QT_INSTALL_LIBS QT_LIBRARY_DIR)
     query_qmake(QT_INSTALL_BINS QT_INSTALL_BINS)
     query_qmake(QT_INSTALL_PLUGINS QT_PLUGINS_DIR)
+	#set( QT_PLUGINS_DIR D:/Qt/Qt5.4.1/5.4/msvc2013/plugins)
+
+	#---print---
+	#MESSAGE(STATUS ${QT_PLUGINS_DIR})
 
     set( TEMP_PACKAGE_DIR ${CMAKE_BINARY_DIR}/temp_folder )
     set( MAIN_PACKAGE_DIR ${TEMP_PACKAGE_DIR}/ApkFactory)
