@@ -1479,12 +1479,8 @@ bool PathManager::CheckSysEnvironment()
 	QStringList pathValueList = processEnvironment.value("Path").split(";");
 	for (QStringList::iterator ite = pathValueList.begin(); ite != pathValueList.end(); ite++)
 	{
-		QString path = ite->toLower();
-		if (path.contains("java") && path.contains("bin")){
-			SetJdkPath(ite->replace("\\", "/"));
-			break;
-		}
-		else if (path.contains("%JAVA_HOME%")){
+
+		if (ite->contains("%JAVA_HOME%")){
 			if (!processEnvironment.value("JAVA_HOME").isEmpty()){
 				QString javaHome = processEnvironment.value("JAVA_HOME");
 				javaHome += "/bin";
@@ -1492,6 +1488,12 @@ bool PathManager::CheckSysEnvironment()
 				break;
 			}
 		}
+		QString path = ite->toLower();
+		if ((path.contains("jre") && path.contains("bin")) || ((path.contains("jdk") && path.contains("bin")))){
+			SetJdkPath(ite->replace("\\", "/"));
+			break;
+		}
+
 	}
 
 	if (JDKPATH.isEmpty()){
