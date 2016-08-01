@@ -345,7 +345,19 @@ bool SrcPack::GenerateBuild(QProcess &pprocess, QString &path)
 		emit GenerateError(QStringLiteral("error:命令执行错误！渠道ID:%1,渠道名:%2\n").arg(mchannelId).arg(mchannelName));
 		return false;
 	}
+
+	FormatProperties(path, pprocess);
 	return true;
+}
+
+void SrcPack::FormatProperties(QString &path, QProcess &pprocess) {
+	QString native2ascii = "\"" + PathManager::GetJdkPath() + QStringLiteral("/native2ascii.exe") + "\"";
+	QFile file(path + QStringLiteral("/ant.properties"));
+	file.rename(path + QStringLiteral("/tmp.properties"));
+	QStringList param;
+	param << "-encoding" << "GBK" << "tmp.properties" << "ant.properties";
+	Tools::ExecuteCmd(native2ascii, param, pprocess, path);
+	file.remove();
 }
 
 bool SrcPack::PackFromSrc(QProcess &pprocess)

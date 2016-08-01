@@ -328,7 +328,7 @@ if (MSVC)
     endforeach( lib )
 
 	# Copy bin libs
-    set( QT_BIN_LIBS icudt53 icuin53 icuuc53 )
+    set( QT_BIN_LIBS icudt54 icuin54 icuuc54 )
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/ )    
     foreach( lib ${QT_BIN_LIBS} )
         set( location location-NOTFOUND )
@@ -336,7 +336,7 @@ if (MSVC)
         add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/ )
     endforeach( lib )
 
-    # Copy platform plugins
+	# Copy platform plugins
     set( QT_PLATFORMS qwindows)
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/Platforms/ )
     foreach( lib ${QT_PLATFORMS} )   
@@ -345,7 +345,7 @@ if (MSVC)
         add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E copy ${location} ${MAIN_PACKAGE_DIR}/Platforms/ )
     endforeach( lib )
 
-   # Copy sqldrivers plugins
+	# Copy sqldrivers plugins
     set( QT_SQLDRIVERS qsqlite )
     add_custom_command( TARGET ${TARGET_FOR_COPY} PRE_BUILD COMMAND cmake -E make_directory ${MAIN_PACKAGE_DIR}/sqldrivers/ )
     foreach( lib ${QT_SQLDRIVERS} )   

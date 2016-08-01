@@ -69,11 +69,12 @@ QString PathManager::GetDocumentsPath()
 
 bool PathManager::AppendContentToProperties(QString &content, QString &path)
 {
-	QFile file(path + QStringLiteral("/project.properties"));
-	if (!file.open(QIODevice::Append | QIODevice::Text))
+	QFile file(path + QStringLiteral("/ant.properties"));
+	if (!file.open(QIODevice::Append | QIODevice::Text)) {
 		return false;
+	}
 	QTextStream out(&file);
-	out.setCodec("UTF-8");
+	out.setCodec("GBK");
 	out << content;
 	file.close();
 	return true;

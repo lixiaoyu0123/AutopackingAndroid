@@ -18,6 +18,7 @@ public:
 	bool PackFromSrc(QProcess &pprocess);
 	bool CreatPath(QString &outPath, QString &channelId, QString &channelName, QString &channeltbId);
 	bool GenerateBuild(QProcess &pprocess ,QString &path);
+	void FormatProperties(QString &path, QProcess &pprocess);
 protected:
 	void run();
 private:
